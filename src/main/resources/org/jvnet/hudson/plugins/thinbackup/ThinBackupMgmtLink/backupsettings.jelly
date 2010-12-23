@@ -1,0 +1,33 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
+         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <l:layout permission="${app.ADMINISTER}" norefresh="true">
+        <st:include it="${app}" page="sidepanel.jelly"/>
+        <l:main-panel>
+            <h1>
+                <img src="${it.iconFileName}" alt=""/>
+                Backup Configuration
+            </h1>
+
+            <f:form method="post" action="saveSettings">
+                 <!-- Backup configuration -->
+                 <f:section title="Backup settings">
+                    <f:entry title="Backup directory"
+                    help="/plugin/thinBackup/help/help-backupPath.html">
+                        <f:textbox value="${it.configuration.backupPath}" name="backupPath"/>
+                    </f:entry>
+                    <f:entry title="Backup time"
+                    help="/plugin/thinBackup/help/help-backupTime.html">
+                        <f:textbox value="${it.configuration.backupTime}" name="backupTime"/>
+                    </f:entry>
+                </f:section>
+                
+                <!-- Save! -->
+                <f:section title="Save">
+                    <f:entry title="Save">
+                        <f:submit value="Save"/>
+                    </f:entry>
+                </f:section>
+            </f:form>
+        </l:main-panel>
+    </l:layout>
+</j:jelly>

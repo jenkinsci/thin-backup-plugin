@@ -1,0 +1,29 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
+         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <l:layout permission="${app.ADMINISTER}" norefresh="true">
+        <st:include it="${app}" page="sidepanel.jelly"/>
+        <l:main-panel>
+            <h1>
+                <img src="${rootURL}${it.iconFileName}" alt=""/>
+                ${it.displayName}
+            </h1>
+            
+            <div style="margin-left : 2em;">
+            <br />
+            <lu style="list-style-type:none;">
+                <li>
+                    <h2><A href="backupManual">
+                    <img src="/plugin/thinBackup/images/backup.png" alt=""/>
+                    Backup Now</A></h2>
+                </li>
+                <li>
+                    <h2><A href="backupsettings">
+                    <img src="/plugin/thinBackup/images/settings.png" alt=""/>
+                    Settings</A></h2>
+                </li>
+            </lu>
+            </div>
+            
+        </l:main-panel>
+    </l:layout>
+</j:jelly>

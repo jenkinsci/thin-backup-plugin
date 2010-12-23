@@ -1,0 +1,57 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.jvnet.hudson.plugins</groupId>
+    <artifactId>plugin</artifactId>
+    <version>1.389</version><!-- which version of Hudson is this plugin built against? -->
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <groupId>org.jvnet.hudson.plugins</groupId>
+  <artifactId>thinBackup</artifactId>
+  <name>ThinBackup</name>
+  <version>1.0-SNAPSHOT</version>
+  <packaging>hpi</packaging>
+
+  <!-- get every artifact through maven.glassfish.org, which proxies all the artifacts that we need -->
+  <description>Backs up the most important global and job specific configuration files. 
+</description>
+  <developers>
+  	<developer>
+  		<id>tofuatjava</id>
+  		<name>Thomas Fürer</name>
+  		<email>tofuatjava@googlemail.com</email>
+  		<organization>Borland (a Microfocus Company)</organization>
+  		<organizationUrl>www.borland.com</organizationUrl>
+  		<timezone>GMT+1</timezone>
+  	</developer>
+  	<developer>
+  		<name>Matthias Steinkogler</name>
+  		<email>alienllama@gmail.com</email>
+  		<organization>Borland (a Microfocus Company)</organization>
+  		<organizationUrl>www.borland.com</organizationUrl>
+  		<timezone>CET</timezone>
+  		<roles>
+  		</roles>
+  	</developer>
+  </developers>
+  <organization>
+  	<name>Borland (a Microfocus Company)</name>
+  	<url>www.borland.com</url>
+  </organization>
+  <repositories>
+    <repository>
+      <id>m.g.o-public</id>
+      <url>http://maven.glassfish.org/content/groups/public/</url>
+    </repository>
+  </repositories>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <id>m.g.o-public</id>
+      <url>http://maven.glassfish.org/content/groups/public/</url>
+    </pluginRepository>
+  </pluginRepositories>
+  <dependencies>
+  </dependencies>
+</project>
