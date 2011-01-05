@@ -170,7 +170,7 @@ public class HudsonBackup {
     final List<PluginWrapper> installedPlugins = Hudson.getInstance()
         .getPluginManager().getPlugins();
     final File pluginVersionList = new File(backupDirectory
-        + "/installedPlugins.xml");
+        + "/installedPlugins.txt");
     pluginVersionList.createNewFile();
     final Writer w = new FileWriter(pluginVersionList);
     w.write(String.format("Hudson [%s]\n", Hudson.getVersion()));

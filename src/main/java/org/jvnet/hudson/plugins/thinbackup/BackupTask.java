@@ -11,8 +11,8 @@ public class BackupTask extends TimerTask {
 
   @Override
   public void run() {
-    plugin.runBackup();
-    plugin.scheduleNextRun();
+//    plugin.runBackup();
+//    plugin.scheduleNextRun();
   }
 
 }

@@ -2,8 +2,10 @@ package org.jvnet.hudson.plugins.thinbackup;
 
 import hudson.Extension;
 import hudson.model.ManagementLink;
+import hudson.model.TaskListener;
 import hudson.model.Hudson;
 import hudson.scheduler.CronTab;
+import hudson.triggers.Trigger;
 import hudson.util.FormValidation;
 
 import java.io.File;
@@ -18,8 +20,7 @@ import antlr.ANTLRException;
 
 @Extension
 public class ThinBackupMgmtLink extends ManagementLink {
-  private static final Logger LOGGER = Logger
-      .getLogger("hudson.plugins.thinbackup");
+  private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
 
   public String getDisplayName() {
     return "ThinBackup";
@@ -35,31 +36,40 @@ public class ThinBackupMgmtLink extends ManagementLink {
     return "thinBackup";
   }
 
-  public void doBackupManual(final StaplerRequest res, final StaplerResponse rsp)
-      throws IOException {
+  @Override
+  public String getDescription() {
+    return "Backup your global and job specific configuration.";
+  }
+
+  public void doBackupManual(final StaplerRequest res, final StaplerResponse rsp) throws IOException {
     Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
-    final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.getInstance();
-    plugin.runBackup();
+
+    ThinBackupPeriodicWork manualBackupWorker = new ThinBackupPeriodicWork() {
+      @Override
+      protected void execute(TaskListener arg0) throws IOException, InterruptedException {
+        backupNow();
+      }
+    };
+    Trigger.timer.schedule(manualBackupWorker, 0);
+
     LOGGER.info("Manual backup finished");
     rsp.sendRedirect(res.getContextPath() + "/thinBackup");
   }
 
-  public void doSaveSettings(final StaplerRequest res,
-      final StaplerResponse rsp,
-      @QueryParameter("backupPath") final String backupPath,
-      @QueryParameter("backupTime") final String backupTime) throws IOException {
+  public void doSaveSettings(final StaplerRequest res, final StaplerResponse rsp,
+      @QueryParameter("backupPath") final String backupPath, @QueryParameter("backupTime") final String backupTime)
+      throws IOException {
     Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
 
     final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.getInstance();
     plugin.setBackupPath(backupPath);
     plugin.setBackupTime(backupTime);
     plugin.save();
-    LOGGER.info("Save backup settings done.");
+    LOGGER.fine("Save backup settings done.");
     rsp.sendRedirect(res.getContextPath() + "/thinBackup");
   }
 
-  public FormValidation doCheckBackupPath(final StaplerRequest res,
-      final StaplerResponse rsp,
+  public FormValidation doCheckBackupPath(final StaplerRequest res, final StaplerResponse rsp,
       @QueryParameter("backupPath") final String backupPath) {
     if ((backupPath == null) || backupPath.isEmpty()) {
       return FormValidation.error("'Backup Path' is not mandatory.");
@@ -67,8 +77,7 @@ public class ThinBackupMgmtLink extends ManagementLink {
 
     final File backupdir = new File(backupPath);
     if (!backupdir.exists()) {
-      return FormValidation
-          .warning("The given directory does not exist, it will be created during the first run.");
+      return FormValidation.warning("The given directory does not exist, it will be created during the first run.");
     }
     if (!backupdir.isDirectory()) {
       return FormValidation.error("A file with this name already exists.");
@@ -76,8 +85,7 @@ public class ThinBackupMgmtLink extends ManagementLink {
     return FormValidation.ok();
   }
 
-  public FormValidation doCheckBackupTime(final StaplerRequest res,
-      final StaplerResponse rsp,
+  public FormValidation doCheckBackupTime(final StaplerRequest res, final StaplerResponse rsp,
       @QueryParameter("backupTime") final String backupTime) {
     String message;
     if ((backupTime != null) && !backupTime.isEmpty()) {
