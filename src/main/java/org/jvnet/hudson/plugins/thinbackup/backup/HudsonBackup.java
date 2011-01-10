@@ -25,10 +25,7 @@ public class HudsonBackup {
 
   private static final String BUILDS_DIR_NAME = "Builds";
   private static final String BACKUP_PREFIX = "backup";
-  private static final String CHANGELOG_XML_NAME = "changelog.xml";
-  private static final String BUILD_XML_NAME = "build.xml";
   private static final String NEXT_BUILD_NUMBER_FILENAME = "nextBuildNumber";
-  private static final String CONFIG_XML = "config.xml";
   private static final String JOBS_DIR = "jobs";
 
   private final File hudsonDirectory;
@@ -77,21 +74,6 @@ public class HudsonBackup {
     IOFileFilter filter = FileFilterUtils.suffixFileFilter(".xml");
     filter = FileFilterUtils.orFileFilter(filter, FileFilterUtils.nameFileFilter(NEXT_BUILD_NUMBER_FILENAME));
 
-    // filter = FileFilterUtils.orFileFilter(filter, FileFilterUtils.nameFileFilter(CHANGELOG_XML_NAME));
-    // filter = FileFilterUtils.andFileFilter(filter, FileFileFilter.FILE);
-    // filter = FileFilterUtils.orFileFilter(filter, DirectoryFileFilter.DIRECTORY);
-    //
-    // IOFileFilter notWorkspaceDirFilter = FileFilterUtils.nameFileFilter("workspace");
-    // notWorkspaceDirFilter = FileFilterUtils.notFileFilter(FileFilterUtils.andFileFilter(notWorkspaceDirFilter,
-    // DirectoryFileFilter.DIRECTORY));
-    //
-    // final IOFileFilter notArchiveDirFilter = FileFilterUtils.nameFileFilter("archive");
-    // notWorkspaceDirFilter = FileFilterUtils.notFileFilter(FileFilterUtils.andFileFilter(notWorkspaceDirFilter,
-    // DirectoryFileFilter.DIRECTORY));
-    //
-    // filter = FileFilterUtils.andFileFilter(filter, notWorkspaceDirFilter);
-    // filter = FileFilterUtils.andFileFilter(filter, notArchiveDirFilter);
-
     final Hudson hudson = Hudson.getInstance();
     Collection<String> jobNames;
     if (hudson != null) {
@@ -109,15 +91,16 @@ public class HudsonBackup {
         jobFilter = FileFilterUtils.orFileFilter(filter, nameFileFilter);
       }
 
-      final Collection<String> builds;
       final File buildsDir = new File(new File(jobsDirectory, jobName), BUILDS_DIR_NAME);
-      builds = Arrays.asList(buildsDir.list());
-      if (builds != null) {
-        final String buildsBackupPath = String.format("%s/%s/%s", jobsBackupPath, jobName, BUILDS_DIR_NAME);
-        for (final String build : builds) {
-          final File srcDir = new File(buildsDir, build);
-          final File destDir = new File(buildsBackupPath, build);
-          FileUtils.copyDirectory(srcDir, destDir, FileFileFilter.FILE);
+      if (buildsDir.exists() && buildsDir.isDirectory()) {
+        final Collection<String> builds = Arrays.asList(buildsDir.list());
+        if (builds != null) {
+          final String buildsBackupPath = String.format("%s/%s/%s", jobsBackupPath, jobName, BUILDS_DIR_NAME);
+          for (final String build : builds) {
+            final File srcDir = new File(buildsDir, build);
+            final File destDir = new File(buildsBackupPath, build);
+            FileUtils.copyDirectory(srcDir, destDir, FileFileFilter.FILE);
+          }
         }
       }
     }
