@@ -44,10 +44,10 @@ public class ThinBackupMgmtLink extends ManagementLink {
   public void doBackupManual(final StaplerRequest res, final StaplerResponse rsp) throws IOException {
     Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
 
-    ThinBackupPeriodicWork manualBackupWorker = new ThinBackupPeriodicWork() {
+    final ThinBackupPeriodicWork manualBackupWorker = new ThinBackupPeriodicWork() {
       @Override
-      protected void execute(TaskListener arg0) throws IOException, InterruptedException {
-        backupNow();
+      protected void execute(final TaskListener arg0) throws IOException, InterruptedException {
+        backupNow(BackupType.FULL);
       }
     };
     Trigger.timer.schedule(manualBackupWorker, 0);
@@ -57,13 +57,15 @@ public class ThinBackupMgmtLink extends ManagementLink {
   }
 
   public void doSaveSettings(final StaplerRequest res, final StaplerResponse rsp,
-      @QueryParameter("backupPath") final String backupPath, @QueryParameter("backupTime") final String backupTime)
-      throws IOException {
+      @QueryParameter("backupPath") final String backupPath,
+      @QueryParameter("fullBackupSchedule") final String fullBackupSchedule,
+      @QueryParameter("diffBackupSchedule") final String diffBackupSchedule) throws IOException {
     Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
 
     final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.getInstance();
     plugin.setBackupPath(backupPath);
-    plugin.setBackupTime(backupTime);
+    plugin.setFullBackupSchedule(fullBackupSchedule);
+    plugin.setDiffBackupSchedule(diffBackupSchedule);
     plugin.save();
     LOGGER.fine("Save backup settings done.");
     rsp.sendRedirect(res.getContextPath() + "/thinBackup");

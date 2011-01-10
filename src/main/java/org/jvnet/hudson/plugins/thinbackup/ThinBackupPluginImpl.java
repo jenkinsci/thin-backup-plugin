@@ -8,7 +8,8 @@ public class ThinBackupPluginImpl extends Plugin {
   private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
   private static ThinBackupPluginImpl instance = null;
 
-  private String backupTime;
+  private String fullBackupSchedule;
+  private String diffBackupSchedule;
   private String backupPath;
 
   public ThinBackupPluginImpl() {
@@ -34,12 +35,20 @@ public class ThinBackupPluginImpl extends Plugin {
     return backupPath;
   }
 
-  public void setBackupTime(final String backupTime) {
-    this.backupTime = backupTime;
+  public void setFullBackupSchedule(final String fullBackupSchedule) {
+    this.fullBackupSchedule = fullBackupSchedule;
   }
 
-  public String getBackupTime() {
-    return backupTime;
+  public String getFullBackupSchedule() {
+    return fullBackupSchedule;
+  }
+
+  public void setDiffBackupSchedule(final String diffBackupSchedule) {
+    this.diffBackupSchedule = diffBackupSchedule;
+  }
+
+  public String getDiffBackupSchedule() {
+    return diffBackupSchedule;
   }
 
 }

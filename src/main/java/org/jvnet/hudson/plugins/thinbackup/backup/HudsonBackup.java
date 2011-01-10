@@ -6,6 +6,7 @@ import hudson.model.Hudson;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.Writer;
 import java.text.SimpleDateFormat;
@@ -20,24 +21,27 @@ import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.FileFileFilter;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
+import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 
 public class HudsonBackup {
 
   private static final String BUILDS_DIR_NAME = "Builds";
-  private static final String BACKUP_PREFIX = "backup";
   private static final String NEXT_BUILD_NUMBER_FILENAME = "nextBuildNumber";
   private static final String JOBS_DIR = "jobs";
 
   private final File hudsonDirectory;
   private final File backupDirectory;
+  private final BackupType backupType;
 
-  public HudsonBackup(final String backupRootPath, final File hudsonHome) {
+  public HudsonBackup(final String backupRootPath, final File hudsonHome, final BackupType backupType) {
     hudsonDirectory = hudsonHome;
 
     final Date date = new Date();
     final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd_HH-mm");
-    final String backupPath = String.format("%s/%s_%s", backupRootPath, BACKUP_PREFIX, format.format(date));
+    final String backupPath = String.format("%s/%s-%s", backupRootPath, backupType, format.format(date));
     backupDirectory = new File(backupPath);
+
+    this.backupType = backupType;
   }
 
   public boolean run() throws IOException {
@@ -50,6 +54,9 @@ public class HudsonBackup {
         throw new IOException("Could not create target directory.");
       }
     }
+    if (backupType == BackupType.NONE) {
+      throw new IllegalStateException("Backup type must be FULL or DIFF.");
+    }
 
     backupGlobalXmls();
     backupJobs();
@@ -59,8 +66,9 @@ public class HudsonBackup {
   }
 
   private void backupGlobalXmls() throws IOException {
-    final IOFileFilter suffixFileFilter = FileFilterUtils.suffixFileFilter(".xml");
-    FileFilterUtils.andFileFilter(FileFileFilter.FILE, suffixFileFilter);
+    IOFileFilter suffixFileFilter = FileFilterUtils.suffixFileFilter(".xml");
+    suffixFileFilter = FileFilterUtils.andFileFilter(FileFileFilter.FILE, suffixFileFilter);
+    suffixFileFilter = FileFilterUtils.andFileFilter(suffixFileFilter, getDiffFilter());
     FileUtils.copyDirectory(hudsonDirectory, backupDirectory, suffixFileFilter);
   }
 
@@ -99,7 +107,8 @@ public class HudsonBackup {
           for (final String build : builds) {
             final File srcDir = new File(buildsDir, build);
             final File destDir = new File(buildsBackupPath, build);
-            FileUtils.copyDirectory(srcDir, destDir, FileFileFilter.FILE);
+            final IOFileFilter buildFilter = FileFilterUtils.andFileFilter(FileFileFilter.FILE, getDiffFilter());
+            FileUtils.copyDirectory(srcDir, destDir, buildFilter);
           }
         }
       }
@@ -109,6 +118,7 @@ public class HudsonBackup {
       filter = FileFilterUtils.orFileFilter(filter, jobFilter);
     }
 
+    filter = FileFilterUtils.andFileFilter(filter, getDiffFilter());
     FileUtils.copyDirectory(jobsDirectory, jobsBackupDirectory, filter);
   }
 
@@ -134,5 +144,31 @@ public class HudsonBackup {
       w.write(entry);
     }
     w.close();
+  }
+
+  private IOFileFilter getDiffFilter() {
+    IOFileFilter result = FileFilterUtils.trueFileFilter();
+
+    if (backupType == BackupType.DIFF) {
+      result = FileFilterUtils.ageFileFilter(getLatestFullBackupDate(), false);
+    }
+
+    return result;
+  }
+
+  private Date getLatestFullBackupDate() {
+    final IOFileFilter prefixFilter = FileFilterUtils.prefixFileFilter(BackupType.FULL.toString());
+    final Collection<File> backups = Arrays.asList(backupDirectory.getParentFile().listFiles(
+        (FilenameFilter) prefixFilter));
+
+    Date latestBackupDate = null;
+    for (final File fullBackupDir : backups) {
+      final Date curModifiedDate = new Date(fullBackupDir.lastModified());
+      if ((latestBackupDate == null) || curModifiedDate.after(latestBackupDate)) {
+        latestBackupDate = curModifiedDate;
+      }
+    }
+
+    return latestBackupDate;
   }
 }

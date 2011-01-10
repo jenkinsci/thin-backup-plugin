@@ -1,13 +1,16 @@
 package org.jvnet.hudson.plugins.thinbackup.backup;
 
 import java.io.File;
+import java.io.FileFilter;
 
 import junit.framework.Assert;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 
 public class TestHudsonBackup {
 
@@ -57,7 +60,7 @@ public class TestHudsonBackup {
 
   @Test
   public void testBackup() throws Exception {
-    new HudsonBackup(backupDir.getAbsolutePath(), root).run();
+    new HudsonBackup(backupDir.getAbsolutePath(), root, BackupType.FULL).run();
 
     String[] list = backupDir.list();
     Assert.assertEquals(1, list.length);
@@ -72,5 +75,24 @@ public class TestHudsonBackup {
     final File build = new File(new File(job, "Builds"), "2011-01-08_22-26-40");
     list = build.list();
     Assert.assertEquals(4, list.length);
+  }
+
+  @Test
+  public void testHudsonDiffBackup() throws Exception {
+    new HudsonBackup(backupDir.getAbsolutePath(), root, BackupType.FULL).run();
+
+    // fake modification
+    backupDir.listFiles((FileFilter) FileFilterUtils.prefixFileFilter(BackupType.FULL.toString()))[0]
+        .setLastModified(System.currentTimeMillis() - 60000 * 60);
+
+    for (final File globalConfigFile : root.listFiles()) {
+      globalConfigFile.setLastModified(System.currentTimeMillis() - 60000 * 120);
+    }
+
+    new HudsonBackup(backupDir.getAbsolutePath(), root, BackupType.DIFF).run();
+    final File lastDiffBackup = backupDir.listFiles((FileFilter) FileFilterUtils.prefixFileFilter(BackupType.DIFF
+        .toString()))[0];
+    Assert.assertEquals(2, lastDiffBackup.list().length);
+
   }
 }

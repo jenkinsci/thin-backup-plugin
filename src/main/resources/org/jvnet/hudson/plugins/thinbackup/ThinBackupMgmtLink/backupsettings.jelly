@@ -15,9 +15,13 @@
                     help="/plugin/thinBackup/help/help-backupPath.html">
                         <f:textbox value="${it.configuration.backupPath}" name="backupPath"/>
                     </f:entry>
-                    <f:entry title="Backup time"
-                    help="/plugin/thinBackup/help/help-backupTime.html">
-                        <f:textbox value="${it.configuration.backupTime}" name="backupTime"/>
+                    <f:entry title="Backup schedule for full backups"
+                    help="/plugin/thinBackup/help/help-fullBackupSchedule.html">
+                        <f:textbox value="${it.configuration.fullBackupSchedule}" name="fullBackupSchedule"/>
+                    </f:entry>
+                    <f:entry title="Backup schedule for differential backups"
+                    help="/plugin/thinBackup/help/help-diffBackupSchedule.html">
+                        <f:textbox value="${it.configuration.diffBackupSchedule}" name="diffBackupSchedule"/>
                     </f:entry>
                 </f:section>
                 
