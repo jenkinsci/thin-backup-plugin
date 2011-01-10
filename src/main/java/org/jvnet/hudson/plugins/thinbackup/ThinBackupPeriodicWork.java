@@ -22,7 +22,8 @@ import antlr.ANTLRException;
 
 @Extension
 public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
-  private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
+  private static final Logger LOGGER = Logger
+      .getLogger("hudson.plugins.thinbackup");
   private static final int COMPUTER_TIMEOUT_WAIT = 500; // ms
 
   public ThinBackupPeriodicWork() {
@@ -35,7 +36,8 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
   }
 
   @Override
-  protected void execute(TaskListener arg0) throws IOException, InterruptedException {
+  protected void execute(final TaskListener arg0) throws IOException,
+      InterruptedException {
     if (executeNow()) {
       backupNow();
     }
@@ -51,7 +53,7 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
         LOGGER.fine("Wait until executors are idle to perform backup.");
         waitUntilIdle();
         LOGGER.info("Perform backup task.");
-        new HudsonBackup(backupPath).run();
+        new HudsonBackup(backupPath, Hudson.getInstance().getRootDir()).run();
         hudson.doCancelQuietDown();
       } else {
         LOGGER.warning("ThinBackup is not configured yet: No backup path set.");
@@ -66,20 +68,23 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
     try {
       final long currentTime = System.currentTimeMillis();
       cronTab = new CronTab(getCronTimeFromConfig());
-      Calendar nextExecution = cronTab.ceil(currentTime);
-      long delay = nextExecution.getTimeInMillis() - currentTime;
-      LOGGER.fine(MessageFormat.format("current time: {0} next execution: {1} delay [s]: {2}", new Date(currentTime),
-          nextExecution.getTime(), TimeUnit2.MILLISECONDS.toSeconds(delay)));
+      final Calendar nextExecution = cronTab.ceil(currentTime);
+      final long delay = nextExecution.getTimeInMillis() - currentTime;
+      LOGGER.fine(MessageFormat.format(
+          "current time: {0} next execution: {1} delay [s]: {2}", new Date(
+              currentTime), nextExecution.getTime(), TimeUnit2.MILLISECONDS
+              .toSeconds(delay)));
       return delay < MIN;
-    } catch (ANTLRException e) {
-      LOGGER.warning("Cannot parse the specified 'BackupTime'. Check cron notation.");
+    } catch (final ANTLRException e) {
+      LOGGER
+          .warning("Cannot parse the specified 'BackupTime'. Check cron notation.");
       return false;
     }
   }
 
   private String getCronTimeFromConfig() {
     final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.getInstance();
-    String backupTime = plugin.getBackupTime();
+    final String backupTime = plugin.getBackupTime();
     return backupTime;
   }
 
