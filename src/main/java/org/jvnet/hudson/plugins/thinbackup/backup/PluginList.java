@@ -46,7 +46,7 @@ public class PluginList implements Comparable<PluginList> {
   }
 
   public int compareTo(final PluginList o) {
-    if (o == null) {
+    if ((o == null) || (this.plugins == null)) {
       return -1;
     }
 
