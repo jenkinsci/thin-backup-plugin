@@ -5,10 +5,8 @@ import hudson.model.Hudson;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,6 +23,7 @@ import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 
 public class HudsonBackup {
 
+  private static final String INSTALLED_PLUGINS_XML = "installedPlugins.xml";
   private static final String BUILDS_DIR_NAME = "Builds";
   private static final String NEXT_BUILD_NUMBER_FILENAME = "nextBuildNumber";
   private static final String JOBS_DIR = "jobs";
@@ -32,16 +31,25 @@ public class HudsonBackup {
   private final File hudsonDirectory;
   private final File backupDirectory;
   private final BackupType backupType;
+  private final Date latestFullBackupDate;
 
   public HudsonBackup(final String backupRootPath, final File hudsonHome, final BackupType backupType) {
     hudsonDirectory = hudsonHome;
 
+    latestFullBackupDate = getLatestFullBackupDate(backupRootPath);
+
+    // for a DIFF backup at least one FULL backup is needed, so if it is missing
+    // ignore the backupType and do a FULL backup in this case
+    if ((backupType == BackupType.DIFF) && (latestFullBackupDate == null)) {
+      this.backupType = BackupType.FULL;
+    } else {
+      this.backupType = backupType;
+    }
+
     final Date date = new Date();
     final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd_HH-mm");
-    final String backupPath = String.format("%s/%s-%s", backupRootPath, backupType, format.format(date));
-    backupDirectory = new File(backupPath);
-
-    this.backupType = backupType;
+    final String dirName = String.format("%s-%s", this.backupType, format.format(date));
+    backupDirectory = new File(new File(backupRootPath), dirName);
   }
 
   public boolean run() throws IOException {
@@ -126,40 +134,56 @@ public class HudsonBackup {
     final Hudson hudson = Hudson.getInstance();
     final List<PluginWrapper> installedPlugins;
 
+    PluginList latestFullPlugins = null;
+    if (backupType == BackupType.DIFF) {
+      final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd_HH-mm");
+      final File latestFullBackupDir = new File(backupDirectory.getParentFile(), String.format("FULL-%s",
+          format.format(latestFullBackupDate)));
+      final File pluginsOfLatestFull = new File(latestFullBackupDir, INSTALLED_PLUGINS_XML);
+      latestFullPlugins = new PluginList(pluginsOfLatestFull);
+      latestFullPlugins.load();
+    }
+
     if (hudson != null) {
       installedPlugins = hudson.getPluginManager().getPlugins();
     } else {
       installedPlugins = Collections.emptyList();
     }
-    final File pluginVersionList = new File(backupDirectory, "installedPlugins.txt");
-    pluginVersionList.createNewFile();
-    final Writer w = new FileWriter(pluginVersionList);
+    final File pluginVersionList = new File(backupDirectory, INSTALLED_PLUGINS_XML);
+
+    final PluginList newPluginList = new PluginList(pluginVersionList);
 
     if (hudson != null) {
-      w.write(String.format("Hudson [%s]\n", Hudson.getVersion()));
+      newPluginList.add("Hudson core", Hudson.getVersion().toString());
     }
 
     for (final PluginWrapper plugin : installedPlugins) {
-      final String entry = String.format("Name: %s Version: %s\n", plugin.getShortName(), plugin.getVersion());
-      w.write(entry);
+      newPluginList.add(plugin.getShortName(), plugin.getVersion());
     }
-    w.close();
+
+    if ((backupType == BackupType.FULL) || (newPluginList.compareTo(latestFullPlugins) != 0)) {
+      newPluginList.save();
+    }
+
   }
 
   private IOFileFilter getDiffFilter() {
     IOFileFilter result = FileFilterUtils.trueFileFilter();
 
     if (backupType == BackupType.DIFF) {
-      result = FileFilterUtils.ageFileFilter(getLatestFullBackupDate(), false);
+      result = FileFilterUtils.ageFileFilter(latestFullBackupDate, false);
     }
 
     return result;
   }
 
-  private Date getLatestFullBackupDate() {
+  private Date getLatestFullBackupDate(final String backupRootPath) {
     final IOFileFilter prefixFilter = FileFilterUtils.prefixFileFilter(BackupType.FULL.toString());
-    final Collection<File> backups = Arrays.asList(backupDirectory.getParentFile().listFiles(
-        (FilenameFilter) prefixFilter));
+    final Collection<File> backups = Arrays.asList(new File(backupRootPath).listFiles((FilenameFilter) prefixFilter));
+
+    if (backups.isEmpty()) {
+      return null;
+    }
 
     Date latestBackupDate = null;
     for (final File fullBackupDir : backups) {
@@ -171,4 +195,5 @@ public class HudsonBackup {
 
     return latestBackupDate;
   }
+
 }
