@@ -70,6 +70,8 @@ public class HudsonBackup {
     backupJobs();
     storePluginList();
 
+    new DirectoryCleaner().clean(backupDirectory);
+
     return true;
   }
 
