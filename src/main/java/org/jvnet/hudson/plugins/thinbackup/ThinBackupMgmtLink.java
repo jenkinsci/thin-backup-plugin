@@ -116,10 +116,19 @@ public class ThinBackupMgmtLink extends ManagementLink {
     return FormValidation.ok();
   }
 
-  public FormValidation doCheckBackupTime(final StaplerRequest res, final StaplerResponse rsp,
-      @QueryParameter("backupTime") final String backupTime) {
-    String message;
+  public FormValidation doCheckFullBackupSchedule(final StaplerRequest res, final StaplerResponse rsp,
+      @QueryParameter("fullBackupSchedule") final String backupSchedule) {
+    return validateCronSchedule(backupSchedule);
+  }
+
+  public FormValidation doCheckDiffBackupSchedule(final StaplerRequest res, final StaplerResponse rsp,
+      @QueryParameter("diffBackupSchedule") final String backupSchedule) {
+    return validateCronSchedule(backupSchedule);
+  }
+
+  private FormValidation validateCronSchedule(final String backupTime) {
     if ((backupTime != null) && !backupTime.isEmpty()) {
+      String message;
       try {
         message = new CronTab(backupTime).checkSanity();
       } catch (final ANTLRException e) {

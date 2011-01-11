@@ -119,7 +119,8 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
 
       return delay;
     } catch (final ANTLRException e) {
-      LOGGER.warning("Cannot parse the specified 'BackupTime'. Check cron notation.");
+      LOGGER.warning(MessageFormat.format(
+          "Cannot parse the specified 'Backup schedule for {0} backups'. Check cron notation.", backupType.toString()));
       return -1;
     }
   }
