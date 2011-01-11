@@ -1,0 +1,36 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
+         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <l:layout permission="${app.ADMINISTER}" norefresh="true">
+        <st:include it="${app}" page="sidepanel.jelly"/>
+        <l:main-panel>
+            <h1>
+                <img src="${it.iconFileName}" alt=""/>
+                Restore Configuration
+            </h1>
+
+            
+            <f:form method="post" action="restore">
+                 <f:section title="Restore options">
+                    <f:entry title="restore backup from"
+                    help="/plugin/thinBackup/help/help-restore.html">
+                      <j:set var="allBackups" value="${it.availableBackups}"/>
+    				  <select name="restoreBackupFrom" >
+				          <j:forEach var="backup" items="${allBackups}">
+				            <f:option>${backup}</f:option>
+				          </j:forEach>
+				      </select>
+                    </f:entry>
+                </f:section>
+                
+                
+                <f:submit value="Restore"/>
+            </f:form>
+
+            <!-- Restore! -->
+            <h1><img src="/images/48x48/warning.gif" alt=""/>
+            Attention
+            <img src="/images/48x48/warning.gif" alt=""/></h1>
+            <h2>You cannot redo this action. All current data in HUDSON_HOME are lost.</h2>
+        </l:main-panel>
+    </l:layout>
+</j:jelly>

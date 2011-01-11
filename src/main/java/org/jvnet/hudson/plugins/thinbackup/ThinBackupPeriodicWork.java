@@ -3,7 +3,6 @@ package org.jvnet.hudson.plugins.thinbackup;
 import hudson.Extension;
 import hudson.model.AsyncPeriodicWork;
 import hudson.model.TaskListener;
-import hudson.model.Computer;
 import hudson.model.Hudson;
 import hudson.scheduler.CronTab;
 import hudson.util.TimeUnit2;
@@ -17,13 +16,13 @@ import java.util.logging.Logger;
 
 import org.apache.commons.lang.StringUtils;
 import org.jvnet.hudson.plugins.thinbackup.backup.HudsonBackup;
+import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 
 import antlr.ANTLRException;
 
 @Extension
 public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
   private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
-  private static final int COMPUTER_TIMEOUT_WAIT = 500; // ms
 
   public enum BackupType {
     NONE, FULL, DIFF
@@ -54,7 +53,7 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
         final Hudson hudson = Hudson.getInstance();
         hudson.doQuietDown();
         LOGGER.fine("Wait until executors are idle to perform backup.");
-        waitUntilIdle();
+        Utils.waitUntilIdle();
         LOGGER.info("Perform backup task.");
         new HudsonBackup(backupPath, Hudson.getInstance().getRootDir(), type).run();
         hudson.doCancelQuietDown();
@@ -135,26 +134,5 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
     final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.getInstance();
     final String backupTime = plugin.getDiffBackupSchedule();
     return backupTime;
-  }
-
-  private void waitUntilIdle() {
-    final Computer computers[] = Hudson.getInstance().getComputers();
-
-    boolean running;
-    do {
-      running = false;
-      for (final Computer computer : computers) {
-        if (computer.countBusy() != 0) {
-          running = true;
-          break;
-        }
-      }
-
-      try {
-        Thread.sleep(COMPUTER_TIMEOUT_WAIT);
-      } catch (final InterruptedException e) {
-        LOGGER.log(Level.WARNING, e.getMessage(), e);
-      }
-    } while (running);
   }
 }

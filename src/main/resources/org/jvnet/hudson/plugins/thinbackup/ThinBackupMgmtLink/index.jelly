@@ -17,6 +17,11 @@
                     Backup Now</A></h2>
                 </li>
                 <li>
+                    <h2><A href="restoreOptions">
+                    <img src="/plugin/thinBackup/images/restore.png" alt=""/>
+                    Restore</A></h2>
+                </li>
+                <li>
                     <h2><A href="backupsettings">
                     <img src="/plugin/thinBackup/images/settings.png" alt=""/>
                     Settings</A></h2>

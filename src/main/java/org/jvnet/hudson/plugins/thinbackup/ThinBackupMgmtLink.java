@@ -10,8 +10,17 @@ import hudson.util.FormValidation;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Logger;
 
+import org.apache.commons.io.filefilter.DirectoryFileFilter;
+import org.apache.commons.io.filefilter.FileFilterUtils;
+import org.apache.commons.io.filefilter.IOFileFilter;
+import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
+import org.jvnet.hudson.plugins.thinbackup.restore.HudsonRestore;
+import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -53,6 +62,26 @@ public class ThinBackupMgmtLink extends ManagementLink {
     Trigger.timer.schedule(manualBackupWorker, 0);
 
     LOGGER.info("Manual backup finished");
+    rsp.sendRedirect(res.getContextPath() + "/thinBackup");
+  }
+
+  public void doRestore(final StaplerRequest res, final StaplerResponse rsp,
+      @QueryParameter("restoreBackupFrom") final String restoreBackupFrom) throws IOException {
+    Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+    final Hudson hudson = Hudson.getInstance();
+    hudson.doQuietDown();
+    LOGGER.fine("Wait until executors are idle to perform restore.");
+    Utils.waitUntilIdle();
+
+    final File hudsonHome = Hudson.getInstance().getRootDir();
+
+    final HudsonRestore hudsonRestore = new HudsonRestore(hudsonHome, ThinBackupPluginImpl.getInstance()
+        .getBackupPath(), restoreBackupFrom);
+    hudsonRestore.prepare();
+    hudsonRestore.restore();
+
+    hudson.doCancelQuietDown();
+    LOGGER.info("Restore finished.");
     rsp.sendRedirect(res.getContextPath() + "/thinBackup");
   }
 
@@ -110,4 +139,19 @@ public class ThinBackupMgmtLink extends ManagementLink {
     return ThinBackupPluginImpl.getInstance();
   }
 
+  public List<String> getAvailableBackups() {
+    final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.getInstance();
+    IOFileFilter filter = FileFilterUtils.prefixFileFilter(BackupType.FULL.toString());
+    filter = FileFilterUtils.orFileFilter(filter, FileFilterUtils.prefixFileFilter(BackupType.DIFF.toString()));
+    filter = FileFilterUtils.andFileFilter(filter, DirectoryFileFilter.DIRECTORY);
+    final String[] backups = new File(plugin.getBackupPath()).list(filter);
+
+    final List<String> list = new ArrayList<String>(backups.length);
+    for (final String name : backups) {
+      list.add(name.replaceFirst(String.format("(%s|%s)-", BackupType.FULL, BackupType.DIFF), ""));
+    }
+    Collections.sort(list);
+
+    return list;
+  }
 }
