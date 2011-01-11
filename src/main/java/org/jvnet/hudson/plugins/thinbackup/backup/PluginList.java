@@ -17,6 +17,7 @@ public class PluginList implements Comparable<PluginList> {
 
   public PluginList(final File pluginsXml) {
     this.pluginsXml = pluginsXml;
+    plugins = new HashMap<String, String>();
   }
 
   public Map<String, String> getPlugins() {
@@ -24,9 +25,6 @@ public class PluginList implements Comparable<PluginList> {
   }
 
   public void add(final String name, final String version) {
-    if (plugins == null) {
-      plugins = new HashMap<String, String>();
-    }
     plugins.put(name, version);
   }
 
@@ -46,7 +44,7 @@ public class PluginList implements Comparable<PluginList> {
   }
 
   public int compareTo(final PluginList o) {
-    if ((o == null) || (this.plugins == null)) {
+    if (o == null) {
       return -1;
     }
 
