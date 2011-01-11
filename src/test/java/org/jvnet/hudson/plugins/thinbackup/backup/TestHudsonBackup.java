@@ -92,7 +92,7 @@ public class TestHudsonBackup {
     new HudsonBackup(backupDir.getAbsolutePath(), root, BackupType.DIFF).run();
     final File lastDiffBackup = backupDir.listFiles((FileFilter) FileFilterUtils.prefixFileFilter(BackupType.DIFF
         .toString()))[0];
-    Assert.assertEquals(2, lastDiffBackup.list().length);
+    Assert.assertEquals(1, lastDiffBackup.list().length);
 
   }
 }
