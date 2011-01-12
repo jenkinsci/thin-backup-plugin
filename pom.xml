@@ -36,6 +36,10 @@
   		</roles>
   	</developer>
   </developers>
+  <scm>
+  	<connection>scm:svn:https://svn.java.net/svn/hudson~svn/trunk/hudson/plugins/thinBackup</connection>
+  	<developerConnection>scm:svn:https://svn.java.net/svn/hudson~svn/trunk/hudson/plugins/thinBackup</developerConnection>
+  </scm>
   <organization>
   	<name>Borland (a Microfocus Company)</name>
   	<url>www.borland.com</url>
@@ -54,19 +58,12 @@
     </pluginRepository>
   </pluginRepositories>
   <dependencies>
-  	<dependency>
-  		<groupId>commons-io</groupId>
-  		<artifactId>commons-io</artifactId>
-  		<version>1.4</version>
-  		<type>jar</type>
-  		<scope>provided</scope>
-  	</dependency>
   </dependencies>
   
   <distributionManagement>
       <repository>
         <id>java.net-m2-repository</id>
-        <url>http://maven.hudson-labs.org/content/repositories/releases/</url>
+        <url>http://maven.hudson-labs.org:8081/content/repositories/releases/</url>
       </repository>
     </distributionManagement> 
 </project>
