@@ -10,7 +10,7 @@
   <groupId>org.jvnet.hudson.plugins</groupId>
   <artifactId>thinBackup</artifactId>
   <name>ThinBackup</name>
-  <version>1.1-SNAPSHOT</version>
+  <version>1.1</version>
   <packaging>hpi</packaging>
 
   <!-- get every artifact through maven.glassfish.org, which proxies all the artifacts that we need -->
@@ -37,8 +37,9 @@
   	</developer>
   </developers>
   <scm>
-  	<connection>scm:svn:https://svn.java.net/svn/hudson~svn/trunk/hudson/plugins/thinBackup</connection>
-  	<developerConnection>scm:svn:https://svn.java.net/svn/hudson~svn/trunk/hudson/plugins/thinBackup</developerConnection>
+  	<connection>scm:svn:https://svn.java.net/svn/hudson~svn/tags/thinBackup-1.1</connection>
+  	<developerConnection>scm:svn:https://svn.java.net/svn/hudson~svn/tags/thinBackup-1.1</developerConnection>
+    <url>https://svn.java.net/svn/hudson~svn/tags/thinBackup-1.1</url>
   </scm>
   <organization>
   	<name>Borland (a Microfocus Company)</name>
