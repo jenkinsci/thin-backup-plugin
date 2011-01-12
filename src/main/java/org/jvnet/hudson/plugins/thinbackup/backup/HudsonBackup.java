@@ -32,11 +32,18 @@ public class HudsonBackup {
   private final File backupDirectory;
   private final BackupType backupType;
   private final Date latestFullBackupDate;
+  private final boolean cleanupDiff;
 
-  public HudsonBackup(final String backupRootPath, final File hudsonHome, final BackupType backupType) {
+  public HudsonBackup(final String backupRootPath, final File hudsonHome, final BackupType backupType,
+      final boolean cleanupDiff) {
     hudsonDirectory = hudsonHome;
+    this.cleanupDiff = cleanupDiff;
 
-    latestFullBackupDate = getLatestFullBackupDate(backupRootPath);
+    File backupRoot = new File(backupRootPath);
+    if (!backupRoot.exists())
+      backupRoot.mkdir();
+
+    latestFullBackupDate = getLatestFullBackupDate(backupRoot);
 
     // for a DIFF backup at least one FULL backup is needed, so if it is missing
     // ignore the backupType and do a FULL backup in this case
@@ -49,7 +56,7 @@ public class HudsonBackup {
     final Date date = new Date();
     final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd_HH-mm");
     final String dirName = String.format("%s-%s", this.backupType, format.format(date));
-    backupDirectory = new File(new File(backupRootPath), dirName);
+    backupDirectory = new File(backupRoot, dirName);
   }
 
   public boolean run() throws IOException {
@@ -71,6 +78,14 @@ public class HudsonBackup {
     storePluginList();
 
     new DirectoryCleaner().clean(backupDirectory);
+    if (cleanupDiff && backupType == BackupType.FULL) {
+      IOFileFilter filter = FileFilterUtils.prefixFileFilter(BackupType.DIFF.toString());
+      filter = FileFilterUtils.andFileFilter(filter, DirectoryFileFilter.DIRECTORY);
+      File[] diffDirs = backupDirectory.getParentFile().listFiles((FilenameFilter) filter);
+      for (File diffDirToDelete : diffDirs) {
+        FileUtils.deleteDirectory(diffDirToDelete);
+      }
+    }
 
     return true;
   }
@@ -179,9 +194,9 @@ public class HudsonBackup {
     return result;
   }
 
-  private Date getLatestFullBackupDate(final String backupRootPath) {
+  private Date getLatestFullBackupDate(final File backupRoot) {
     final IOFileFilter prefixFilter = FileFilterUtils.prefixFileFilter(BackupType.FULL.toString());
-    final Collection<File> backups = Arrays.asList(new File(backupRootPath).listFiles((FilenameFilter) prefixFilter));
+    final Collection<File> backups = Arrays.asList(backupRoot.listFiles((FilenameFilter) prefixFilter));
 
     if (backups.isEmpty()) {
       return null;

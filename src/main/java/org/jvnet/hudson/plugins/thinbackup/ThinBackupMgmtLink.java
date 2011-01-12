@@ -88,13 +88,15 @@ public class ThinBackupMgmtLink extends ManagementLink {
   public void doSaveSettings(final StaplerRequest res, final StaplerResponse rsp,
       @QueryParameter("backupPath") final String backupPath,
       @QueryParameter("fullBackupSchedule") final String fullBackupSchedule,
-      @QueryParameter("diffBackupSchedule") final String diffBackupSchedule) throws IOException {
+      @QueryParameter("diffBackupSchedule") final String diffBackupSchedule,
+      @QueryParameter("cleanupDiff") final String cleanupDiff) throws IOException {
     Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
 
     final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.getInstance();
     plugin.setBackupPath(backupPath);
     plugin.setFullBackupSchedule(fullBackupSchedule);
     plugin.setDiffBackupSchedule(diffBackupSchedule);
+    // plugin.setCleanupDiff(cleanupDiff);
     plugin.save();
     LOGGER.fine("Save backup settings done.");
     rsp.sendRedirect(res.getContextPath() + "/thinBackup");

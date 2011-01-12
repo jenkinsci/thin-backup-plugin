@@ -11,6 +11,7 @@ public class ThinBackupPluginImpl extends Plugin {
   private String fullBackupSchedule;
   private String diffBackupSchedule;
   private String backupPath;
+  private boolean cleanupDiff;
 
   public ThinBackupPluginImpl() {
     instance = this;
@@ -49,6 +50,14 @@ public class ThinBackupPluginImpl extends Plugin {
 
   public String getDiffBackupSchedule() {
     return diffBackupSchedule;
+  }
+
+  public void setCleanupDiff(boolean cleanupDiff) {
+    this.cleanupDiff = cleanupDiff;
+  }
+
+  public boolean isCleanupDiff() {
+    return cleanupDiff;
   }
 
 }

@@ -23,13 +23,17 @@
                     help="/plugin/thinBackup/help/help-diffBackupSchedule.html">
                         <f:textbox value="${it.configuration.diffBackupSchedule}" name="diffBackupSchedule"/>
                     </f:entry>
+                    <f:entry title="clean up differential backups"
+                    help="/plugin/thinBackup/help/help-cleanupDiff.html">
+                        <f:checkbox field="cleanupDiff" value="${it.configuration.cleanupDiff}" />
+                    </f:entry>
                 </f:section>
                 
                 <!-- Save! -->
-                <f:section title="Save">
-                    <f:entry title="Save">
-                        <f:submit value="Save"/>
-                    </f:entry>
+                <f:section>
+		              <f:entry>
+		                <f:submit value="Save"/>
+		              </f:entry>
                 </f:section>
             </f:form>
         </l:main-panel>

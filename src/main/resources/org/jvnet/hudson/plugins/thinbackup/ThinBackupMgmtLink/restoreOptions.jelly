@@ -22,14 +22,15 @@
                     </f:entry>
                 </f:section>
                 
-                
-                <f:submit value="Restore"/>
+                <f:section>
+	                <f:entry>
+	                  <f:submit value="Restore"/>
+	                </f:entry>
+                </f:section>
             </f:form>
 
             <!-- Restore! -->
-            <h1><img src="/images/48x48/warning.gif" alt=""/>
-            Attention
-            <img src="/images/48x48/warning.gif" alt=""/></h1>
+            <h1><img src="/images/48x48/warning.gif" alt=""/>Attention</h1>
             <h2>You cannot redo this action. All current data in HUDSON_HOME are lost.</h2>
         </l:main-panel>
     </l:layout>
