@@ -11,6 +11,7 @@ public class ThinBackupPluginImpl extends Plugin {
   private String fullBackupSchedule;
   private String diffBackupSchedule;
   private String backupPath;
+  private String nrMaxStoredFull;
   private boolean cleanupDiff;
 
   public ThinBackupPluginImpl() {
@@ -52,12 +53,20 @@ public class ThinBackupPluginImpl extends Plugin {
     return diffBackupSchedule;
   }
 
-  public void setCleanupDiff(boolean cleanupDiff) {
+  public void setCleanupDiff(final boolean cleanupDiff) {
     this.cleanupDiff = cleanupDiff;
   }
 
   public boolean isCleanupDiff() {
     return cleanupDiff;
+  }
+
+  public void setNrMaxStoredFull(String nrMaxStoredFull) {
+    this.nrMaxStoredFull = nrMaxStoredFull;
+  }
+
+  public String getNrMaxStoredFull() {
+    return nrMaxStoredFull;
   }
 
 }

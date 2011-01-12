@@ -60,7 +60,7 @@ public class TestHudsonBackup {
 
   @Test
   public void testBackup() throws Exception {
-    new HudsonBackup(backupDir.getAbsolutePath(), root, BackupType.FULL, false).run();
+    new HudsonBackup(backupDir.getAbsolutePath(), root, BackupType.FULL, -1, false).run();
 
     String[] list = backupDir.list();
     Assert.assertEquals(1, list.length);
@@ -70,7 +70,7 @@ public class TestHudsonBackup {
 
     final File job = new File(new File(backup, "jobs"), "test");
     list = job.list();
-    Assert.assertEquals(3, list.length);
+    Assert.assertEquals(2, list.length);
 
     final File build = new File(new File(job, "Builds"), "2011-01-08_22-26-40");
     list = build.list();
@@ -79,7 +79,7 @@ public class TestHudsonBackup {
 
   @Test
   public void testHudsonDiffBackup() throws Exception {
-    new HudsonBackup(backupDir.getAbsolutePath(), root, BackupType.FULL, false).run();
+    new HudsonBackup(backupDir.getAbsolutePath(), root, BackupType.FULL, -1, false).run();
 
     // fake modification
     backupDir.listFiles((FileFilter) FileFilterUtils.prefixFileFilter(BackupType.FULL.toString()))[0]
@@ -89,7 +89,7 @@ public class TestHudsonBackup {
       globalConfigFile.setLastModified(System.currentTimeMillis() - 60000 * 120);
     }
 
-    new HudsonBackup(backupDir.getAbsolutePath(), root, BackupType.DIFF, false).run();
+    new HudsonBackup(backupDir.getAbsolutePath(), root, BackupType.DIFF, -1, false).run();
     final File lastDiffBackup = backupDir.listFiles((FileFilter) FileFilterUtils.prefixFileFilter(BackupType.DIFF
         .toString()))[0];
     Assert.assertEquals(1, lastDiffBackup.list().length);

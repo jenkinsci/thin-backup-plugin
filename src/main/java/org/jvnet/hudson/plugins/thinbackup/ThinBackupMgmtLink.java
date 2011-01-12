@@ -10,15 +10,9 @@ import hudson.util.FormValidation;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
-import org.apache.commons.io.filefilter.DirectoryFileFilter;
-import org.apache.commons.io.filefilter.FileFilterUtils;
-import org.apache.commons.io.filefilter.IOFileFilter;
-import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 import org.jvnet.hudson.plugins.thinbackup.restore.HudsonRestore;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 import org.kohsuke.stapler.QueryParameter;
@@ -77,7 +71,6 @@ public class ThinBackupMgmtLink extends ManagementLink {
 
     final HudsonRestore hudsonRestore = new HudsonRestore(hudsonHome, ThinBackupPluginImpl.getInstance()
         .getBackupPath(), restoreBackupFrom);
-    hudsonRestore.prepare();
     hudsonRestore.restore();
 
     hudson.doCancelQuietDown();
@@ -89,14 +82,16 @@ public class ThinBackupMgmtLink extends ManagementLink {
       @QueryParameter("backupPath") final String backupPath,
       @QueryParameter("fullBackupSchedule") final String fullBackupSchedule,
       @QueryParameter("diffBackupSchedule") final String diffBackupSchedule,
-      @QueryParameter("cleanupDiff") final String cleanupDiff) throws IOException {
+      @QueryParameter("nrMaxStoredFull") final String nrMaxStoredFull,
+      @QueryParameter("cleanupDiff") final boolean cleanupDiff) throws IOException {
     Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
 
     final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.getInstance();
     plugin.setBackupPath(backupPath);
     plugin.setFullBackupSchedule(fullBackupSchedule);
     plugin.setDiffBackupSchedule(diffBackupSchedule);
-    // plugin.setCleanupDiff(cleanupDiff);
+    plugin.setNrMaxStoredFull(nrMaxStoredFull);
+    plugin.setCleanupDiff(cleanupDiff);
     plugin.save();
     LOGGER.fine("Save backup settings done.");
     rsp.sendRedirect(res.getContextPath() + "/thinBackup");
@@ -151,18 +146,6 @@ public class ThinBackupMgmtLink extends ManagementLink {
   }
 
   public List<String> getAvailableBackups() {
-    final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.getInstance();
-    IOFileFilter filter = FileFilterUtils.prefixFileFilter(BackupType.FULL.toString());
-    filter = FileFilterUtils.orFileFilter(filter, FileFilterUtils.prefixFileFilter(BackupType.DIFF.toString()));
-    filter = FileFilterUtils.andFileFilter(filter, DirectoryFileFilter.DIRECTORY);
-    final String[] backups = new File(plugin.getBackupPath()).list(filter);
-
-    final List<String> list = new ArrayList<String>(backups.length);
-    for (final String name : backups) {
-      list.add(name.replaceFirst(String.format("(%s|%s)-", BackupType.FULL, BackupType.DIFF), ""));
-    }
-    Collections.sort(list);
-
-    return list;
+    return Utils.getAvailableBackups();
   }
 }

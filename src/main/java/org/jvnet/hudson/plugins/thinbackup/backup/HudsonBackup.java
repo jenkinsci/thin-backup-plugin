@@ -7,12 +7,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
@@ -20,12 +21,13 @@ import org.apache.commons.io.filefilter.FileFileFilter;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
+import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 
 public class HudsonBackup {
+  private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
 
   private static final String INSTALLED_PLUGINS_XML = "installedPlugins.xml";
   private static final String BUILDS_DIR_NAME = "Builds";
-  private static final String NEXT_BUILD_NUMBER_FILENAME = "nextBuildNumber";
   private static final String JOBS_DIR = "jobs";
 
   private final File hudsonDirectory;
@@ -33,15 +35,19 @@ public class HudsonBackup {
   private final BackupType backupType;
   private final Date latestFullBackupDate;
   private final boolean cleanupDiff;
+  private final int nrMaxStoredFull;
+  private final File backupRoot;
 
   public HudsonBackup(final String backupRootPath, final File hudsonHome, final BackupType backupType,
-      final boolean cleanupDiff) {
+      final int nrMaxStoredFull, final boolean cleanupDiff) {
     hudsonDirectory = hudsonHome;
     this.cleanupDiff = cleanupDiff;
+    this.nrMaxStoredFull = nrMaxStoredFull;
 
-    File backupRoot = new File(backupRootPath);
-    if (!backupRoot.exists())
+    backupRoot = new File(backupRootPath);
+    if (!backupRoot.exists()) {
       backupRoot.mkdir();
+    }
 
     latestFullBackupDate = getLatestFullBackupDate(backupRoot);
 
@@ -54,12 +60,12 @@ public class HudsonBackup {
     }
 
     final Date date = new Date();
-    final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd_HH-mm");
-    final String dirName = String.format("%s-%s", this.backupType, format.format(date));
-    backupDirectory = new File(backupRoot, dirName);
+    backupDirectory = Utils.getFormattedDirectory(backupRoot, backupType, date);
   }
 
   public boolean run() throws IOException {
+    LOGGER.info(MessageFormat.format("Performing {0} backup.", backupType));
+
     if (!hudsonDirectory.exists() || !hudsonDirectory.isDirectory()) {
       throw new FileNotFoundException("No Hudson directory found, thus cannot trigger backup.");
     }
@@ -78,12 +84,22 @@ public class HudsonBackup {
     storePluginList();
 
     new DirectoryCleaner().clean(backupDirectory);
-    if (cleanupDiff && backupType == BackupType.FULL) {
-      IOFileFilter filter = FileFilterUtils.prefixFileFilter(BackupType.DIFF.toString());
-      filter = FileFilterUtils.andFileFilter(filter, DirectoryFileFilter.DIRECTORY);
-      File[] diffDirs = backupDirectory.getParentFile().listFiles((FilenameFilter) filter);
-      for (File diffDirToDelete : diffDirs) {
-        FileUtils.deleteDirectory(diffDirToDelete);
+    if (backupType == BackupType.FULL) {
+      if (nrMaxStoredFull > 0) {
+        final List<BackupSet> availableBackupSets = Utils.getAvailableValidBackupSets();
+        while (availableBackupSets.size() > nrMaxStoredFull) {
+          final BackupSet set = availableBackupSets.get(0);
+          set.delete();
+          availableBackupSets.remove(set);
+        }
+      }
+      if (cleanupDiff) {
+        IOFileFilter filter = FileFilterUtils.prefixFileFilter(BackupType.DIFF.toString());
+        filter = FileFilterUtils.andFileFilter(filter, DirectoryFileFilter.DIRECTORY);
+        final File[] diffDirs = backupDirectory.getParentFile().listFiles((FilenameFilter) filter);
+        for (final File diffDirToDelete : diffDirs) {
+          FileUtils.deleteDirectory(diffDirToDelete);
+        }
       }
     }
 
@@ -105,7 +121,6 @@ public class HudsonBackup {
     final File jobsBackupDirectory = new File(jobsBackupPath);
 
     IOFileFilter filter = FileFilterUtils.suffixFileFilter(".xml");
-    filter = FileFilterUtils.orFileFilter(filter, FileFilterUtils.nameFileFilter(NEXT_BUILD_NUMBER_FILENAME));
 
     final Hudson hudson = Hudson.getInstance();
     Collection<String> jobNames;
@@ -153,9 +168,8 @@ public class HudsonBackup {
 
     PluginList latestFullPlugins = null;
     if (backupType == BackupType.DIFF) {
-      final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd_HH-mm");
-      final File latestFullBackupDir = new File(backupDirectory.getParentFile(), String.format("FULL-%s",
-          format.format(latestFullBackupDate)));
+      final File latestFullBackupDir = Utils.getFormattedDirectory(backupDirectory.getParentFile(), BackupType.FULL,
+          latestFullBackupDate);
       final File pluginsOfLatestFull = new File(latestFullBackupDir, INSTALLED_PLUGINS_XML);
       latestFullPlugins = new PluginList(pluginsOfLatestFull);
       latestFullPlugins.load();

@@ -50,13 +50,24 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
       final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.getInstance();
       final String backupPath = plugin.getBackupPath();
       final boolean cleanupDiff = plugin.isCleanupDiff();
+      final String noMaxStoredFull = plugin.getNrMaxStoredFull();
+      int maxStoredFull;
+      if (StringUtils.isEmpty(noMaxStoredFull)) {
+        maxStoredFull = -1;
+      } else {
+        try {
+          maxStoredFull = Integer.parseInt(noMaxStoredFull);
+        } catch (final NumberFormatException nfe) {
+          maxStoredFull = -1;
+        }
+      }
+
       if (!StringUtils.isEmpty(backupPath)) {
         final Hudson hudson = Hudson.getInstance();
         hudson.doQuietDown();
         LOGGER.fine("Wait until executors are idle to perform backup.");
         Utils.waitUntilIdle();
-        LOGGER.info("Perform backup task.");
-        new HudsonBackup(backupPath, Hudson.getInstance().getRootDir(), type, cleanupDiff).run();
+        new HudsonBackup(backupPath, Hudson.getInstance().getRootDir(), type, maxStoredFull, cleanupDiff).run();
         hudson.doCancelQuietDown();
       } else {
         LOGGER.warning("ThinBackup is not configured yet: No backup path set.");

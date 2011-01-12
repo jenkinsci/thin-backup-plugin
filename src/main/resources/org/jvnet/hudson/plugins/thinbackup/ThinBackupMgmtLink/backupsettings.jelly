@@ -23,10 +23,16 @@
                     help="/plugin/thinBackup/help/help-diffBackupSchedule.html">
                         <f:textbox value="${it.configuration.diffBackupSchedule}" name="diffBackupSchedule"/>
                     </f:entry>
-                    <f:entry title="clean up differential backups"
-                    help="/plugin/thinBackup/help/help-cleanupDiff.html">
-                        <f:checkbox field="cleanupDiff" value="${it.configuration.cleanupDiff}" />
+                    
+                    <f:entry title="Max number of stored full backups"
+                    help="/plugin/thinBackup/help/help-nrMaxStoredFull.html">
+                        <f:textbox value="${it.configuration.nrMaxStoredFull}" name="nrMaxStoredFull"/>
                     </f:entry>
+                    
+                    <f:optionalBlock title="Clean up differential backups"
+                        checked="${it.configuration.cleanupDiff}"
+                        name="cleanupDiff"
+                        help="/plugin/backup/help/help-cleanupDiff.html"/>
                 </f:section>
                 
                 <!-- Save! -->
