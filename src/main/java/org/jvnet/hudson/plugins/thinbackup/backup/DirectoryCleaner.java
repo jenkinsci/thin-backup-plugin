@@ -6,12 +6,15 @@ import java.util.Collection;
 
 import org.apache.commons.io.DirectoryWalker;
 
-/**
- * Deletes all empty directories.
- */
 public class DirectoryCleaner extends DirectoryWalker {
 
-  public void clean(final File rootDir) throws IOException {
+  /**
+   * Deletes all empty directories, including rootDir if it is empty at the end.
+   * 
+   * @param rootDir
+   * @throws IOException
+   */
+  public void removeEmptyDirectories(final File rootDir) throws IOException {
     walk(rootDir, null);
   }
 

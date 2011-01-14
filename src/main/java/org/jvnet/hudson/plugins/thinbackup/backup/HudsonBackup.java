@@ -28,8 +28,9 @@ public class HudsonBackup {
 
   private static final String INSTALLED_PLUGINS_XML = "installedPlugins.xml";
   private static final String BUILDS_DIR_NAME = "Builds";
-  private static final String JOBS_DIR = "jobs";
+  private static final String JOBS_DIR_NAME = "jobs";
 
+  private final Hudson hudson;
   private final File hudsonDirectory;
   private final File backupRoot;
   private final File backupDirectory;
@@ -40,6 +41,8 @@ public class HudsonBackup {
 
   public HudsonBackup(final File backupRoot, final File hudsonHome, final BackupType backupType,
       final int nrMaxStoredFull, final boolean cleanupDiff) {
+    hudson = Hudson.getInstance();
+
     hudsonDirectory = hudsonHome;
     this.cleanupDiff = cleanupDiff;
     this.nrMaxStoredFull = nrMaxStoredFull;
@@ -50,10 +53,8 @@ public class HudsonBackup {
     }
 
     latestFullBackupDate = getLatestFullBackupDate();
-
-    // for a DIFF backup at least one FULL backup is needed, so if it is missing
-    // ignore the backupType and do a FULL backup in this case
-    if ((backupType == BackupType.DIFF) && (latestFullBackupDate == null)) {
+    // if no full backup has been done yet, do a FULL backup
+    if (latestFullBackupDate == null) {
       this.backupType = BackupType.FULL;
     } else {
       this.backupType = backupType;
@@ -63,7 +64,11 @@ public class HudsonBackup {
     backupDirectory = Utils.getFormattedDirectory(backupRoot, backupType, date);
   }
 
-  public boolean run() throws IOException {
+  public void backup() throws IOException {
+    if (backupType == BackupType.NONE) {
+      throw new IllegalStateException("Backup type must be FULL or DIFF.");
+    }
+
     LOGGER.info(MessageFormat.format("Performing {0} backup.", backupType));
 
     if (!hudsonDirectory.exists() || !hudsonDirectory.isDirectory()) {
@@ -72,38 +77,20 @@ public class HudsonBackup {
     if (!backupDirectory.exists() || !backupDirectory.isDirectory()) {
       final boolean res = backupDirectory.mkdirs();
       if (!res) {
-        throw new IOException("Could not create target directory.");
+        throw new IOException("Could not create backup directory.");
       }
-    }
-    if (backupType == BackupType.NONE) {
-      throw new IllegalStateException("Backup type must be FULL or DIFF.");
     }
 
     backupGlobalXmls();
     backupJobs();
-    storePluginList();
+    storePluginListIfChanged();
 
-    new DirectoryCleaner().clean(backupDirectory);
+    new DirectoryCleaner().removeEmptyDirectories(backupDirectory);
+
     if (backupType == BackupType.FULL) {
-      if (nrMaxStoredFull > 0) {
-        final List<BackupSet> availableBackupSets = Utils.getAvailableValidBackupSets();
-        while (availableBackupSets.size() > nrMaxStoredFull) {
-          final BackupSet set = availableBackupSets.get(0);
-          set.delete();
-          availableBackupSets.remove(set);
-        }
-      }
-      if (cleanupDiff) {
-        IOFileFilter filter = FileFilterUtils.prefixFileFilter(BackupType.DIFF.toString());
-        filter = FileFilterUtils.andFileFilter(filter, DirectoryFileFilter.DIRECTORY);
-        final File[] diffDirs = backupDirectory.getParentFile().listFiles((FilenameFilter) filter);
-        for (final File diffDirToDelete : diffDirs) {
-          FileUtils.deleteDirectory(diffDirToDelete);
-        }
-      }
+      removeSuperfluousBackups();
+      cleanupDiffs();
     }
-
-    return true;
   }
 
   private void backupGlobalXmls() throws IOException {
@@ -114,15 +101,12 @@ public class HudsonBackup {
   }
 
   private void backupJobs() throws IOException {
-    final String jobsPath = String.format("%s/%s", hudsonDirectory.getAbsolutePath(), JOBS_DIR);
+    final String jobsPath = String.format("%s/%s", hudsonDirectory.getAbsolutePath(), JOBS_DIR_NAME);
     final File jobsDirectory = new File(jobsPath);
 
-    final String jobsBackupPath = String.format("%s/%s", backupDirectory.getAbsolutePath(), JOBS_DIR);
+    final String jobsBackupPath = String.format("%s/%s", backupDirectory.getAbsolutePath(), JOBS_DIR_NAME);
     final File jobsBackupDirectory = new File(jobsBackupPath);
 
-    IOFileFilter filter = FileFilterUtils.suffixFileFilter(".xml");
-
-    final Hudson hudson = Hudson.getInstance();
     Collection<String> jobNames;
     if (hudson != null) {
       jobNames = hudson.getJobNames();
@@ -130,6 +114,7 @@ public class HudsonBackup {
       jobNames = Arrays.asList(jobsDirectory.list());
     }
 
+    IOFileFilter filter = FileFilterUtils.suffixFileFilter(".xml");
     IOFileFilter jobFilter = null;
     for (final String jobName : jobNames) {
       final IOFileFilter nameFileFilter = FileFilterUtils.nameFileFilter(jobName);
@@ -162,40 +147,66 @@ public class HudsonBackup {
     FileUtils.copyDirectory(jobsDirectory, jobsBackupDirectory, filter);
   }
 
-  private void storePluginList() throws IOException {
-    final Hudson hudson = Hudson.getInstance();
-    final List<PluginWrapper> installedPlugins;
-
+  private void storePluginListIfChanged() throws IOException {
+    final PluginList pluginList = getInstalledPlugins();
     PluginList latestFullPlugins = null;
     if (backupType == BackupType.DIFF) {
-      final File latestFullBackupDir = Utils.getFormattedDirectory(backupDirectory.getParentFile(), BackupType.FULL,
-          latestFullBackupDate);
-      final File pluginsOfLatestFull = new File(latestFullBackupDir, INSTALLED_PLUGINS_XML);
-      latestFullPlugins = new PluginList(pluginsOfLatestFull);
-      latestFullPlugins.load();
+      latestFullPlugins = getPluginListFromLatestFull();
     }
 
+    if (pluginList.compareTo(latestFullPlugins) != 0) {
+      pluginList.save();
+    }
+  }
+
+  private PluginList getInstalledPlugins() {
+    final File pluginVersionList = new File(backupDirectory, INSTALLED_PLUGINS_XML);
+    final PluginList newPluginList = new PluginList(pluginVersionList);
+    if (hudson != null) {
+      newPluginList.add("Hudson core", Hudson.getVersion().toString());
+    }
+
+    final List<PluginWrapper> installedPlugins;
     if (hudson != null) {
       installedPlugins = hudson.getPluginManager().getPlugins();
     } else {
       installedPlugins = Collections.emptyList();
     }
-    final File pluginVersionList = new File(backupDirectory, INSTALLED_PLUGINS_XML);
-
-    final PluginList newPluginList = new PluginList(pluginVersionList);
-
-    if (hudson != null) {
-      newPluginList.add("Hudson core", Hudson.getVersion().toString());
-    }
-
     for (final PluginWrapper plugin : installedPlugins) {
       newPluginList.add(plugin.getShortName(), plugin.getVersion());
     }
 
-    if ((backupType == BackupType.FULL) || (newPluginList.compareTo(latestFullPlugins) != 0)) {
-      newPluginList.save();
-    }
+    return newPluginList;
+  }
 
+  private PluginList getPluginListFromLatestFull() throws IOException {
+    final File latestFullBackupDir = Utils.getFormattedDirectory(backupRoot, BackupType.FULL, latestFullBackupDate);
+    final File pluginsOfLatestFull = new File(latestFullBackupDir, INSTALLED_PLUGINS_XML);
+    final PluginList latestFullPlugins = new PluginList(pluginsOfLatestFull);
+    latestFullPlugins.load();
+    return latestFullPlugins;
+  }
+
+  private void removeSuperfluousBackups() throws IOException {
+    if (nrMaxStoredFull > 0) {
+      final List<BackupSet> availableBackupSets = Utils.getAvailableValidBackupSets();
+      while (availableBackupSets.size() > nrMaxStoredFull) {
+        final BackupSet set = availableBackupSets.get(0);
+        set.delete();
+        availableBackupSets.remove(set);
+      }
+    }
+  }
+
+  private void cleanupDiffs() throws IOException {
+    if (cleanupDiff) {
+      IOFileFilter filter = FileFilterUtils.prefixFileFilter(BackupType.DIFF.toString());
+      filter = FileFilterUtils.andFileFilter(filter, DirectoryFileFilter.DIRECTORY);
+      final File[] diffDirs = backupDirectory.getParentFile().listFiles((FilenameFilter) filter);
+      for (final File diffDirToDelete : diffDirs) {
+        FileUtils.deleteDirectory(diffDirToDelete);
+      }
+    }
   }
 
   private IOFileFilter getDiffFilter() {

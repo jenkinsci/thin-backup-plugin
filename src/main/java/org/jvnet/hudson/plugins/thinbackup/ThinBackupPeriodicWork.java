@@ -70,7 +70,7 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
         LOGGER.fine("Wait until executors are idle to perform backup.");
         Utils.waitUntilIdle();
         new HudsonBackup(new File(backupPath), Hudson.getInstance().getRootDir(), type, maxStoredFull, cleanupDiff)
-            .run();
+            .backup();
         hudson.doCancelQuietDown();
       } else {
         LOGGER.warning("ThinBackup is not configured yet: No backup path set.");

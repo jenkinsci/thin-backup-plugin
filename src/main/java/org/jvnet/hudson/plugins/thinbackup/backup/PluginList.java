@@ -43,12 +43,16 @@ public class PluginList implements Comparable<PluginList> {
     }
   }
 
-  public int compareTo(final PluginList o) {
-    if (o == null) {
+  /**
+   * @param other
+   * @return -1 if <i>other</i> is different than <b>this</b>.
+   */
+  public int compareTo(final PluginList other) {
+    if (other == null) {
       return -1;
     }
 
-    final Map<String, String> plugins2 = o.getPlugins();
+    final Map<String, String> plugins2 = other.getPlugins();
 
     if (plugins2.size() != plugins.size()) {
       return -1;
