@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.jvnet.hudson.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>1.389</version><!-- which version of Hudson is this plugin built against? -->
+    <version>1.393</version><!-- which version of Hudson is this plugin built against? -->
     <relativePath>../pom.xml</relativePath>
   </parent>
 

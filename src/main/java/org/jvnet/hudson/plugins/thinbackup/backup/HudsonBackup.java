@@ -31,25 +31,25 @@ public class HudsonBackup {
   private static final String JOBS_DIR = "jobs";
 
   private final File hudsonDirectory;
+  private final File backupRoot;
   private final File backupDirectory;
   private final BackupType backupType;
   private final Date latestFullBackupDate;
   private final boolean cleanupDiff;
   private final int nrMaxStoredFull;
-  private final File backupRoot;
 
-  public HudsonBackup(final String backupRootPath, final File hudsonHome, final BackupType backupType,
+  public HudsonBackup(final File backupRoot, final File hudsonHome, final BackupType backupType,
       final int nrMaxStoredFull, final boolean cleanupDiff) {
     hudsonDirectory = hudsonHome;
     this.cleanupDiff = cleanupDiff;
     this.nrMaxStoredFull = nrMaxStoredFull;
 
-    backupRoot = new File(backupRootPath);
+    this.backupRoot = backupRoot;
     if (!backupRoot.exists()) {
       backupRoot.mkdir();
     }
 
-    latestFullBackupDate = getLatestFullBackupDate(backupRoot);
+    latestFullBackupDate = getLatestFullBackupDate();
 
     // for a DIFF backup at least one FULL backup is needed, so if it is missing
     // ignore the backupType and do a FULL backup in this case
@@ -208,7 +208,7 @@ public class HudsonBackup {
     return result;
   }
 
-  private Date getLatestFullBackupDate(final File backupRoot) {
+  private Date getLatestFullBackupDate() {
     final IOFileFilter prefixFilter = FileFilterUtils.prefixFileFilter(BackupType.FULL.toString());
     final Collection<File> backups = Arrays.asList(backupRoot.listFiles((FilenameFilter) prefixFilter));
 

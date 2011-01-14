@@ -7,6 +7,7 @@ import hudson.model.Hudson;
 import hudson.scheduler.CronTab;
 import hudson.util.TimeUnit2;
 
+import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Calendar;
@@ -23,6 +24,7 @@ import antlr.ANTLRException;
 @Extension
 public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
   private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
+  private final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.getInstance();
 
   public enum BackupType {
     NONE, FULL, DIFF
@@ -37,9 +39,10 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
     return MIN;
   }
 
+  @SuppressWarnings("unused")
   @Override
   protected void execute(final TaskListener arg0) throws IOException, InterruptedException {
-    final BackupType type = executeNow();
+    final BackupType type = getNextScheduledBackup();
     if (type != BackupType.NONE) {
       backupNow(type);
     }
@@ -47,7 +50,6 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
 
   protected void backupNow(final BackupType type) {
     try {
-      final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.getInstance();
       final String backupPath = plugin.getBackupPath();
       final boolean cleanupDiff = plugin.isCleanupDiff();
       final String noMaxStoredFull = plugin.getNrMaxStoredFull();
@@ -67,7 +69,8 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
         hudson.doQuietDown();
         LOGGER.fine("Wait until executors are idle to perform backup.");
         Utils.waitUntilIdle();
-        new HudsonBackup(backupPath, Hudson.getInstance().getRootDir(), type, maxStoredFull, cleanupDiff).run();
+        new HudsonBackup(new File(backupPath), Hudson.getInstance().getRootDir(), type, maxStoredFull, cleanupDiff)
+            .run();
         hudson.doCancelQuietDown();
       } else {
         LOGGER.warning("ThinBackup is not configured yet: No backup path set.");
@@ -77,7 +80,7 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
     }
   }
 
-  private BackupType executeNow() {
+  private BackupType getNextScheduledBackup() {
     final long currentTime = System.currentTimeMillis();
     final long fullDelay = calculateDelay(currentTime, BackupType.FULL);
     final long diffDelay = calculateDelay(currentTime, BackupType.DIFF);
@@ -110,10 +113,10 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
       String cron = null;
       switch (backupType) {
       case FULL:
-        cron = getFullCronTimeFromConfig();
+        cron = plugin.getFullBackupSchedule();
         break;
       case DIFF:
-        cron = getDiffCronTimeFromConfig();
+        cron = plugin.getDiffBackupSchedule();
         break;
       default:
         return -1;
@@ -137,15 +140,4 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
     }
   }
 
-  private String getFullCronTimeFromConfig() {
-    final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.getInstance();
-    final String backupTime = plugin.getFullBackupSchedule();
-    return backupTime;
-  }
-
-  private String getDiffCronTimeFromConfig() {
-    final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.getInstance();
-    final String backupTime = plugin.getDiffBackupSchedule();
-    return backupTime;
-  }
 }

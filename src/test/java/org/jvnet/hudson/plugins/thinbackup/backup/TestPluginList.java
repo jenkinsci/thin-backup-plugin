@@ -5,7 +5,6 @@ import java.io.IOException;
 
 import junit.framework.Assert;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -18,10 +17,6 @@ public class TestPluginList {
     final File pluginsXml = File.createTempFile("pluginList", ".xml");
     pluginList = new PluginList(pluginsXml);
     pluginList.add("default", "0.1");
-  }
-
-  @After
-  public void tearDown() {
   }
 
   @Test
