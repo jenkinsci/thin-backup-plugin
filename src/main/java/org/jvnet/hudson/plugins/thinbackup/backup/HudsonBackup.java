@@ -66,18 +66,24 @@ public class HudsonBackup {
 
   public void backup() throws IOException {
     if (backupType == BackupType.NONE) {
-      throw new IllegalStateException("Backup type must be FULL or DIFF.");
+      final String msg = "Backup type must be FULL or DIFF. Backup cannot be performed.";
+      LOGGER.severe(msg);
+      throw new IllegalStateException(msg);
     }
 
     LOGGER.info(MessageFormat.format("Performing {0} backup.", backupType));
 
     if (!hudsonDirectory.exists() || !hudsonDirectory.isDirectory()) {
-      throw new FileNotFoundException("No Hudson directory found, thus cannot trigger backup.");
+      final String msg = "No Hudson directory found. Backup cannot be performed.";
+      LOGGER.severe(msg);
+      throw new FileNotFoundException(msg);
     }
     if (!backupDirectory.exists() || !backupDirectory.isDirectory()) {
       final boolean res = backupDirectory.mkdirs();
       if (!res) {
-        throw new IOException("Could not create backup directory.");
+        final String msg = "Could not create backup directory. Backup cannot be performed.";
+        LOGGER.severe(msg);
+        throw new IOException(msg);
       }
     }
 
@@ -94,13 +100,19 @@ public class HudsonBackup {
   }
 
   private void backupGlobalXmls() throws IOException {
+    LOGGER.info("Backing up global configuration files...");
+
     IOFileFilter suffixFileFilter = FileFilterUtils.suffixFileFilter(".xml");
     suffixFileFilter = FileFilterUtils.andFileFilter(FileFileFilter.FILE, suffixFileFilter);
     suffixFileFilter = FileFilterUtils.andFileFilter(suffixFileFilter, getDiffFilter());
     FileUtils.copyDirectory(hudsonDirectory, backupDirectory, suffixFileFilter);
+
+    LOGGER.info("DONE backing up global configuration files.");
   }
 
   private void backupJobs() throws IOException {
+    LOGGER.info("Backing up job specific configuration files...");
+
     final String jobsPath = String.format("%s/%s", hudsonDirectory.getAbsolutePath(), JOBS_DIR_NAME);
     final File jobsDirectory = new File(jobsPath);
 
@@ -116,6 +128,8 @@ public class HudsonBackup {
 
     IOFileFilter filter = FileFilterUtils.suffixFileFilter(".xml");
     IOFileFilter jobFilter = null;
+    LOGGER.info(String.format("Found %s jobs to back up.", jobNames.size()));
+    LOGGER.fine(String.format("\t%s", jobNames));
     for (final String jobName : jobNames) {
       final IOFileFilter nameFileFilter = FileFilterUtils.nameFileFilter(jobName);
       if (jobFilter == null) {
@@ -145,6 +159,8 @@ public class HudsonBackup {
 
     filter = FileFilterUtils.andFileFilter(filter, getDiffFilter());
     FileUtils.copyDirectory(jobsDirectory, jobsBackupDirectory, filter);
+
+    LOGGER.info("DONE backing up job specific configuration files.");
   }
 
   private void storePluginListIfChanged() throws IOException {
@@ -155,8 +171,13 @@ public class HudsonBackup {
     }
 
     if (pluginList.compareTo(latestFullPlugins) != 0) {
+      LOGGER.info("Storing list of installed plugins...");
       pluginList.save();
+    } else {
+      LOGGER.info("No changes in plugin list since last full backup.");
     }
+
+    LOGGER.info("DONE storing list of installed plugins.");
   }
 
   private PluginList getInstalledPlugins() {
@@ -189,23 +210,29 @@ public class HudsonBackup {
 
   private void removeSuperfluousBackups() throws IOException {
     if (nrMaxStoredFull > 0) {
+      LOGGER.info("Removing superfluous backups...");
       final List<BackupSet> availableBackupSets = Utils.getAvailableValidBackupSets();
+      int nrOfRemovedBackups = 0;
       while (availableBackupSets.size() > nrMaxStoredFull) {
         final BackupSet set = availableBackupSets.get(0);
         set.delete();
         availableBackupSets.remove(set);
+        ++nrOfRemovedBackups;
       }
+      LOGGER.info(String.format("DONE. Removed %s superfluous backup(s).", nrOfRemovedBackups));
     }
   }
 
   private void cleanupDiffs() throws IOException {
     if (cleanupDiff) {
+      LOGGER.info("Cleaning up diffs...");
       IOFileFilter filter = FileFilterUtils.prefixFileFilter(BackupType.DIFF.toString());
       filter = FileFilterUtils.andFileFilter(filter, DirectoryFileFilter.DIRECTORY);
       final File[] diffDirs = backupDirectory.getParentFile().listFiles((FilenameFilter) filter);
       for (final File diffDirToDelete : diffDirs) {
         FileUtils.deleteDirectory(diffDirToDelete);
       }
+      LOGGER.info(String.format("DONE. Removed %s unnecessary diff directories.", diffDirs.length));
     }
   }
 
@@ -224,6 +251,7 @@ public class HudsonBackup {
     final Collection<File> backups = Arrays.asList(backupRoot.listFiles((FilenameFilter) prefixFilter));
 
     if (backups.isEmpty()) {
+      LOGGER.info("No full backups found.");
       return null;
     }
 

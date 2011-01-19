@@ -23,8 +23,9 @@ import org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl;
 import org.jvnet.hudson.plugins.thinbackup.backup.BackupSet;
 
 public class Utils {
-  private static final int COMPUTER_TIMEOUT_WAIT = 500; // ms
   private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
+
+  private static final int COMPUTER_TIMEOUT_WAIT = 500; // ms
   private static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HH-mm");
 
   public static void waitUntilIdle() {

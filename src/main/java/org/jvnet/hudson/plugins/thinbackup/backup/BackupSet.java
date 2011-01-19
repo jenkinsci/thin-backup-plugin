@@ -4,12 +4,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.apache.commons.io.FileUtils;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 
 public class BackupSet implements Comparable<BackupSet> {
+  private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
+
   private File fullBackup;
   private List<File> diffBackups;
 
@@ -28,6 +31,8 @@ public class BackupSet implements Comparable<BackupSet> {
     if (fullBackup != null) {
       diffBackups = Utils.getReferencingDiffBackups(fullBackup);
     } else if (initial.getName().startsWith(BackupType.DIFF.toString())) {
+      LOGGER.info(String.format("BackupSet: Backup '%s' has no referenced full backup available.", initial.getName()));
+
       diffBackups = new ArrayList<File>(1);
       diffBackups.add(initial);
     }

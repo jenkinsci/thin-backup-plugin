@@ -45,6 +45,8 @@ public class ThinBackupMgmtLink extends ManagementLink {
   }
 
   public void doBackupManual(final StaplerRequest res, final StaplerResponse rsp) throws IOException {
+    LOGGER.info("Starting manual backup.");
+
     Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
 
     final ThinBackupPeriodicWork manualBackupWorker = new ThinBackupPeriodicWork() {
@@ -56,27 +58,32 @@ public class ThinBackupMgmtLink extends ManagementLink {
     };
     Trigger.timer.schedule(manualBackupWorker, 0);
 
-    LOGGER.info("Manual backup finished");
     rsp.sendRedirect(res.getContextPath() + "/thinBackup");
+
+    LOGGER.info("Manual backup finished.");
   }
 
   public void doRestore(final StaplerRequest res, final StaplerResponse rsp,
       @QueryParameter("restoreBackupFrom") final String restoreBackupFrom) throws IOException {
+    LOGGER.info("Starting restore operation.");
+
     Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+
     final Hudson hudson = Hudson.getInstance();
     hudson.doQuietDown();
-    LOGGER.fine("Wait until executors are idle to perform restore.");
+    LOGGER.fine("Waiting until executors are idle to perform restore...");
     Utils.waitUntilIdle();
 
-    final File hudsonHome = Hudson.getInstance().getRootDir();
-
+    final File hudsonHome = hudson.getRootDir();
     final HudsonRestore hudsonRestore = new HudsonRestore(hudsonHome, ThinBackupPluginImpl.getInstance()
         .getBackupPath(), restoreBackupFrom);
     hudsonRestore.restore();
 
     hudson.doCancelQuietDown();
-    LOGGER.info("Restore finished.");
+
     rsp.sendRedirect(res.getContextPath() + "/thinBackup");
+
+    LOGGER.info("Restore finished.");
   }
 
   public void doSaveSettings(final StaplerRequest res, final StaplerResponse rsp,
