@@ -55,6 +55,7 @@ public class HudsonBackup {
     latestFullBackupDate = getLatestFullBackupDate();
     // if no full backup has been done yet, do a FULL backup
     if (latestFullBackupDate == null) {
+      LOGGER.info("No previous full backup found, thus creating one.");
       this.backupType = BackupType.FULL;
     } else {
       this.backupType = backupType;
@@ -248,9 +249,9 @@ public class HudsonBackup {
 
   private Date getLatestFullBackupDate() {
     final IOFileFilter prefixFilter = FileFilterUtils.prefixFileFilter(BackupType.FULL.toString());
-    final Collection<File> backups = Arrays.asList(backupRoot.listFiles((FilenameFilter) prefixFilter));
+    final File[] backups = backupRoot.listFiles((FilenameFilter) prefixFilter);
 
-    if (backups.isEmpty()) {
+    if ((backups == null) || (backups.length == 0)) {
       LOGGER.info("No full backups found.");
       return null;
     }
@@ -265,5 +266,4 @@ public class HudsonBackup {
 
     return latestBackupDate;
   }
-
 }

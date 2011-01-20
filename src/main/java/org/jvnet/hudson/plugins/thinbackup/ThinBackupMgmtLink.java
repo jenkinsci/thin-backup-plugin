@@ -59,8 +59,6 @@ public class ThinBackupMgmtLink extends ManagementLink {
     Trigger.timer.schedule(manualBackupWorker, 0);
 
     rsp.sendRedirect(res.getContextPath() + "/thinBackup");
-
-    LOGGER.info("Manual backup finished.");
   }
 
   public void doRestore(final StaplerRequest res, final StaplerResponse rsp,
