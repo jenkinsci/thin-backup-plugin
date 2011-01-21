@@ -34,23 +34,22 @@
 
             
             <f:form method="post" action="restore">
-                 <f:section title="Restore options">
-                    <f:entry title="restore backup from"
-                    help="/plugin/thinBackup/help/help-restore.html">
-                      <j:set var="allBackups" value="${it.availableBackups}"/>
-    				  <select name="restoreBackupFrom" >
-				          <j:forEach var="backup" items="${allBackups}">
-				            <f:option>${backup}</f:option>
-				          </j:forEach>
-				      </select>
-                    </f:entry>
-                </f:section>
-                
-                <f:section>
-	                <f:entry>
-	                  <f:submit value="Restore"/>
-	                </f:entry>
-                </f:section>
+              <f:section title="Restore options">
+                <f:entry title="restore backup from" help="/plugin/thinBackup/help/help-restore.html">
+                  <j:set var="allBackups" value="${it.availableBackups}"/>
+                  <select name="restoreBackupFrom" >
+                      <j:forEach var="backup" items="${allBackups}">
+                        <f:option>${backup}</f:option>
+                      </j:forEach>
+                  </select>
+                </f:entry>
+              </f:section>
+              
+              <f:section>
+                <f:entry>
+                  <f:submit value="Restore"/>
+                </f:entry>
+              </f:section>
             </f:form>
         </l:main-panel>
     </l:layout>

@@ -29,6 +29,7 @@ import hudson.model.Hudson;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,7 +51,10 @@ public class Utils {
   private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
 
   private static final int COMPUTER_TIMEOUT_WAIT = 500; // ms
-  private static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HH-mm");
+  private static SimpleDateFormat DIRECTORY_NAME_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HH-mm");
+  private static SimpleDateFormat DISPLAY_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+  private static final String DIRECTORY_NAME_DATE_EXTRACTION_REGEX = String.format("(%s|%s)-", BackupType.FULL,
+      BackupType.DIFF);
 
   public static void waitUntilIdle() {
     final Computer computers[] = Hudson.getInstance().getComputers();
@@ -107,7 +111,8 @@ public class Utils {
   }
 
   public static File getFormattedDirectory(final File directory, final BackupType backupType, final Date date) {
-    final File formattedDirectory = new File(directory, String.format("%s-%s", backupType, DATE_FORMAT.format(date)));
+    final File formattedDirectory = new File(directory, String.format("%s-%s", backupType,
+        DIRECTORY_NAME_DATE_FORMAT.format(date)));
     return formattedDirectory;
   }
 
@@ -169,10 +174,19 @@ public class Utils {
 
     final List<String> list = new ArrayList<String>(backups.length);
     for (final String name : backups) {
-      list.add(name.replaceFirst(String.format("(%s|%s)-", BackupType.FULL, BackupType.DIFF), ""));
+      try {
+        final String dateOnly = name.replaceFirst(DIRECTORY_NAME_DATE_EXTRACTION_REGEX, "");
+        final Date tmp = DIRECTORY_NAME_DATE_FORMAT.parse(dateOnly);
+        list.add(DISPLAY_DATE_FORMAT.format(tmp));
+      } catch (final ParseException e) {
+        LOGGER.warning("Cannot parse directory name '" + name
+            + "', so it will not show up in the list of available backups.");
+      }
     }
     Collections.sort(list);
+    Collections.reverse(list);
 
     return list;
   }
+
 }
