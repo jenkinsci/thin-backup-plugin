@@ -151,10 +151,17 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
 
       cronTab = new CronTab(cron);
 
-      final Calendar nextFullExecution = cronTab.ceil(currentTime);
-      final long delay = nextFullExecution.getTimeInMillis() - currentTime;
-      LOGGER.fine(MessageFormat.format("current time: {0} next {3} execution: {1} delay [s]: {2}",
-          new Date(currentTime), nextFullExecution.getTime(), TimeUnit2.MILLISECONDS.toSeconds(delay), backupType));
+      final Calendar nextExecution = cronTab.ceil(currentTime);
+      final long delay = nextExecution.getTimeInMillis() - currentTime;
+
+      LOGGER.fine(MessageFormat.format("Current time: {0}. Next execution ({3}) in {2} seconds which is {1} ",
+          new Date(currentTime), nextExecution.getTime(), TimeUnit2.MILLISECONDS.toSeconds(delay), backupType));
+
+      if (delay < 0) {
+        final String msg = "Delay is a negative number, which means the next execution is in the past! Something bad happened.";
+        LOGGER.severe(msg);
+        throw new IllegalStateException(msg);
+      }
 
       return delay;
     } catch (final ANTLRException e) {
