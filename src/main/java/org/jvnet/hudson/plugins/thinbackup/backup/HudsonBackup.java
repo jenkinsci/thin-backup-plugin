@@ -272,7 +272,8 @@ public class HudsonBackup {
   }
 
   private Date getLatestFullBackupDate() {
-    final IOFileFilter prefixFilter = FileFilterUtils.prefixFileFilter(BackupType.FULL.toString());
+    IOFileFilter prefixFilter = FileFilterUtils.prefixFileFilter(BackupType.FULL.toString());
+    prefixFilter = FileFilterUtils.andFileFilter(prefixFilter, DirectoryFileFilter.DIRECTORY);
     final File[] backups = backupRoot.listFiles((FilenameFilter) prefixFilter);
 
     if ((backups == null) || (backups.length == 0)) {

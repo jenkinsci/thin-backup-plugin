@@ -66,7 +66,11 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
   @SuppressWarnings("unused")
   @Override
   protected void execute(final TaskListener arg0) throws IOException, InterruptedException {
-    final BackupType type = getNextScheduledBackup();
+    final long currentTime = System.currentTimeMillis();
+    final String fullCron = plugin.getFullBackupSchedule();
+    final String diffCron = plugin.getDiffBackupSchedule();
+
+    final BackupType type = getNextScheduledBackup(currentTime, fullCron, diffCron);
     if (type != BackupType.NONE) {
       backupNow(type);
     }
@@ -104,10 +108,9 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
     }
   }
 
-  private BackupType getNextScheduledBackup() {
-    final long currentTime = System.currentTimeMillis();
-    final long fullDelay = calculateDelay(currentTime, BackupType.FULL);
-    final long diffDelay = calculateDelay(currentTime, BackupType.DIFF);
+  BackupType getNextScheduledBackup(final long currentTime, final String fullCron, final String diffCron) {
+    final long fullDelay = calculateDelay(currentTime, BackupType.FULL, fullCron);
+    final long diffDelay = calculateDelay(currentTime, BackupType.DIFF, diffCron);
 
     BackupType res = BackupType.NONE;
     long delay = Long.MAX_VALUE;
@@ -131,20 +134,9 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
     return delay < MIN ? res : BackupType.NONE;
   }
 
-  private long calculateDelay(final long currentTime, final BackupType backupType) {
+  long calculateDelay(final long currentTime, final BackupType backupType, final String cron) {
     CronTab cronTab;
     try {
-      String cron = null;
-      switch (backupType) {
-      case FULL:
-        cron = plugin.getFullBackupSchedule();
-        break;
-      case DIFF:
-        cron = plugin.getDiffBackupSchedule();
-        break;
-      default:
-        return -1;
-      }
       if (StringUtils.isEmpty(cron)) {
         return -1;
       }
