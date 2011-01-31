@@ -6,44 +6,63 @@
     <version>1.393</version><!-- which version of Hudson is this plugin built against? -->
     <relativePath>../pom.xml</relativePath>
   </parent>
-
   <groupId>org.jvnet.hudson.plugins</groupId>
   <artifactId>thinBackup</artifactId>
   <name>ThinBackup</name>
   <version>1.2-SNAPSHOT</version>
   <packaging>hpi</packaging>
+  <licenses>
+    <license>
+      <name>GPLv3</name>
+      <distribution>repo</distribution>
+      <comments>
+    Copyright (C) 2011  Matthias Steinkogler, Thomas Fürer
 
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see http://www.gnu.org/licenses.</comments>
+    </license>
+  </licenses>
   <!-- get every artifact through maven.glassfish.org, which proxies all the artifacts that we need -->
   <description>Backs up the most important global and job specific configuration files. 
 </description>
   <url>http://wiki.hudson-ci.org/display/HUDSON/thinBackup</url>
   <developers>
-  	<developer>
-  		<id>tofuatjava</id>
-  		<name>Thomas Fürer</name>
-  		<email>tfuerer.javanet@gmail.com</email>
-  		<organization>Borland (a Microfocus Company)</organization>
-  		<organizationUrl>www.borland.com</organizationUrl>
-  		<timezone>GMT+1</timezone>
-  	</developer>
-  	<developer>
-  		<name>Matthias Steinkogler</name>
-  		<email>alienllama@gmail.com</email>
-  		<organization>Borland (a Microfocus Company)</organization>
-  		<organizationUrl>www.borland.com</organizationUrl>
-  		<timezone>CET</timezone>
-  		<roles>
-  		</roles>
-  	</developer>
+    <developer>
+      <id>tofuatjava</id>
+      <name>Thomas Fuerer</name>
+      <email>tfuerer.javanet@gmail.com</email>
+      <organization>Borland (a Microfocus Company)</organization>
+      <organizationUrl>www.borland.com</organizationUrl>
+      <timezone>GMT+1</timezone>
+    </developer>
+    <developer>
+      <name>Matthias Steinkogler</name>
+      <email>alienllama@gmail.com</email>
+      <organization>Borland (a Microfocus Company)</organization>
+      <organizationUrl>www.borland.com</organizationUrl>
+      <timezone>CET</timezone>
+      <roles>
+      </roles>
+    </developer>
   </developers>
   <scm>
-  	<connection>scm:svn:https://svn.java.net/svn/hudson~svn/trunk/hudson/plugins/thinBackup</connection>
-  	<developerConnection>scm:svn:https://svn.java.net/svn/hudson~svn/trunk/hudson/plugins/thinBackup</developerConnection>
+    <connection>scm:svn:https://svn.java.net/svn/hudson~svn/trunk/hudson/plugins/thinBackup</connection>
+    <developerConnection>scm:svn:https://svn.java.net/svn/hudson~svn/trunk/hudson/plugins/thinBackup</developerConnection>
     <url>https://svn.java.net/svn/hudson~svn/trunk/hudson/plugins/thinBackup</url>
   </scm>
   <organization>
-  	<name>Borland (a Microfocus Company)</name>
-  	<url>www.borland.com</url>
+    <name>Borland (a Microfocus Company)</name>
+    <url>www.borland.com</url>
   </organization>
   <repositories>
     <repository>
@@ -51,7 +70,6 @@
       <url>http://maven.glassfish.org/content/groups/public/</url>
     </repository>
   </repositories>
-
   <pluginRepositories>
     <pluginRepository>
       <id>m.g.o-public</id>
@@ -60,11 +78,10 @@
   </pluginRepositories>
   <dependencies>
   </dependencies>
-  
   <distributionManagement>
-      <repository>
-        <id>java.net-m2-repository</id>
-        <url>http://maven.hudson-labs.org:8081/content/repositories/releases/</url>
-      </repository>
-    </distributionManagement> 
+    <repository>
+      <id>java.net-m2-repository</id>
+      <url>http://maven.hudson-labs.org:8081/content/repositories/releases/</url>
+    </repository>
+  </distributionManagement>
 </project>

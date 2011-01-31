@@ -1,36 +1,26 @@
-/*
- * The MIT License
+/**
+ *  Copyright (C) 2011  Matthias Steinkogler, Thomas Fürer
  *
- * Copyright (c) 2011, Borland (a Micro Focus Company), Matthias Steinkogler, Thomas Fuerer
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see http://www.gnu.org/licenses.
  */
-
 package org.jvnet.hudson.plugins.thinbackup;
 
 import hudson.Extension;
 import hudson.model.ManagementLink;
 import hudson.model.TaskListener;
 import hudson.model.Hudson;
-import hudson.scheduler.CronTab;
 import hudson.triggers.Trigger;
-import hudson.util.FormValidation;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,8 +32,6 @@ import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-
-import antlr.ANTLRException;
 
 /**
  * A backup solution for Hudson. Backs up configuration files from Hudson and its jobs.
@@ -131,50 +119,6 @@ public class ThinBackupMgmtLink extends ManagementLink {
     plugin.save();
     LOGGER.fine("Save backup settings done.");
     rsp.sendRedirect(res.getContextPath() + "/thinBackup");
-  }
-
-  public FormValidation doCheckBackupPath(final StaplerRequest res, final StaplerResponse rsp,
-      @QueryParameter("backupPath") final String backupPath) {
-    if ((backupPath == null) || backupPath.isEmpty()) {
-      return FormValidation.error("'Backup Path' is not mandatory.");
-    }
-
-    final File backupdir = new File(backupPath);
-    if (!backupdir.exists()) {
-      return FormValidation.warning("The given directory does not exist, it will be created during the first run.");
-    }
-    if (!backupdir.isDirectory()) {
-      return FormValidation.error("A file with this name already exists.");
-    }
-    return FormValidation.ok();
-  }
-
-  public FormValidation doCheckFullBackupSchedule(final StaplerRequest res, final StaplerResponse rsp,
-      @QueryParameter("fullBackupSchedule") final String backupSchedule) {
-    return validateCronSchedule(backupSchedule);
-  }
-
-  public FormValidation doCheckDiffBackupSchedule(final StaplerRequest res, final StaplerResponse rsp,
-      @QueryParameter("diffBackupSchedule") final String backupSchedule) {
-    return validateCronSchedule(backupSchedule);
-  }
-
-  private FormValidation validateCronSchedule(final String backupTime) {
-    if ((backupTime != null) && !backupTime.isEmpty()) {
-      String message;
-      try {
-        message = new CronTab(backupTime).checkSanity();
-      } catch (final ANTLRException e) {
-        return FormValidation.error(e.getMessage());
-      }
-      if (message != null) {
-        return FormValidation.warning(message);
-      } else {
-        return FormValidation.ok();
-      }
-    } else {
-      return FormValidation.ok();
-    }
   }
 
   public ThinBackupPluginImpl getConfiguration() {
