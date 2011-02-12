@@ -129,12 +129,8 @@ public class HudsonBackup {
 
   private void backupJobs() throws IOException {
     LOGGER.info("Backing up job specific configuration files...");
-
-    final String jobsPath = String.format("%s/%s", hudsonDirectory.getAbsolutePath(), JOBS_DIR_NAME);
-    final File jobsDirectory = new File(jobsPath);
-
-    final String jobsBackupPath = String.format("%s/%s", backupDirectory.getAbsolutePath(), JOBS_DIR_NAME);
-    final File jobsBackupDirectory = new File(jobsBackupPath);
+    final File jobsDirectory = new File(hudsonDirectory.getAbsolutePath(), JOBS_DIR_NAME);
+    final File jobsBackupDirectory = new File(backupDirectory.getAbsolutePath(), JOBS_DIR_NAME);
 
     Collection<String> jobNames;
     if (hudson != null) {
@@ -159,10 +155,9 @@ public class HudsonBackup {
       if (buildsDir.exists() && buildsDir.isDirectory()) {
         final Collection<String> builds = Arrays.asList(buildsDir.list());
         if (builds != null) {
-          final String buildsBackupPath = String.format("%s/%s/%s", jobsBackupPath, jobName, BUILDS_DIR_NAME);
           for (final String build : builds) {
             final File srcDir = new File(buildsDir, build);
-            final File destDir = new File(buildsBackupPath, build);
+            final File destDir = new File(new File(new File(jobsBackupDirectory, jobName), BUILDS_DIR_NAME), build);
             final IOFileFilter buildFilter = FileFilterUtils.andFileFilter(FileFileFilter.FILE, getDiffFilter());
             FileUtils.copyDirectory(srcDir, destDir, buildFilter);
           }
