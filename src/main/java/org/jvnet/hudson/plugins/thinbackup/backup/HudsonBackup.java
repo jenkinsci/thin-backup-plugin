@@ -1,5 +1,5 @@
 /**
- *  Copyright (C) 2011  Matthias Steinkogler, Thomas Fürer
+ *  Copyright (C) 2011  Matthias Steinkogler, Thomas Fï¿½rer
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -43,8 +43,9 @@ public class HudsonBackup {
   private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
 
   private static final String INSTALLED_PLUGINS_XML = "installedPlugins.xml";
-  private static final String BUILDS_DIR_NAME = "Builds";
+  private static final String BUILDS_DIR_NAME = "builds";
   private static final String JOBS_DIR_NAME = "jobs";
+  private static final String USERS_DIR_NAME = "users";
 
   private final Hudson hudson;
   private final File hudsonDirectory;
@@ -106,6 +107,7 @@ public class HudsonBackup {
 
     backupGlobalXmls();
     backupJobs();
+    backupUsers();
     storePluginListIfChanged();
 
     new DirectoryCleaner().removeEmptyDirectories(backupDirectory);
@@ -117,18 +119,18 @@ public class HudsonBackup {
   }
 
   private void backupGlobalXmls() throws IOException {
-    LOGGER.info("Backing up global configuration files...");
+    LOGGER.fine("Backing up global configuration files...");
 
     IOFileFilter suffixFileFilter = FileFilterUtils.suffixFileFilter(".xml");
     suffixFileFilter = FileFilterUtils.andFileFilter(FileFileFilter.FILE, suffixFileFilter);
     suffixFileFilter = FileFilterUtils.andFileFilter(suffixFileFilter, getDiffFilter());
     FileUtils.copyDirectory(hudsonDirectory, backupDirectory, suffixFileFilter);
 
-    LOGGER.info("DONE backing up global configuration files.");
+    LOGGER.fine("DONE backing up global configuration files.");
   }
 
   private void backupJobs() throws IOException {
-    LOGGER.info("Backing up job specific configuration files...");
+    LOGGER.fine("Backing up job specific configuration files...");
     final File jobsDirectory = new File(hudsonDirectory.getAbsolutePath(), JOBS_DIR_NAME);
     final File jobsBackupDirectory = new File(backupDirectory.getAbsolutePath(), JOBS_DIR_NAME);
 
@@ -157,9 +159,11 @@ public class HudsonBackup {
         if (builds != null) {
           for (final String build : builds) {
             final File srcDir = new File(buildsDir, build);
-            final File destDir = new File(new File(new File(jobsBackupDirectory, jobName), BUILDS_DIR_NAME), build);
-            final IOFileFilter buildFilter = FileFilterUtils.andFileFilter(FileFileFilter.FILE, getDiffFilter());
-            FileUtils.copyDirectory(srcDir, destDir, buildFilter);
+            if (!isSymLinkFile(srcDir)) {
+              final File destDir = new File(new File(new File(jobsBackupDirectory, jobName), BUILDS_DIR_NAME), build);
+              final IOFileFilter buildFilter = FileFilterUtils.andFileFilter(FileFileFilter.FILE, getDiffFilter());
+              FileUtils.copyDirectory(srcDir, destDir, buildFilter);
+            }
           }
         }
       }
@@ -172,7 +176,27 @@ public class HudsonBackup {
     filter = FileFilterUtils.andFileFilter(filter, getDiffFilter());
     FileUtils.copyDirectory(jobsDirectory, jobsBackupDirectory, filter);
 
-    LOGGER.info("DONE backing up job specific configuration files.");
+    LOGGER.fine("DONE backing up job specific configuration files.");
+  }
+
+  private void backupUsers() throws IOException {
+    final File usersDirectory = new File(hudsonDirectory.getAbsolutePath(), USERS_DIR_NAME);
+    if (usersDirectory.exists() && usersDirectory.isDirectory()) {
+      LOGGER.fine("Backing up users specific configuration files...");
+      final File usersBackupDirectory = new File(backupDirectory.getAbsolutePath(), USERS_DIR_NAME);
+      IOFileFilter filter = FileFilterUtils.suffixFileFilter(".xml");
+      filter = FileFilterUtils.andFileFilter(filter, getDiffFilter());
+      filter = FileFilterUtils.orFileFilter(filter, DirectoryFileFilter.DIRECTORY);
+      FileUtils.copyDirectory(usersDirectory, usersBackupDirectory, filter);
+      LOGGER.fine("DONE backing up users specific configuration files.");
+    }
+  }
+
+  private boolean isSymLinkFile(File file) throws IOException {
+    String canonicalPath = file.getCanonicalPath();
+    String absolutePath = file.getAbsolutePath();
+    return !canonicalPath.substring(canonicalPath.lastIndexOf(File.separatorChar)).equals(
+        absolutePath.substring(absolutePath.lastIndexOf(File.separatorChar)));
   }
 
   private void storePluginListIfChanged() throws IOException {
