@@ -161,7 +161,9 @@ public class HudsonBackup {
             final File srcDir = new File(buildsDir, build);
             if (!isSymLinkFile(srcDir)) {
               final File destDir = new File(new File(new File(jobsBackupDirectory, jobName), BUILDS_DIR_NAME), build);
-              final IOFileFilter buildFilter = FileFilterUtils.andFileFilter(FileFileFilter.FILE, getDiffFilter());
+              IOFileFilter buildFilter = FileFilterUtils.andFileFilter(FileFileFilter.FILE, getDiffFilter());
+              buildFilter = FileFilterUtils.andFileFilter(buildFilter,
+                  FileFilterUtils.notFileFilter(FileFilterUtils.suffixFileFilter(".zip")));
               FileUtils.copyDirectory(srcDir, destDir, buildFilter);
             }
           }
