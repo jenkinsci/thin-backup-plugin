@@ -1,5 +1,5 @@
 /**
- *  Copyright (C) 2011  Matthias Steinkogler, Thomas Fürer
+ *  Copyright (C) 2011  Matthias Steinkogler, Thomas Fï¿½rer
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -100,6 +100,11 @@ public class Utils {
     }
 
     return referencedFullBackup;
+  }
+
+  public static String convertToDirectoryNameDateFormat(String displayFormatdate) throws ParseException {
+    Date displayDate = DISPLAY_DATE_FORMAT.parse(displayFormatdate);
+    return DIRECTORY_NAME_DATE_FORMAT.format(displayDate);
   }
 
   public static File getFormattedDirectory(final File directory, final BackupType backupType, final Date date) {

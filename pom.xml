@@ -84,4 +84,7 @@
       <url>http://maven.hudson-labs.org:8081/content/repositories/releases/</url>
     </repository>
   </distributionManagement>
+  <properties>
+  	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
 </project>

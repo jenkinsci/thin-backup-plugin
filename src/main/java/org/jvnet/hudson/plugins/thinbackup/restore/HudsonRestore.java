@@ -1,5 +1,5 @@
 /**
- *  Copyright (C) 2011  Matthias Steinkogler, Thomas Fürer
+ *  Copyright (C) 2011  Matthias Steinkogler, Thomas Fï¿½rer
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -19,6 +19,10 @@ package org.jvnet.hudson.plugins.thinbackup.restore;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.text.MessageFormat;
+import java.text.ParseException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
@@ -29,6 +33,7 @@ import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 
 public class HudsonRestore {
+  private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
   private final String backupPath;
   private final String restoreBackupFrom;
   private final File hudsonHome;
@@ -40,18 +45,24 @@ public class HudsonRestore {
   }
 
   public void restore() throws IOException {
-    IOFileFilter suffixFilter = FileFilterUtils.suffixFileFilter(restoreBackupFrom);
-    suffixFilter = FileFilterUtils.andFileFilter(suffixFilter, DirectoryFileFilter.DIRECTORY);
+    try {
+      String directoryDateFormat = Utils.convertToDirectoryNameDateFormat(restoreBackupFrom);
+      IOFileFilter suffixFilter = FileFilterUtils.suffixFileFilter(directoryDateFormat);
+      suffixFilter = FileFilterUtils.andFileFilter(suffixFilter, DirectoryFileFilter.DIRECTORY);
 
-    if (!StringUtils.isEmpty(backupPath)) {
-      final File[] candidates = new File(backupPath).listFiles((FileFilter) suffixFilter);
-      if (candidates.length == 1) {
-        final File toRestore = candidates[0];
-        if (toRestore.getName().startsWith(BackupType.DIFF.toString())) {
-          restore(Utils.getReferencedFullBackup(toRestore));
+      if (!StringUtils.isEmpty(backupPath)) {
+        final File[] candidates = new File(backupPath).listFiles((FileFilter) suffixFilter);
+        if (candidates.length == 1) {
+          final File toRestore = candidates[0];
+          if (toRestore.getName().startsWith(BackupType.DIFF.toString())) {
+            restore(Utils.getReferencedFullBackup(toRestore));
+          }
+          restore(toRestore);
         }
-        restore(toRestore);
       }
+    } catch (ParseException e) {
+      LOGGER.log(Level.SEVERE,
+          MessageFormat.format("Cannot convert diplay date format ({0}) to directory date format.", restoreBackupFrom));
     }
   }
 
