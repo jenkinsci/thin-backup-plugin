@@ -88,7 +88,7 @@ public class TestHudsonBackup {
     list = job.list();
     Assert.assertEquals(2, list.length);
 
-    final File build = new File(new File(job, "Builds"), "2011-01-08_22-26-40");
+    final File build = new File(new File(job, "builds"), "2011-01-08_22-26-40");
     list = build.list();
     Assert.assertEquals(4, list.length);
   }
