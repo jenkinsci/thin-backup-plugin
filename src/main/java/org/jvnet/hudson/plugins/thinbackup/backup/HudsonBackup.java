@@ -141,44 +141,42 @@ public class HudsonBackup {
       jobNames = Arrays.asList(jobsDirectory.list());
     }
 
-    IOFileFilter filter = FileFilterUtils.suffixFileFilter(".xml");
-    IOFileFilter jobFilter = null;
     LOGGER.info(String.format("Found %s jobs to back up.", jobNames.size()));
     LOGGER.fine(String.format("\t%s", jobNames));
     for (final String jobName : jobNames) {
-      final IOFileFilter nameFileFilter = FileFilterUtils.nameFileFilter(jobName);
-      if (jobFilter == null) {
-        jobFilter = nameFileFilter;
-      } else {
-        jobFilter = FileFilterUtils.orFileFilter(filter, nameFileFilter);
-      }
+      backupJobConfigFor(jobName, jobsDirectory, jobsBackupDirectory);
+      backupBuildsFor(jobName, jobsDirectory, jobsBackupDirectory);
+    }
+    LOGGER.fine("DONE backing up job specific configuration files.");
+  }
 
-      final File buildsDir = new File(new File(jobsDirectory, jobName), BUILDS_DIR_NAME);
-      if (buildsDir.exists() && buildsDir.isDirectory()) {
-        final Collection<String> builds = Arrays.asList(buildsDir.list());
-        if (builds != null) {
-          for (final String build : builds) {
-            final File srcDir = new File(buildsDir, build);
-            if (!isSymLinkFile(srcDir)) {
-              final File destDir = new File(new File(new File(jobsBackupDirectory, jobName), BUILDS_DIR_NAME), build);
-              IOFileFilter buildFilter = FileFilterUtils.andFileFilter(FileFileFilter.FILE, getDiffFilter());
-              buildFilter = FileFilterUtils.andFileFilter(buildFilter,
-                  FileFilterUtils.notFileFilter(FileFilterUtils.suffixFileFilter(".zip")));
-              FileUtils.copyDirectory(srcDir, destDir, buildFilter);
-            }
+  private void backupJobConfigFor(String jobName, File jobsDirectory, File jobsBackupDirectory) throws IOException {
+    IOFileFilter filter = FileFilterUtils.suffixFileFilter(".xml");
+    filter = FileFilterUtils.andFileFilter(filter, getDiffFilter());
+    File srcDir = new File(jobsDirectory, jobName);
+    if (srcDir.exists()) { // sub jobs e.g. maven modules need not be copied
+      FileUtils.copyDirectory(srcDir, new File(jobsBackupDirectory, jobName), filter);
+    }
+  }
+
+  private void backupBuildsFor(final String jobName, final File jobsDirectory, final File jobsBackupDirectory)
+      throws IOException {
+    final File buildsDir = new File(new File(jobsDirectory, jobName), BUILDS_DIR_NAME);
+    if (buildsDir.exists() && buildsDir.isDirectory()) {
+      final Collection<String> builds = Arrays.asList(buildsDir.list());
+      if (builds != null) {
+        for (final String build : builds) {
+          final File srcDir = new File(buildsDir, build);
+          if (!isSymLinkFile(srcDir)) {
+            final File destDir = new File(new File(new File(jobsBackupDirectory, jobName), BUILDS_DIR_NAME), build);
+            IOFileFilter buildFilter = FileFilterUtils.andFileFilter(FileFileFilter.FILE, getDiffFilter());
+            buildFilter = FileFilterUtils.andFileFilter(buildFilter,
+                FileFilterUtils.notFileFilter(FileFilterUtils.suffixFileFilter(".zip")));
+            FileUtils.copyDirectory(srcDir, destDir, buildFilter);
           }
         }
       }
     }
-    if (jobFilter != null) {
-      jobFilter = FileFilterUtils.andFileFilter(jobFilter, DirectoryFileFilter.DIRECTORY);
-      filter = FileFilterUtils.orFileFilter(filter, jobFilter);
-    }
-
-    filter = FileFilterUtils.andFileFilter(filter, getDiffFilter());
-    FileUtils.copyDirectory(jobsDirectory, jobsBackupDirectory, filter);
-
-    LOGGER.fine("DONE backing up job specific configuration files.");
   }
 
   private void backupUsers() throws IOException {
