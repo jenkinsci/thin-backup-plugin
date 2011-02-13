@@ -21,7 +21,7 @@
         <st:include it="${app}" page="sidepanel.jelly"/>
         <l:main-panel>
             <h1>
-                <img src="${rootURL}${it.iconFileName}" alt=""/>
+                <img src="${rootURL}/${it.iconFileName}" alt=""/>
                 ${it.displayName}
             </h1>
             
@@ -30,17 +30,17 @@
             <lu style="list-style-type:none;">
                 <li>
                     <h2><A href="backupManual">
-                    <img src="/hudson/plugin/thinBackup/images/backup.png" alt=""/>
+                    <img src="${rootURL}/plugin/thinBackup/images/backup.png" alt=""/>
                     Backup Now</A></h2>
                 </li>
                 <li>
                     <h2><A href="restoreOptions">
-                    <img src="/hudson/plugin/thinBackup/images/restore.png" alt=""/>
+                    <img src="${rootURL}/plugin/thinBackup/images/restore.png" alt=""/>
                     Restore</A></h2>
                 </li>
                 <li>
                     <h2><A href="backupsettings">
-                    <img src="/hudson/plugin/thinBackup/images/settings.png" alt=""/>
+                    <img src="${rootURL}/plugin/thinBackup/images/settings.png" alt=""/>
                     Settings</A></h2>
                 </li>
             </lu>
