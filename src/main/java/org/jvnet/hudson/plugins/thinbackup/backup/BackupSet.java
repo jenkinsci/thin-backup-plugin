@@ -1,5 +1,5 @@
 /**
- *  Copyright (C) 2011  Matthias Steinkogler, Thomas Fürer
+ *  Copyright (C) 2011  Matthias Steinkogler, Thomas Fï¿½rer
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -47,7 +47,8 @@ public class BackupSet implements Comparable<BackupSet> {
     if (fullBackup != null) {
       diffBackups = Utils.getReferencingDiffBackups(fullBackup);
     } else if (initial.getName().startsWith(BackupType.DIFF.toString())) {
-      LOGGER.info(String.format("BackupSet: Backup '%s' has no referenced full backup available.", initial.getName()));
+      LOGGER
+          .warning(String.format("BackupSet: Backup '%s' has no referenced full backup available.", initial.getName()));
 
       diffBackups = new ArrayList<File>(1);
       diffBackups.add(initial);

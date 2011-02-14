@@ -89,7 +89,7 @@ public class HudsonBackup {
       throw new IllegalStateException(msg);
     }
 
-    LOGGER.info(MessageFormat.format("Performing {0} backup.", backupType));
+    LOGGER.fine(MessageFormat.format("Performing {0} backup.", backupType));
 
     if (!hudsonDirectory.exists() || !hudsonDirectory.isDirectory()) {
       final String msg = "No Hudson directory found. Backup cannot be performed.";
@@ -141,7 +141,7 @@ public class HudsonBackup {
       jobNames = Arrays.asList(jobsDirectory.list());
     }
 
-    LOGGER.info(String.format("Found %s jobs to back up.", jobNames.size()));
+    LOGGER.info(String.format("Found %d jobs to back up.", jobNames.size()));
     LOGGER.fine(String.format("\t%s", jobNames));
     for (final String jobName : jobNames) {
       backupJobConfigFor(jobName, jobsDirectory, jobsBackupDirectory);
@@ -207,13 +207,13 @@ public class HudsonBackup {
     }
 
     if (pluginList.compareTo(latestFullPlugins) != 0) {
-      LOGGER.info("Storing list of installed plugins...");
+      LOGGER.fine("Storing list of installed plugins...");
       pluginList.save();
     } else {
-      LOGGER.info("No changes in plugin list since last full backup.");
+      LOGGER.fine("No changes in plugin list since last full backup.");
     }
 
-    LOGGER.info("DONE storing list of installed plugins.");
+    LOGGER.fine("DONE storing list of installed plugins.");
   }
 
   private PluginList getInstalledPlugins() {
@@ -246,7 +246,7 @@ public class HudsonBackup {
 
   private void removeSuperfluousBackups() throws IOException {
     if (nrMaxStoredFull > 0) {
-      LOGGER.info("Removing superfluous backups...");
+      LOGGER.fine("Removing superfluous backups...");
       final List<BackupSet> availableBackupSets = Utils.getAvailableValidBackupSets();
       int nrOfRemovedBackups = 0;
       while (availableBackupSets.size() > nrMaxStoredFull) {
@@ -255,20 +255,20 @@ public class HudsonBackup {
         availableBackupSets.remove(set);
         ++nrOfRemovedBackups;
       }
-      LOGGER.info(String.format("DONE. Removed %s superfluous backup(s).", nrOfRemovedBackups));
+      LOGGER.fine(String.format("DONE. Removed %d superfluous backup(s).", nrOfRemovedBackups));
     }
   }
 
   private void cleanupDiffs() throws IOException {
     if (cleanupDiff) {
-      LOGGER.info("Cleaning up diffs...");
+      LOGGER.fine("Cleaning up diffs...");
       IOFileFilter filter = FileFilterUtils.prefixFileFilter(BackupType.DIFF.toString());
       filter = FileFilterUtils.andFileFilter(filter, DirectoryFileFilter.DIRECTORY);
       final File[] diffDirs = backupDirectory.getParentFile().listFiles((FilenameFilter) filter);
       for (final File diffDirToDelete : diffDirs) {
         FileUtils.deleteDirectory(diffDirToDelete);
       }
-      LOGGER.info(String.format("DONE. Removed %s unnecessary diff directories.", diffDirs.length));
+      LOGGER.fine(String.format("DONE. Removed %s unnecessary diff directories.", diffDirs.length));
     }
   }
 
@@ -288,7 +288,6 @@ public class HudsonBackup {
     final File[] backups = backupRoot.listFiles((FilenameFilter) prefixFilter);
 
     if ((backups == null) || (backups.length == 0)) {
-      LOGGER.info("No full backups found.");
       return null;
     }
 
