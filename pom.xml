@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.jvnet.hudson.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>1.393</version><!-- which version of Hudson is this plugin built against? -->
+    <version>1.395</version><!-- which version of Hudson is this plugin built against? -->
     <relativePath>../pom.xml</relativePath>
   </parent>
   <groupId>org.jvnet.hudson.plugins</groupId>
@@ -37,23 +37,23 @@
 </description>
   <url>http://wiki.hudson-ci.org/display/HUDSON/thinBackup</url>
   <developers>
-    <developer>
-      <id>tofuatjava</id>
-      <name>Thomas Fuerer</name>
-      <email>tfuerer.javanet@gmail.com</email>
-      <organization>Borland (a Microfocus Company)</organization>
-      <organizationUrl>www.borland.com</organizationUrl>
-      <timezone>GMT+1</timezone>
-    </developer>
-    <developer>
-      <name>Matthias Steinkogler</name>
-      <email>alienllama@gmail.com</email>
-      <organization>Borland (a Microfocus Company)</organization>
-      <organizationUrl>www.borland.com</organizationUrl>
-      <timezone>CET</timezone>
-      <roles>
-      </roles>
-    </developer>
+  	<developer>
+  		<id>tofuatjava</id>
+  		<name>Thomas Fürer</name>
+  		<email>tfuerer.javanet@gmail.com</email>
+  		<organization>Borland (a Microfocus Company)</organization>
+  		<organizationUrl>www.borland.com</organizationUrl>
+  		<timezone>CET</timezone>
+  	</developer>
+  	<developer>
+  		<name>Matthias Steinkogler</name>
+  		<email>alienllama@gmail.com</email>
+  		<organization>Borland (a Microfocus Company)</organization>
+  		<organizationUrl>www.borland.com</organizationUrl>
+  		<timezone>CET</timezone>
+  		<roles>
+  		</roles>
+  	</developer>
   </developers>
   <scm>
     <connection>scm:svn:https://svn.java.net/svn/hudson~svn/trunk/hudson/plugins/thinBackup</connection>
@@ -64,6 +64,21 @@
     <name>Borland (a Microfocus Company)</name>
     <url>www.borland.com</url>
   </organization>
+  <build>
+  	<plugins>
+  		<plugin>
+  			<groupId>org.apache.maven.plugins</groupId>
+  			<artifactId>maven-compiler-plugin</artifactId>
+  			<version>2.3.2</version>
+  			<configuration>
+  			  <verbose>true</verbose>
+  	          <fork>true</fork>
+  	          <executable>${JAVA_HOME}/bin/javac</executable>
+  	          <compilerVersion>1.6</compilerVersion>
+  			</configuration>
+  		</plugin>
+  	</plugins>
+  </build>
   <repositories>
     <repository>
       <id>m.g.o-public</id>
