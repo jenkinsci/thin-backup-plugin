@@ -1,5 +1,5 @@
 /**
- *  Copyright (C) 2011  Matthias Steinkogler, Thomas F�rer
+ *  Copyright (C) 2011  Matthias Steinkogler, Thomas Fürer
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.comparator.LastModifiedFileComparator;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 
@@ -83,9 +84,12 @@ public class BackupSet implements Comparable<BackupSet> {
     return diffBackups;
   }
 
+  /**
+   * Compares the backup sets by using the sets' associated full backups' last modification date.
+   */
   public int compareTo(final BackupSet other) {
     final File otherFullBackup = other.getFullBackup();
-    if ((fullBackup == null) && (otherFullBackup == null)) {
+    if ((other == this) || ((fullBackup == null) && (otherFullBackup == null))) {
       return 0;
     } else if (fullBackup == null) {
       return -1;
@@ -93,16 +97,7 @@ public class BackupSet implements Comparable<BackupSet> {
       return 1;
     }
 
-    final long thisLastModified = fullBackup.lastModified();
-    final long otherLastModified = otherFullBackup.lastModified();
-
-    if (thisLastModified == otherLastModified) {
-      return 0;
-    } else if (thisLastModified < otherLastModified) {
-      return -1;
-    } else {
-      return 1;
-    }
+    return LastModifiedFileComparator.LASTMODIFIED_COMPARATOR.compare(fullBackup, otherFullBackup);
   }
 
 }

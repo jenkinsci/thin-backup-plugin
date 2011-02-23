@@ -1,5 +1,5 @@
 /**
- *  Copyright (C) 2011  Matthias Steinkogler, Thomas Fürer
+ *  Copyright (C) 2011  Matthias Steinkogler, Thomas FÃ¼rer
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -50,7 +50,6 @@ public class TestPluginList {
 
     Assert.assertEquals(0, pluginList.compareTo(pluginList2));
     Assert.assertEquals(0, pluginList2.compareTo(pluginList));
-
   }
 
   @Test

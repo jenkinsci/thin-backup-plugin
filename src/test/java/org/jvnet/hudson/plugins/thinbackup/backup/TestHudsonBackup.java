@@ -1,5 +1,5 @@
 /**
- *  Copyright (C) 2011  Matthias Steinkogler, Thomas F�rer
+ *  Copyright (C) 2011  Matthias Steinkogler, Thomas Fürer
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -65,7 +65,6 @@ public class TestHudsonBackup {
     new File(build, "changelog.xml").createNewFile();
     new File(build, "log").createNewFile();
     new File(build, "revision.txt").createNewFile();
-
   }
 
   @After
@@ -109,6 +108,6 @@ public class TestHudsonBackup {
     final File lastDiffBackup = backupDir.listFiles((FileFilter) FileFilterUtils.prefixFileFilter(BackupType.DIFF
         .toString()))[0];
     Assert.assertEquals(1, lastDiffBackup.list().length);
-
   }
+
 }

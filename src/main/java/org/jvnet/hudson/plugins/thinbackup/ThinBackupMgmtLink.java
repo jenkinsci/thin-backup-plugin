@@ -1,5 +1,5 @@
 /**
- *  Copyright (C) 2011  Matthias Steinkogler, Thomas Fürer
+ *  Copyright (C) 2011  Matthias Steinkogler, Thomas FÃ¼rer
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@ import org.kohsuke.stapler.StaplerResponse;
 /**
  * A backup solution for Hudson. Backs up configuration files from Hudson and its jobs.
  * 
- * Originally based on the Backup plugin by Vincent Sellier, Manufacture Française des Pneumatiques Michelin, Romain
+ * Originally based on the Backup plugin by Vincent Sellier, Manufacture Franï¿½aise des Pneumatiques Michelin, Romain
  * Seguy, et.al. Subsequently heavily modified.
  */
 @Extension
@@ -117,7 +117,7 @@ public class ThinBackupMgmtLink extends ManagementLink {
     plugin.setNrMaxStoredFull(nrMaxStoredFull);
     plugin.setCleanupDiff(cleanupDiff);
     plugin.save();
-    LOGGER.fine("Save backup settings done.");
+    LOGGER.fine("Saving backup settings done.");
     rsp.sendRedirect(res.getContextPath() + "/thinBackup");
   }
 
@@ -126,6 +126,8 @@ public class ThinBackupMgmtLink extends ManagementLink {
   }
 
   public List<String> getAvailableBackups() {
-    return Utils.getAvailableBackups();
+    final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.getInstance();
+    return Utils.getBackups(new File(plugin.getBackupPath()));
   }
+
 }

@@ -1,5 +1,5 @@
 /**
- *  Copyright (C) 2011  Matthias Steinkogler, Thomas F�rer
+ *  Copyright (C) 2011  Matthias Steinkogler, Thomas Fürer
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,7 +21,6 @@ import hudson.model.Hudson;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Arrays;
@@ -32,11 +31,13 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.comparator.LastModifiedFileComparator;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.FileFileFilter;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
+import org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 
 public class HudsonBackup {
@@ -150,10 +151,11 @@ public class HudsonBackup {
     LOGGER.fine("DONE backing up job specific configuration files.");
   }
 
-  private void backupJobConfigFor(String jobName, File jobsDirectory, File jobsBackupDirectory) throws IOException {
+  private void backupJobConfigFor(final String jobName, final File jobsDirectory, final File jobsBackupDirectory)
+      throws IOException {
     IOFileFilter filter = FileFilterUtils.suffixFileFilter(".xml");
     filter = FileFilterUtils.andFileFilter(filter, getDiffFilter());
-    File srcDir = new File(jobsDirectory, jobName);
+    final File srcDir = new File(jobsDirectory, jobName);
     if (srcDir.exists()) { // sub jobs e.g. maven modules need not be copied
       FileUtils.copyDirectory(srcDir, new File(jobsBackupDirectory, jobName), filter);
     }
@@ -192,9 +194,9 @@ public class HudsonBackup {
     }
   }
 
-  private boolean isSymLinkFile(File file) throws IOException {
-    String canonicalPath = file.getCanonicalPath();
-    String absolutePath = file.getAbsolutePath();
+  private boolean isSymLinkFile(final File file) throws IOException {
+    final String canonicalPath = file.getCanonicalPath();
+    final String absolutePath = file.getAbsolutePath();
     return !canonicalPath.substring(canonicalPath.lastIndexOf(File.separatorChar)).equals(
         absolutePath.substring(absolutePath.lastIndexOf(File.separatorChar)));
   }
@@ -247,7 +249,8 @@ public class HudsonBackup {
   private void removeSuperfluousBackups() throws IOException {
     if (nrMaxStoredFull > 0) {
       LOGGER.fine("Removing superfluous backups...");
-      final List<BackupSet> availableBackupSets = Utils.getAvailableValidBackupSets();
+      final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.getInstance();
+      final List<BackupSet> availableBackupSets = Utils.getValidBackupSets(new File(plugin.getBackupPath()));
       int nrOfRemovedBackups = 0;
       while (availableBackupSets.size() > nrMaxStoredFull) {
         final BackupSet set = availableBackupSets.get(0);
@@ -262,13 +265,13 @@ public class HudsonBackup {
   private void cleanupDiffs() throws IOException {
     if (cleanupDiff) {
       LOGGER.fine("Cleaning up diffs...");
-      IOFileFilter filter = FileFilterUtils.prefixFileFilter(BackupType.DIFF.toString());
-      filter = FileFilterUtils.andFileFilter(filter, DirectoryFileFilter.DIRECTORY);
-      final File[] diffDirs = backupDirectory.getParentFile().listFiles((FilenameFilter) filter);
+
+      final Collection<File> diffDirs = Utils.getBackupTypeDirectories(backupDirectory.getParentFile(), BackupType.DIFF);
+
       for (final File diffDirToDelete : diffDirs) {
         FileUtils.deleteDirectory(diffDirToDelete);
       }
-      LOGGER.fine(String.format("DONE. Removed %s unnecessary diff directories.", diffDirs.length));
+      LOGGER.fine(String.format("DONE. Removed %s unnecessary diff directories.", diffDirs.size()));
     }
   }
 
@@ -283,23 +286,11 @@ public class HudsonBackup {
   }
 
   private Date getLatestFullBackupDate() {
-    IOFileFilter prefixFilter = FileFilterUtils.prefixFileFilter(BackupType.FULL.toString());
-    prefixFilter = FileFilterUtils.andFileFilter(prefixFilter, DirectoryFileFilter.DIRECTORY);
-    final File[] backups = backupRoot.listFiles((FilenameFilter) prefixFilter);
-
-    if ((backups == null) || (backups.length == 0)) {
+    final List<File> backups = Utils.getBackupTypeDirectories(backupRoot, BackupType.FULL);
+    if ((backups == null) || (backups.size() == 0)) {
       return null;
     }
-
-    Date latestBackupDate = null;
-    for (final File fullBackupDir : backups) {
-      final Date curModifiedDate = new Date(fullBackupDir.lastModified());
-      if ((latestBackupDate == null) || curModifiedDate.after(latestBackupDate)) {
-        latestBackupDate = curModifiedDate;
-      }
-    }
-
-    return latestBackupDate;
+    Collections.sort(backups, LastModifiedFileComparator.LASTMODIFIED_REVERSE);
+    return new Date(backups.get(0).lastModified());
   }
-
 }

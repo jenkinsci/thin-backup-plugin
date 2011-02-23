@@ -1,5 +1,5 @@
 /**
- *  Copyright (C) 2011  Matthias Steinkogler, Thomas F�rer
+ *  Copyright (C) 2011  Matthias Steinkogler, Thomas Fürer
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -46,7 +46,7 @@ public class HudsonRestore {
 
   public void restore() throws IOException {
     try {
-      String directoryDateFormat = Utils.convertToDirectoryNameDateFormat(restoreBackupFrom);
+      final String directoryDateFormat = Utils.convertToDirectoryNameDateFormat(restoreBackupFrom);
       IOFileFilter suffixFilter = FileFilterUtils.suffixFileFilter(directoryDateFormat);
       suffixFilter = FileFilterUtils.andFileFilter(suffixFilter, DirectoryFileFilter.DIRECTORY);
 
@@ -60,9 +60,10 @@ public class HudsonRestore {
           restore(toRestore);
         }
       }
-    } catch (ParseException e) {
-      LOGGER.log(Level.SEVERE,
-          MessageFormat.format("Cannot convert diplay date format ({0}) to directory date format.", restoreBackupFrom));
+    } catch (final ParseException e) {
+      LOGGER
+          .log(Level.SEVERE, MessageFormat.format("Cannot convert display date format ({0}) to directory date format.",
+              restoreBackupFrom));
     }
   }
 

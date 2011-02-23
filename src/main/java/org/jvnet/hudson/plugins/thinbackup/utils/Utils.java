@@ -1,5 +1,5 @@
 /**
- *  Copyright (C) 2011  Matthias Steinkogler, Thomas F�rer
+ *  Copyright (C) 2011  Matthias Steinkogler, Thomas Fürer
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -36,18 +36,20 @@ import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
-import org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl;
 import org.jvnet.hudson.plugins.thinbackup.backup.BackupSet;
 
 public class Utils {
   private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
 
-  private static final int COMPUTER_TIMEOUT_WAIT = 500; // ms
+  private static final int COMPUTER_TIMEOUT_WAIT_IN_MS = 500;
   private static SimpleDateFormat DIRECTORY_NAME_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HH-mm");
   private static SimpleDateFormat DISPLAY_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");
   private static final String DIRECTORY_NAME_DATE_EXTRACTION_REGEX = String.format("(%s|%s)-", BackupType.FULL,
       BackupType.DIFF);
 
+  /**
+   * Waits until all Hudson slaves are idle.
+   */
   public static void waitUntilIdle() {
     final Computer computers[] = Hudson.getInstance().getComputers();
 
@@ -62,11 +64,46 @@ public class Utils {
       }
 
       try {
-        Thread.sleep(COMPUTER_TIMEOUT_WAIT);
+        Thread.sleep(COMPUTER_TIMEOUT_WAIT_IN_MS);
       } catch (final InterruptedException e) {
         LOGGER.log(Level.WARNING, e.getMessage(), e);
       }
     } while (running);
+  }
+
+  /**
+   * @param displayFormattedDate
+   *          a String in the display format date
+   * @return the string formatted in the directory names' date format
+   * @throws ParseException
+   */
+  public static String convertToDirectoryNameDateFormat(final String displayFormattedDate) throws ParseException {
+    final Date displayDate = DISPLAY_DATE_FORMAT.parse(displayFormattedDate);
+    return DIRECTORY_NAME_DATE_FORMAT.format(displayDate);
+  }
+
+  /**
+   * @param parent
+   * @param backupType
+   * @param date
+   * @return a directory created in the given parent directory with a name formatted like
+   *         "<BACKUP_TYPE>-yyyy-MM-dd_HH-mm".
+   */
+  public static File getFormattedDirectory(final File parent, final BackupType backupType, final Date date) {
+    final File formattedDirectory = new File(parent, String.format("%s-%s", backupType,
+        DIRECTORY_NAME_DATE_FORMAT.format(date)));
+    return formattedDirectory;
+  }
+
+  /**
+   * @param parentDir
+   * @param backupType
+   * @return an (unordered) list of backup directories of the given backup type.
+   */
+  public static List<File> getBackupTypeDirectories(final File parentDir, final BackupType backupType) {
+    IOFileFilter prefixFilter = FileFilterUtils.prefixFileFilter(backupType.toString());
+    prefixFilter = FileFilterUtils.andFileFilter(prefixFilter, DirectoryFileFilter.DIRECTORY);
+    return Arrays.asList(parentDir.listFiles((FilenameFilter) prefixFilter));
   }
 
   /**
@@ -78,10 +115,7 @@ public class Utils {
       return diffBackup;
     }
 
-    IOFileFilter prefixFilter = FileFilterUtils.prefixFileFilter(BackupType.FULL.toString());
-    prefixFilter = FileFilterUtils.andFileFilter(prefixFilter, DirectoryFileFilter.DIRECTORY);
-    final Collection<File> backups = Arrays.asList(new File(diffBackup.getParent())
-        .listFiles((FilenameFilter) prefixFilter));
+    final Collection<File> backups = getBackupTypeDirectories(diffBackup.getParentFile(), BackupType.FULL);
 
     if (backups.isEmpty()) {
       return null;
@@ -102,17 +136,6 @@ public class Utils {
     return referencedFullBackup;
   }
 
-  public static String convertToDirectoryNameDateFormat(String displayFormatdate) throws ParseException {
-    Date displayDate = DISPLAY_DATE_FORMAT.parse(displayFormatdate);
-    return DIRECTORY_NAME_DATE_FORMAT.format(displayDate);
-  }
-
-  public static File getFormattedDirectory(final File directory, final BackupType backupType, final Date date) {
-    final File formattedDirectory = new File(directory, String.format("%s-%s", backupType,
-        DIRECTORY_NAME_DATE_FORMAT.format(date)));
-    return formattedDirectory;
-  }
-
   /**
    * @param fullBackup
    * @return a list of all diff backups which reference the given full backup.
@@ -123,10 +146,7 @@ public class Utils {
       return diffBackups;
     }
 
-    IOFileFilter prefixFilter = FileFilterUtils.prefixFileFilter(BackupType.DIFF.toString());
-    prefixFilter = FileFilterUtils.andFileFilter(prefixFilter, DirectoryFileFilter.DIRECTORY);
-    final Collection<File> allDiffBackups = Arrays.asList(new File(fullBackup.getParent())
-        .listFiles((FilenameFilter) prefixFilter));
+    final Collection<File> allDiffBackups = getBackupTypeDirectories(fullBackup.getParentFile(), BackupType.DIFF);
 
     for (final File diffBackup : allDiffBackups) {
       final File tmpFullBackup = getReferencedFullBackup(diffBackup);
@@ -139,35 +159,15 @@ public class Utils {
   }
 
   /**
-   * @return a list of available backup sets, ordered ascending by date of the BackupSets full backup.
+   * @param directory
+   * @return a list of backups (both FULL and DIFF) in the given directory, ordered descending by the date encoded in
+   *         the directories' name.
    */
-  public static List<BackupSet> getAvailableValidBackupSets() {
-    final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.getInstance();
-    IOFileFilter prefixFilter = FileFilterUtils.prefixFileFilter(BackupType.FULL.toString());
-    prefixFilter = FileFilterUtils.andFileFilter(prefixFilter, DirectoryFileFilter.DIRECTORY);
-    final Collection<File> backups = Arrays.asList(new File(plugin.getBackupPath())
-        .listFiles((FilenameFilter) prefixFilter));
-
-    final List<BackupSet> sets = new ArrayList<BackupSet>();
-    for (final File backup : backups) {
-      final BackupSet set = new BackupSet(backup);
-      if (set.isValid()) {
-        sets.add(set);
-      }
-    }
-    Collections.sort(sets);
-    return sets;
-  }
-
-  /**
-   * @return a list of available backups, ordered ascending by date.
-   */
-  public static List<String> getAvailableBackups() {
-    final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.getInstance();
+  public static List<String> getBackups(final File directory) {
     IOFileFilter filter = FileFilterUtils.prefixFileFilter(BackupType.FULL.toString());
     filter = FileFilterUtils.orFileFilter(filter, FileFilterUtils.prefixFileFilter(BackupType.DIFF.toString()));
     filter = FileFilterUtils.andFileFilter(filter, DirectoryFileFilter.DIRECTORY);
-    final String[] backups = new File(plugin.getBackupPath()).list(filter);
+    final String[] backups = directory.list(filter);
 
     final List<String> list = new ArrayList<String>(backups.length);
     for (final String name : backups) {
@@ -177,13 +177,32 @@ public class Utils {
         list.add(DISPLAY_DATE_FORMAT.format(tmp));
       } catch (final ParseException e) {
         LOGGER.warning("Cannot parse directory name '" + name
-            + "', so it will not show up in the list of available backups.");
+            + "', therefore it will not show up in the list of available backups.");
       }
     }
     Collections.sort(list);
     Collections.reverse(list);
 
     return list;
+  }
+
+  /**
+   * @param directory
+   * @return a list of valid (@see BackupSet#isValid) backup sets in the given directory, ordered ascending by the last
+   *         modified date of the BackupSets' full backup.
+   */
+  public static List<BackupSet> getValidBackupSets(final File directory) {
+    final Collection<File> backups = Utils.getBackupTypeDirectories(directory, BackupType.FULL);
+
+    final List<BackupSet> validSets = new ArrayList<BackupSet>();
+    for (final File backup : backups) {
+      final BackupSet set = new BackupSet(backup);
+      if (set.isValid()) {
+        validSets.add(set);
+      }
+    }
+    Collections.sort(validSets);
+    return validSets;
   }
 
 }
