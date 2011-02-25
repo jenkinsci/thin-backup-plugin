@@ -29,30 +29,36 @@
                  <!-- Backup configuration -->
                  <f:section title="Backup settings">
                     <f:entry title="Backup directory"
-                    help="/plugin/thinBackup/help/help-backupPath.html">
+                        help="/plugin/thinBackup/help/help-backupPath.html">
                         <f:textbox value="${it.configuration.backupPath}" name="backupPath"
                             checkURL="'${rootUrl}/plugin/thinBackup/checkBackupPath?value='+escape(this.value)"/>
                     </f:entry>
                     
                     <f:entry title="Backup schedule for full backups"
-                    help="/plugin/thinBackup/help/help-fullBackupSchedule.html">
+                        help="/plugin/thinBackup/help/help-fullBackupSchedule.html">
                         <f:textbox value="${it.configuration.fullBackupSchedule}" name="fullBackupSchedule"/>
                     </f:entry>
                     
                     <f:entry title="Backup schedule for differential backups"
-                    help="/plugin/thinBackup/help/help-diffBackupSchedule.html">
+                        help="/plugin/thinBackup/help/help-diffBackupSchedule.html">
                         <f:textbox value="${it.configuration.diffBackupSchedule}" name="diffBackupSchedule"/>
                     </f:entry>
                     
                     <f:entry title="Max number of stored full backups"
-                    help="/plugin/thinBackup/help/help-nrMaxStoredFull.html">
+                        help="/plugin/thinBackup/help/help-nrMaxStoredFull.html">
                         <f:textbox value="${it.configuration.nrMaxStoredFull}" name="nrMaxStoredFull"/>
                     </f:entry>
                     
                     <f:optionalBlock title="Clean up differential backups"
+                        help="/plugin/thinBackup/help/help-cleanupDiff.html"
                         checked="${it.configuration.cleanupDiff}"
-                        name="cleanupDiff"
-                        help="/plugin/backup/help/help-cleanupDiff.html"/>
+                        name="cleanupDiff" />
+                    
+                    <f:optionalBlock title="Move old backups to ZIP file"
+                        help="/plugin/thinBackup/help/help-moveOldBackupsToZipFile.html"
+                        checked="${it.configuration.moveOldBackupsToZipFile}"
+                        name="moveOldBackupsToZipFile"
+                        />
                 </f:section>
                 
                 <!-- Save! -->

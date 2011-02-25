@@ -24,10 +24,10 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
-import org.jvnet.hudson.plugins.thinbackup.backup.BackupDirStructure;
+import org.jvnet.hudson.plugins.thinbackup.backup.BackupDirStructureSetup;
 import org.jvnet.hudson.plugins.thinbackup.backup.BackupSet;
 
-public class TestUtils extends BackupDirStructure {
+public class TestUtils extends BackupDirStructureSetup {
 
   @Test
   public void testConvertToDirectoryNameDateFormat() throws ParseException {

@@ -76,6 +76,36 @@ public class BackupSet implements Comparable<BackupSet> {
     }
   }
 
+  @Override
+  public String toString() {
+    final StringBuffer strBuf = new StringBuffer();
+
+    strBuf.append("[FULL backup: ");
+    if (fullBackup != null) {
+      strBuf.append(fullBackup.getName());
+    } else {
+      strBuf.append("NONE");
+    }
+    strBuf.append("; DIFF backups: ");
+    boolean hasDiffs = false;
+    if (diffBackups != null) {
+      for (final File diffBackup : diffBackups) {
+        strBuf.append(diffBackup.getName());
+        strBuf.append(",");
+      }
+      if (diffBackups.size() > 0) {
+        strBuf.deleteCharAt(strBuf.length() - 1);
+        hasDiffs = true;
+      }
+    }
+    if (!hasDiffs) {
+      strBuf.append("NONE");
+    }
+    strBuf.append("]");
+
+    return strBuf.toString();
+  }
+
   public File getFullBackup() {
     return fullBackup;
   }
@@ -100,4 +130,21 @@ public class BackupSet implements Comparable<BackupSet> {
     return LastModifiedFileComparator.LASTMODIFIED_COMPARATOR.compare(fullBackup, otherFullBackup);
   }
 
+  public boolean containsDirectory(final File directory) {
+    if ((directory == null) || (!directory.isDirectory())) {
+      return false;
+    }
+
+    final String directoryPath = directory.getAbsolutePath();
+
+    boolean inDiffs = false;
+    for (final File diffBackup : diffBackups) {
+      inDiffs = directoryPath.equals(diffBackup.getAbsolutePath());
+      if (inDiffs) {
+        break;
+      }
+    }
+
+    return inDiffs || (directoryPath.equals(fullBackup.getAbsolutePath()));
+  }
 }

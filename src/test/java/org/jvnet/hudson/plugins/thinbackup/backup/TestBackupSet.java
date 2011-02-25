@@ -19,6 +19,7 @@ package org.jvnet.hudson.plugins.thinbackup.backup;
 import static org.jvnet.hudson.plugins.thinbackup.utils.Utils.getFormattedDirectory;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Calendar;
 
 import junit.framework.Assert;
@@ -26,7 +27,7 @@ import junit.framework.Assert;
 import org.junit.Test;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 
-public class TestBackupSets extends BackupDirStructure {
+public class TestBackupSet extends BackupDirStructureSetup {
 
   @Test
   public void testSimpleBackupSet() throws Exception {
@@ -93,6 +94,32 @@ public class TestBackupSets extends BackupDirStructure {
     final BackupSet backupSet5 = new BackupSet(full5);
     Assert.assertEquals(0, backupSet1.compareTo(backupSet5));
     Assert.assertEquals(0, backupSet5.compareTo(backupSet1));
+  }
+
+  @Test
+  public void testBackupSetContainsDirectory() throws IOException {
+    final BackupSet backupSet1 = new BackupSet(full1);
+
+    Assert.assertTrue(backupSet1.containsDirectory(full1));
+    Assert.assertTrue(backupSet1.containsDirectory(new File(full1.getAbsolutePath())));
+    Assert.assertTrue(backupSet1.containsDirectory(diff11));
+    Assert.assertTrue(backupSet1.containsDirectory(diff12));
+    Assert.assertTrue(backupSet1.containsDirectory(diff13));
+    Assert.assertTrue(backupSet1.containsDirectory(diff14));
+    Assert.assertFalse(backupSet1.containsDirectory(null));
+    Assert.assertFalse(backupSet1.containsDirectory(full2));
+    Assert.assertFalse(backupSet1.containsDirectory(diff21));
+    Assert.assertFalse(backupSet1.containsDirectory(new File(diff21.getAbsolutePath())));
+
+    final BackupSet invalidBackupSet = new BackupSet(diff41);
+    Assert.assertTrue(invalidBackupSet.containsDirectory(diff41));
+
+    final File tempDir = new File(System.getProperty("java.io.tmpdir"));
+    backupDir = new File(tempDir, "BackupDirForHudsonBackupTest");
+    final File testFile = new File(backupDir, "tempFile.nxt");
+    testFile.createNewFile();
+    Assert.assertFalse(backupSet1.containsDirectory(testFile));
+    Assert.assertFalse(backupSet1.containsDirectory(new File(testFile.getAbsolutePath())));
   }
 
 }

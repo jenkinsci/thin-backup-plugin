@@ -56,13 +56,15 @@ public class HudsonBackup {
   private final Date latestFullBackupDate;
   private final boolean cleanupDiff;
   private final int nrMaxStoredFull;
+  private final boolean moveOldBackupsToZipFile;
 
   public HudsonBackup(final File backupRoot, final File hudsonHome, final BackupType backupType,
-      final int nrMaxStoredFull, final boolean cleanupDiff) {
+      final int nrMaxStoredFull, final boolean cleanupDiff, final boolean moveOldBackupsToZipFile) {
     hudson = Hudson.getInstance();
 
     hudsonDirectory = hudsonHome;
     this.cleanupDiff = cleanupDiff;
+    this.moveOldBackupsToZipFile = moveOldBackupsToZipFile;
     this.nrMaxStoredFull = nrMaxStoredFull;
 
     this.backupRoot = backupRoot;
@@ -115,6 +117,7 @@ public class HudsonBackup {
 
     if (backupType == BackupType.FULL) {
       removeSuperfluousBackups();
+      moveOldBackupsToZipFile(backupDirectory);
       cleanupDiffs();
     }
   }
@@ -250,12 +253,12 @@ public class HudsonBackup {
     if (nrMaxStoredFull > 0) {
       LOGGER.fine("Removing superfluous backups...");
       final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.getInstance();
-      final List<BackupSet> availableBackupSets = Utils.getValidBackupSets(new File(plugin.getBackupPath()));
+      final List<BackupSet> validBackupSets = Utils.getValidBackupSets(new File(plugin.getBackupPath()));
       int nrOfRemovedBackups = 0;
-      while (availableBackupSets.size() > nrMaxStoredFull) {
-        final BackupSet set = availableBackupSets.get(0);
+      while (validBackupSets.size() > nrMaxStoredFull) {
+        final BackupSet set = validBackupSets.get(0);
         set.delete();
-        availableBackupSets.remove(set);
+        validBackupSets.remove(set);
         ++nrOfRemovedBackups;
       }
       LOGGER.fine(String.format("DONE. Removed %d superfluous backup(s).", nrOfRemovedBackups));
@@ -266,12 +269,19 @@ public class HudsonBackup {
     if (cleanupDiff) {
       LOGGER.fine("Cleaning up diffs...");
 
-      final Collection<File> diffDirs = Utils.getBackupTypeDirectories(backupDirectory.getParentFile(), BackupType.DIFF);
+      final Collection<File> diffDirs = Utils
+          .getBackupTypeDirectories(backupDirectory.getParentFile(), BackupType.DIFF);
 
       for (final File diffDirToDelete : diffDirs) {
         FileUtils.deleteDirectory(diffDirToDelete);
       }
       LOGGER.fine(String.format("DONE. Removed %s unnecessary diff directories.", diffDirs.size()));
+    }
+  }
+
+  private void moveOldBackupsToZipFile(final File currentBackup) {
+    if (moveOldBackupsToZipFile) {
+      new ThinBackupZipper().moveOldBackupsToZipFile(backupRoot, currentBackup);
     }
   }
 

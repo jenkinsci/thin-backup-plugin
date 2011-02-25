@@ -38,6 +38,7 @@ public class ThinBackupPluginImpl extends Plugin {
   private String backupPath;
   private String nrMaxStoredFull;
   private boolean cleanupDiff;
+  private boolean moveOldBackupsToZipFile;
 
   public ThinBackupPluginImpl() {
     instance = this;
@@ -78,6 +79,14 @@ public class ThinBackupPluginImpl extends Plugin {
     return diffBackupSchedule;
   }
 
+  public void setNrMaxStoredFull(final String nrMaxStoredFull) {
+    this.nrMaxStoredFull = nrMaxStoredFull;
+  }
+
+  public String getNrMaxStoredFull() {
+    return nrMaxStoredFull;
+  }
+
   public void setCleanupDiff(final boolean cleanupDiff) {
     this.cleanupDiff = cleanupDiff;
   }
@@ -86,12 +95,12 @@ public class ThinBackupPluginImpl extends Plugin {
     return cleanupDiff;
   }
 
-  public void setNrMaxStoredFull(final String nrMaxStoredFull) {
-    this.nrMaxStoredFull = nrMaxStoredFull;
+  public void setMoveOldBackupsToZipFile(boolean moveOldBackupsToZipFile) {
+    this.moveOldBackupsToZipFile = moveOldBackupsToZipFile;
   }
 
-  public String getNrMaxStoredFull() {
-    return nrMaxStoredFull;
+  public boolean isMoveOldBackupsToZipFile() {
+    return moveOldBackupsToZipFile;
   }
 
   public FormValidation doCheckBackupPath(final StaplerRequest res, final StaplerResponse rsp,

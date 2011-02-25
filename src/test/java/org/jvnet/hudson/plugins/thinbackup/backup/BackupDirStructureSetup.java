@@ -10,7 +10,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 
-public class BackupDirStructure {
+public class BackupDirStructureSetup {
 
   protected File backupDir;
 
