@@ -21,6 +21,7 @@ import hudson.model.Hudson;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -33,6 +34,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
+import org.apache.commons.io.filefilter.FileFileFilter;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
@@ -42,10 +44,13 @@ public class Utils {
   private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
 
   private static final int COMPUTER_TIMEOUT_WAIT_IN_MS = 500;
-  private static SimpleDateFormat DIRECTORY_NAME_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HH-mm");
   private static SimpleDateFormat DISPLAY_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");
   private static final String DIRECTORY_NAME_DATE_EXTRACTION_REGEX = String.format("(%s|%s)-", BackupType.FULL,
       BackupType.DIFF);
+
+  public static SimpleDateFormat DIRECTORY_NAME_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HH-mm");
+  public static final String THINBACKUP_TMP_DIR = System.getProperty("java.io.tmpdir") + File.separator
+      + "thinBackupTmpDir";
 
   /**
    * Waits until all Hudson slaves are idle.
@@ -72,6 +77,33 @@ public class Utils {
   }
 
   /**
+   * @param directory
+   * @return the date component of a directory name formatted in the thinBackup standard
+   * @throws ParseException
+   *           if the name could not be parsed
+   */
+  public static Date getDateFromBackupDirectory(final File directory) throws ParseException {
+    return getDateFromBackupDirectory(directory.getName());
+  }
+
+  /**
+   * @param directoryName
+   * @return the date component of a directory name formatted in the thinBackup standard
+   * @throws ParseException
+   *           if the name could not be parsed
+   */
+  public static Date getDateFromBackupDirectory(final String directoryName) throws ParseException {
+    Date result = null;
+
+    if (directoryName.startsWith(BackupType.FULL.toString()) || directoryName.startsWith(BackupType.DIFF.toString())) {
+      final String dateOnly = directoryName.replaceFirst(DIRECTORY_NAME_DATE_EXTRACTION_REGEX, "");
+      result = DIRECTORY_NAME_DATE_FORMAT.parse(dateOnly);
+    }
+
+    return result;
+  }
+
+  /**
    * @param displayFormattedDate
    *          a String in the display format date
    * @return the string formatted in the directory names' date format
@@ -86,7 +118,7 @@ public class Utils {
    * @param parent
    * @param backupType
    * @param date
-   * @return a directory created in the given parent directory with a name formatted like
+   * @return a reference to a file in the given parent directory with a name formatted like
    *         "<BACKUP_TYPE>-yyyy-MM-dd_HH-mm".
    */
   public static File getFormattedDirectory(final File parent, final BackupType backupType, final Date date) {
@@ -123,14 +155,21 @@ public class Utils {
 
     File referencedFullBackup = null;
 
-    final Date curModifiedDate = new Date(diffBackup.lastModified());
-    Date closestPreviousBackupDate = new Date(0);
-    for (final File fullBackupDir : backups) {
-      final Date tmpModifiedDate = new Date(fullBackupDir.lastModified());
-      if (tmpModifiedDate.before(curModifiedDate) && tmpModifiedDate.after(closestPreviousBackupDate)) {
-        closestPreviousBackupDate = tmpModifiedDate;
-        referencedFullBackup = fullBackupDir;
+    Date curBackupDate;
+    try {
+      curBackupDate = getDateFromBackupDirectory(diffBackup);
+
+      Date closestPreviousBackupDate = new Date(0);
+      for (final File fullBackupDir : backups) {
+        final Date tmpBackupDate = getDateFromBackupDirectory(fullBackupDir);
+        if (tmpBackupDate.after(closestPreviousBackupDate) && (tmpBackupDate.getTime() <= curBackupDate.getTime())) {
+          closestPreviousBackupDate = tmpBackupDate;
+          referencedFullBackup = fullBackupDir;
+        }
       }
+    } catch (final ParseException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
     }
 
     return referencedFullBackup;
@@ -160,38 +199,74 @@ public class Utils {
 
   /**
    * @param directory
-   * @return a list of backups (both FULL and DIFF) in the given directory, ordered descending by the date encoded in
-   *         the directories' name.
+   * @return a list of backups in the given directory (both FULL and DIFF), displayed as the respective backup date,
+   *         from both directories and ZIP files, ordered descending by the date encoded in the backups' name.
    */
-  public static List<String> getBackups(final File directory) {
-    IOFileFilter filter = FileFilterUtils.prefixFileFilter(BackupType.FULL.toString());
-    filter = FileFilterUtils.orFileFilter(filter, FileFilterUtils.prefixFileFilter(BackupType.DIFF.toString()));
-    filter = FileFilterUtils.andFileFilter(filter, DirectoryFileFilter.DIRECTORY);
-    final String[] backups = directory.list(filter);
+  public static List<String> getBackupsAsDates(final File directory) {
+    IOFileFilter directoryFilter = FileFilterUtils.prefixFileFilter(BackupType.FULL.toString());
+    directoryFilter = FileFilterUtils.orFileFilter(directoryFilter,
+        FileFilterUtils.prefixFileFilter(BackupType.DIFF.toString()));
+    directoryFilter = FileFilterUtils.andFileFilter(directoryFilter, DirectoryFileFilter.DIRECTORY);
+    final String[] backups = directory.list(directoryFilter);
 
-    final List<String> list = new ArrayList<String>(backups.length);
+    final List<String> backupDates = new ArrayList<String>(backups.length);
     for (final String name : backups) {
       try {
-        final String dateOnly = name.replaceFirst(DIRECTORY_NAME_DATE_EXTRACTION_REGEX, "");
-        final Date tmp = DIRECTORY_NAME_DATE_FORMAT.parse(dateOnly);
-        list.add(DISPLAY_DATE_FORMAT.format(tmp));
+        final Date tmp = getDateFromBackupDirectory(name);
+        backupDates.add(DISPLAY_DATE_FORMAT.format(tmp));
       } catch (final ParseException e) {
         LOGGER.warning("Cannot parse directory name '" + name
             + "', therefore it will not show up in the list of available backups.");
       }
     }
-    Collections.sort(list);
-    Collections.reverse(list);
 
-    return list;
+    IOFileFilter zipFileFilter = FileFilterUtils.prefixFileFilter(BackupSet.BACKUPSET_ZIPFILE_PREFIX);
+    zipFileFilter = FileFilterUtils.andFileFilter(directoryFilter,
+        FileFilterUtils.suffixFileFilter(BackupSet.BACKUPSET_ZIPFILE_SUFFIX));
+    zipFileFilter = FileFilterUtils.andFileFilter(directoryFilter, FileFileFilter.FILE);
+    final String[] backupSets = directory.list(zipFileFilter);
+    for (final String name : backupSets) {
+      final BackupSet set = new BackupSet(new File(directory, name));
+      if (set.isValid()) {
+        final String fullName = set.getFullBackupName();
+        try {
+          final Date tmp = getDateFromBackupDirectory(fullName);
+          backupDates.add(DISPLAY_DATE_FORMAT.format(tmp));
+        } catch (final ParseException e) {
+          LOGGER
+              .warning(String
+                  .format(
+                      "Cannot parse directory name '%s' contained in ZIP file '%s', therefore it will not show up in the list of available backups.",
+                      fullName, name));
+        }
+
+        for (final String diffName : set.getDiffBackupsNames()) {
+          try {
+            final Date tmp = getDateFromBackupDirectory(diffName);
+            backupDates.add(DISPLAY_DATE_FORMAT.format(tmp));
+          } catch (final ParseException e) {
+            LOGGER
+                .warning(String
+                    .format(
+                        "Cannot parse directory name '%s' contained in ZIP file '%s', therefore it will not show up in the list of available backups.",
+                        diffName, name));
+          }
+        }
+      }
+    }
+
+    Collections.sort(backupDates);
+    Collections.reverse(backupDates);
+
+    return backupDates;
   }
 
   /**
    * @param directory
-   * @return a list of valid (@see BackupSet#isValid) backup sets in the given directory, ordered ascending by the last
-   *         modified date of the BackupSets' full backup.
+   * @return a list of valid (@see BackupSet#isValid) backup sets that exists as directories (not as ZIP files) in the
+   *         given directory, ordered ascending by the backup date of the BackupSets' full backup.
    */
-  public static List<BackupSet> getValidBackupSets(final File directory) {
+  public static List<BackupSet> getValidBackupSetsFromDirectories(final File directory) {
     final Collection<File> backups = Utils.getBackupTypeDirectories(directory, BackupType.FULL);
 
     final List<BackupSet> validSets = new ArrayList<BackupSet>();
@@ -203,6 +278,38 @@ public class Utils {
     }
     Collections.sort(validSets);
     return validSets;
+  }
+
+  /**
+   * Moves all backup sets (that are not already zipped) other than the one containing currentBackup to ZIP files
+   * located in backupRoot.
+   * 
+   * @param backupRoot
+   * @param currentBackup
+   * @throws IOException
+   */
+  public static void moveOldBackupsToZipFile(final File backupRoot, final File currentBackup) throws IOException {
+    LOGGER.fine("Moving old backups to zip files...");
+
+    final List<BackupSet> validBackupSets = Utils.getValidBackupSetsFromDirectories(backupRoot);
+
+    for (final BackupSet backupSet : validBackupSets) {
+      if ((!backupSet.containsDirectory(currentBackup)) && (!backupSet.isInZipFile())) {
+        final File zippedBackupSet = backupSet.zipTo(backupRoot);
+        if (zippedBackupSet != null) {
+          LOGGER.fine(String.format("Successfully zipped backup set %s to '%s'.", backupSet,
+              zippedBackupSet.getAbsolutePath()));
+          try {
+            backupSet.delete();
+            LOGGER.fine(String.format("Deleted backup set %s.", backupSet));
+          } catch (final IOException ioe) {
+            LOGGER.log(Level.WARNING, String.format("Could not delete backup set %s.", backupSet));
+          }
+        }
+      }
+    }
+
+    LOGGER.fine("DONE moving old backups to zip files.");
   }
 
 }

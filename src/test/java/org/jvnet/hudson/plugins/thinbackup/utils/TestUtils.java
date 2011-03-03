@@ -98,13 +98,13 @@ public class TestUtils extends BackupDirStructureSetup {
 
   @Test
   public void testGetBackups() {
-    final List<String> backups = Utils.getBackups(backupDir);
+    final List<String> backups = Utils.getBackupsAsDates(backupDir);
     Assert.assertEquals(10, backups.size());
   }
 
   @Test
   public void testGetValidBackupSets() {
-    final List<BackupSet> validBackupSets = Utils.getValidBackupSets(backupDir);
+    final List<BackupSet> validBackupSets = Utils.getValidBackupSetsFromDirectories(backupDir);
     Assert.assertEquals(3, validBackupSets.size());
   }
 

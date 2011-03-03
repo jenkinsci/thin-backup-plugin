@@ -127,7 +127,7 @@ public class ThinBackupMgmtLink extends ManagementLink {
 
   public List<String> getAvailableBackups() {
     final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.getInstance();
-    return Utils.getBackups(new File(plugin.getBackupPath()));
+    return Utils.getBackupsAsDates(new File(plugin.getBackupPath()));
   }
 
 }

@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -31,7 +32,6 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.comparator.LastModifiedFileComparator;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.FileFileFilter;
 import org.apache.commons.io.filefilter.FileFilterUtils;
@@ -253,7 +253,7 @@ public class HudsonBackup {
     if (nrMaxStoredFull > 0) {
       LOGGER.fine("Removing superfluous backups...");
       final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.getInstance();
-      final List<BackupSet> validBackupSets = Utils.getValidBackupSets(new File(plugin.getBackupPath()));
+      final List<BackupSet> validBackupSets = Utils.getValidBackupSetsFromDirectories(new File(plugin.getBackupPath()));
       int nrOfRemovedBackups = 0;
       while (validBackupSets.size() > nrMaxStoredFull) {
         final BackupSet set = validBackupSets.get(0);
@@ -279,9 +279,9 @@ public class HudsonBackup {
     }
   }
 
-  private void moveOldBackupsToZipFile(final File currentBackup) {
+  private void moveOldBackupsToZipFile(final File currentBackup) throws IOException {
     if (moveOldBackupsToZipFile) {
-      new ThinBackupZipper().moveOldBackupsToZipFile(backupRoot, currentBackup);
+      Utils.moveOldBackupsToZipFile(backupRoot, currentBackup);
     }
   }
 
@@ -296,11 +296,26 @@ public class HudsonBackup {
   }
 
   private Date getLatestFullBackupDate() {
-    final List<File> backups = Utils.getBackupTypeDirectories(backupRoot, BackupType.FULL);
-    if ((backups == null) || (backups.size() == 0)) {
+    final List<File> fullBackups = Utils.getBackupTypeDirectories(backupRoot, BackupType.FULL);
+    if ((fullBackups == null) || (fullBackups.size() == 0)) {
       return null;
     }
-    Collections.sort(backups, LastModifiedFileComparator.LASTMODIFIED_REVERSE);
-    return new Date(backups.get(0).lastModified());
+
+    Date result = new Date(0);
+    for (final File fullBackup : fullBackups) {
+      try {
+        final Date tmp = Utils.getDateFromBackupDirectory(fullBackup);
+        if (tmp.after(result)) {
+          result = tmp;
+        }
+      } catch (final ParseException e) {
+        LOGGER
+            .info(String.format("Cannot parse directory name '%s', thus ignoring it when getting latest backup date.",
+                fullBackup.getName()));
+      }
+    }
+
+    return result;
   }
+
 }

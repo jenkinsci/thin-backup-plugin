@@ -21,18 +21,28 @@ import java.io.IOException;
 
 import junit.framework.Assert;
 
+import org.apache.commons.io.FileUtils;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 public class TestPluginList {
 
   private PluginList pluginList;
+  private File pluginsXml;
+  private File pluginsXml2;
 
   @Before
   public void setup() throws IOException {
-    final File pluginsXml = File.createTempFile("pluginList", ".xml");
+    pluginsXml = File.createTempFile("pluginList", ".xml");
     pluginList = new PluginList(pluginsXml);
     pluginList.add("default", "0.1");
+  }
+
+  @After
+  public void teardown() {
+    FileUtils.deleteQuietly(pluginsXml);
+    FileUtils.deleteQuietly(pluginsXml2);
   }
 
   @Test
@@ -44,7 +54,7 @@ public class TestPluginList {
 
   @Test
   public void testCompareToEqualPluginList() throws IOException {
-    final File pluginsXml2 = File.createTempFile("pluginList2", ".xml");
+    pluginsXml2 = File.createTempFile("pluginList2", ".xml");
     final PluginList pluginList2 = new PluginList(pluginsXml2);
     pluginList2.add("default", "0.1");
 
@@ -54,7 +64,7 @@ public class TestPluginList {
 
   @Test
   public void testCompareToNotEqualPluginList() throws IOException {
-    final File pluginsXml2 = File.createTempFile("pluginList2", ".xml");
+    pluginsXml2 = File.createTempFile("pluginList2", ".xml");
     final PluginList pluginList2 = new PluginList(pluginsXml2);
 
     Assert.assertEquals(-1, pluginList.compareTo(pluginList2));
@@ -68,7 +78,7 @@ public class TestPluginList {
 
   @Test
   public void testCompareToDifferentSecondPluginList() throws IOException {
-    final File pluginsXml2 = File.createTempFile("pluginList2", ".xml");
+    pluginsXml2 = File.createTempFile("pluginList2", ".xml");
     final PluginList pluginList2 = new PluginList(pluginsXml2);
 
     pluginList2.add("hudson", "0.2");

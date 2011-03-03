@@ -7,10 +7,12 @@ import java.io.FileOutputStream;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
+import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 import org.mortbay.io.ByteArrayBuffer;
 
 public class HudsonDirectoryStructureSetup {
 
+  public static final String CONFIG_XML_CONTENTS = "FILLED WITH DATA... ";
   protected File root;
   protected File backupDir;
 
@@ -39,7 +41,7 @@ public class HudsonDirectoryStructureSetup {
     final File config = new File(testJob, "config.xml");
     config.createNewFile();
     final BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(config));
-    out.write(new ByteArrayBuffer("FILLED WITH DATA... ").array());
+    out.write(new ByteArrayBuffer(CONFIG_XML_CONTENTS).array());
     out.close();
     new File(testJob, "nextBuildNumber").createNewFile();
     new File(testJob, "workspace").mkdir();
@@ -60,6 +62,7 @@ public class HudsonDirectoryStructureSetup {
   public void tearDown() throws Exception {
     FileUtils.deleteDirectory(root);
     FileUtils.deleteDirectory(backupDir);
+    FileUtils.deleteDirectory(new File(Utils.THINBACKUP_TMP_DIR));
   }
 
 }

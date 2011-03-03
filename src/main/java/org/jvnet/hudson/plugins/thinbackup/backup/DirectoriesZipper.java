@@ -18,7 +18,7 @@ import org.apache.commons.io.DirectoryWalker;
 public class DirectoriesZipper extends DirectoryWalker implements Closeable {
   private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
 
-  static final byte[] BUFFER = new byte[512 * 1024];
+  public static final int BUFFER_SIZE = 512 * 1024;
 
   private final ZipOutputStream zipStream;
   private final String rootPath;
@@ -50,8 +50,9 @@ public class DirectoriesZipper extends DirectoryWalker implements Closeable {
 
       zipStream.putNextEntry(entry);
       int count;
-      while ((count = origin.read(BUFFER)) != -1) {
-        zipStream.write(BUFFER, 0, count);
+      final byte[] buffer = new byte[BUFFER_SIZE];
+      while ((count = origin.read(buffer)) != -1) {
+        zipStream.write(buffer, 0, count);
       }
       origin.close();
     } catch (final IOException ioe) {

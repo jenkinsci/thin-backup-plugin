@@ -16,63 +16,195 @@
  */
 package org.jvnet.hudson.plugins.thinbackup.backup;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.comparator.LastModifiedFileComparator;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 
 public class BackupSet implements Comparable<BackupSet> {
   private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
 
+  public static final String BACKUPSET_ZIPFILE_PREFIX = "BACKUPSET";
+  public static final String BACKUPSET_ZIPFILE_SUFFIX = ".zip";
+
+  private boolean inZipFile = false;
+
+  private File backupSetzipFile = null;
+  private File unzipDir = null;
+
   private File fullBackup;
+  private String fullBackupName = null;
   private List<File> diffBackups;
+  private List<String> diffBackupsNames;
 
   public BackupSet(final File initial) {
     fullBackup = null;
     diffBackups = null;
 
-    File tmpFull = null;
-    if (initial.getName().startsWith(BackupType.FULL.toString())) {
-      tmpFull = initial;
-    } else if (initial.getName().startsWith(BackupType.DIFF.toString())) {
-      tmpFull = Utils.getReferencedFullBackup(initial);
+    boolean success = false;
+
+    final String name = initial.getName();
+    if ((name.startsWith(BACKUPSET_ZIPFILE_PREFIX)) && (name.endsWith(BACKUPSET_ZIPFILE_SUFFIX))) {
+      inZipFile = true;
+      backupSetzipFile = initial;
+    } else {
+      if (name.startsWith(BackupType.FULL.toString())) {
+        fullBackup = initial;
+      } else if (name.startsWith(BackupType.DIFF.toString())) {
+        fullBackup = Utils.getReferencedFullBackup(initial);
+      }
     }
-    fullBackup = tmpFull;
+
+    success = initialize();
+
+    if (!success) {
+      LOGGER.warning(String
+          .format("Could not initialize backup set from file/directory '%s' as it is not valid.", name));
+    }
+  }
+
+  private boolean initialize() {
+    boolean success = false;
+
+    diffBackupsNames = new ArrayList<String>();
+
+    if (inZipFile) {
+      success = initializeFromZipFile();
+    } else {
+      success = initializeFromDirs();
+    }
+
+    if (!success) {
+      fullBackup = null;
+      fullBackupName = null;
+      if (diffBackups != null) {
+        diffBackups.clear();
+      }
+      diffBackups = null;
+      if (diffBackupsNames != null) {
+        diffBackupsNames.clear();
+      }
+      diffBackupsNames = null;
+    }
+
+    if (success && (diffBackupsNames != null)) {
+      Collections.sort(diffBackupsNames);
+    }
+
+    return success;
+  }
+
+  private boolean initializeFromZipFile() {
+    boolean success = true;
+
+    try {
+      final ZipFile zipFile = new ZipFile(backupSetzipFile);
+      final Enumeration<? extends ZipEntry> zipEntries = zipFile.entries();
+      while (zipEntries.hasMoreElements() && success) {
+        final ZipEntry entry = zipEntries.nextElement();
+        String tmpName = entry.getName();
+        tmpName = tmpName.substring(0, tmpName.indexOf(File.separator));
+        if (tmpName.startsWith(BackupType.FULL.toString())) {
+          if ((fullBackupName == null) || fullBackupName.equals(tmpName)) {
+            fullBackupName = tmpName;
+          } else {
+            LOGGER.warning(String.format("Backup set '%s' contains multiple full backups and is therefore not valid.",
+                zipFile.getName()));
+            success = false;
+          }
+        } else if (tmpName.startsWith(BackupType.DIFF.toString())) {
+          if (!diffBackupsNames.contains(tmpName)) {
+            diffBackupsNames.add(tmpName);
+          }
+        }
+      }
+      zipFile.close();
+    } catch (final IOException e) {
+      LOGGER.log(Level.SEVERE,
+          String.format("Cannot initialize BackupSet from ZIP file '%s'.", backupSetzipFile.getName()), e);
+    }
+
+    return success;
+  }
+
+  private boolean initializeFromDirs() {
+    boolean success = false;
 
     if (fullBackup != null) {
+      fullBackupName = fullBackup.getName();
       diffBackups = Utils.getReferencingDiffBackups(fullBackup);
-    } else if (initial.getName().startsWith(BackupType.DIFF.toString())) {
-      LOGGER
-          .warning(String.format("BackupSet: Backup '%s' has no referenced full backup available.", initial.getName()));
-
-      diffBackups = new ArrayList<File>(1);
-      diffBackups.add(initial);
+      success = true;
     }
+    if (success && (diffBackups != null) && !diffBackups.isEmpty()) {
+      diffBackupsNames = new ArrayList<String>(diffBackups.size());
+      for (final File diffBackup : diffBackups) {
+        final String tmpName = diffBackup.getName();
+        if (!diffBackupsNames.contains(tmpName)) {
+          diffBackupsNames.add(tmpName);
+        } else {
+          LOGGER
+              .warning("Backup set contains multiple diff backups with the same name. This is not allowed; backup set is invalid.");
+          success = false;
+        }
+      }
+    }
+
+    return success;
   }
 
   /**
    * @return true if this backup set has a referenced full backup.
    */
   public boolean isValid() {
-    return (fullBackup != null);
+    return (fullBackupName != null);
   }
 
   public void delete() throws IOException {
-    if (fullBackup != null) {
-      FileUtils.deleteDirectory(fullBackup);
-      fullBackup = null;
-    }
-    if (diffBackups != null) {
-      for (final File diffBackup : diffBackups) {
-        FileUtils.deleteDirectory(diffBackup);
+    if (isValid()) {
+      if (!inZipFile) {
+        if (fullBackup != null) {
+          FileUtils.deleteDirectory(fullBackup);
+          fullBackup = null;
+        }
+        if (diffBackups != null) {
+          for (final File diffBackup : diffBackups) {
+            FileUtils.deleteDirectory(diffBackup);
+          }
+          diffBackups = null;
+        }
+      } else {
+        FileUtils.deleteQuietly(backupSetzipFile);
+        deleteUnzipDir();
       }
-      diffBackups = null;
+    }
+  }
+
+  /**
+   * Deletes the directory used for unzipping this BackupSet. Note that this will make BackupSets created from that
+   * directory no longer usable.
+   */
+  public void deleteUnzipDir() {
+    if ((unzipDir != null) && (unzipDir.exists())) {
+      try {
+        FileUtils.deleteDirectory(unzipDir);
+      } catch (final IOException e) {
+        LOGGER.warning(String.format("Could not delete unzipping directory '%s'. Please delete manually.",
+            unzipDir.getAbsolutePath()));
+      }
     }
   }
 
@@ -81,19 +213,19 @@ public class BackupSet implements Comparable<BackupSet> {
     final StringBuffer strBuf = new StringBuffer();
 
     strBuf.append("[FULL backup: ");
-    if (fullBackup != null) {
-      strBuf.append(fullBackup.getName());
+    if (fullBackupName != null) {
+      strBuf.append(fullBackupName);
     } else {
       strBuf.append("NONE");
     }
     strBuf.append("; DIFF backups: ");
     boolean hasDiffs = false;
-    if (diffBackups != null) {
-      for (final File diffBackup : diffBackups) {
-        strBuf.append(diffBackup.getName());
+    if (diffBackupsNames != null) {
+      for (final String diffBackup : diffBackupsNames) {
+        strBuf.append(diffBackup);
         strBuf.append(",");
       }
-      if (diffBackups.size() > 0) {
+      if (diffBackupsNames.size() > 0) {
         strBuf.deleteCharAt(strBuf.length() - 1);
         hasDiffs = true;
       }
@@ -106,45 +238,242 @@ public class BackupSet implements Comparable<BackupSet> {
     return strBuf.toString();
   }
 
+  /**
+   * Unzips this backup set if it was initialized from a ZIP file. Does does NOT change <i>this</i>. Unzip location is
+   * Utils.THINBACKUP_TMP_DIR. deleteUnzipDir() may be called if the unzipped BackupSet is no longer needed. Before
+   * using the returned BackupSet, it should be checked if it is valid.
+   * 
+   * @return a new BackupSet referencing the unzipped directories, or the current BackupSet if it was either not created
+   *         from a ZIP file or is invalid. In case of an error an invalid BackupSet is returned.
+   * @throws IOException
+   */
+  public BackupSet unzip() throws IOException {
+    BackupSet result = null;
+
+    if (inZipFile && isValid()) {
+      result = unzipTo(new File(Utils.THINBACKUP_TMP_DIR));
+    } else {
+      result = this;
+    }
+
+    return result;
+  }
+
+  /**
+   * Unzips this backup set into a directory within the specified directory if it was initialized from a ZIP file. Does
+   * NOT change <i>this</i>. deleteUnzipDir() may be called if the unzipped BackupSet is no longer needed. The directory
+   * the BackupSet was unzipped to can be retrieved with getUnzipDir(). Before using the returned BackupSet, it should
+   * be checked if it is valid.
+   * 
+   * @param directory
+   * @return a new BackupSet referencing the unzipped directories, or the current BackupSet if it was either not created
+   *         from a ZIP file or is invalid. In case of an error an invalid BackupSet is returned.
+   * @throws IOException
+   */
+  public BackupSet unzipTo(final File directory) throws IOException {
+    BackupSet result = null;
+
+    if (inZipFile && isValid()) {
+      if (!directory.exists()) {
+        directory.mkdirs();
+      }
+      unzipDir = new File(directory, getBackupSetZipFileName().replace(BACKUPSET_ZIPFILE_SUFFIX, ""));
+      if (!unzipDir.exists()) {
+        unzipDir.mkdirs();
+      }
+
+      final ZipFile zipFile = new ZipFile(backupSetzipFile);
+      final byte data[] = new byte[DirectoriesZipper.BUFFER_SIZE];
+      final Enumeration<? extends ZipEntry> zipEntries = zipFile.entries();
+      while (zipEntries.hasMoreElements()) {
+        final ZipEntry entry = zipEntries.nextElement();
+
+        final String fullPathToEntry = entry.getName();
+        final String pathToEntry = fullPathToEntry.substring(0, fullPathToEntry.lastIndexOf(File.separator));
+        final File entryDir = new File(unzipDir, pathToEntry);
+        entryDir.mkdirs();
+        final String entryName = fullPathToEntry.substring(fullPathToEntry.lastIndexOf(File.separator) + 1);
+
+        final BufferedInputStream is = new BufferedInputStream(zipFile.getInputStream(entry));
+
+        final FileOutputStream fos = new FileOutputStream(new File(unzipDir + File.separator + pathToEntry, entryName));
+        final BufferedOutputStream dest = new BufferedOutputStream(fos, DirectoriesZipper.BUFFER_SIZE);
+
+        int count = 0;
+        while ((count = is.read(data)) != -1) {
+          dest.write(data, 0, count);
+        }
+
+        dest.flush();
+        dest.close();
+      }
+      zipFile.close();
+
+      final File[] backups = unzipDir.listFiles();
+      if (backups.length > 0) {
+        result = new BackupSet(backups[0]);
+      } else {
+        // in case of an error (i.e. nothing was unzipped) return an invalid BackupSet
+        result = new BackupSet(unzipDir);
+      }
+    } else {
+      result = this;
+    }
+
+    return result;
+  }
+
+  /**
+   * @param directory
+   * @return a reference to the created ZIP file, the current ZIP file if the BackupSet was created from one, or null if
+   *         this BackupSet is invalid.
+   * @throws IOException
+   */
+  public File zipTo(final File directory) throws IOException {
+    File zipFile = null;
+
+    if (isValid()) {
+      if (!inZipFile) {
+        try {
+          if (!directory.exists()) {
+            final boolean success = directory.mkdirs();
+            if (!success) {
+              throw new IOException(String.format("Could not create directory '%s'.", directory.getAbsolutePath()));
+            }
+          }
+
+          final String zipFileName = getBackupSetZipFileName();
+          zipFile = new File(directory, zipFileName);
+          final DirectoriesZipper zipper = new DirectoriesZipper(zipFile);
+
+          zipper.addToZip(getFullBackup());
+          for (final File diffBackup : getDiffBackups()) {
+            zipper.addToZip(diffBackup);
+          }
+
+          zipper.close();
+        } catch (final IOException ioe) {
+          LOGGER.log(Level.WARNING, "Could not zip backup set.", ioe);
+          throw ioe;
+        }
+      } else {
+        zipFile = backupSetzipFile;
+      }
+    }
+
+    return zipFile;
+  }
+
+  private String getBackupSetZipFileName() {
+    return String.format("%s_%s_%s%s", BACKUPSET_ZIPFILE_PREFIX, getFullBackupDate(), getLastDiffBackupDate(),
+        BACKUPSET_ZIPFILE_SUFFIX);
+  }
+
+  private String getFullBackupDate() {
+    return getFormattedDateFromDirectoryName(fullBackupName);
+  }
+
+  private String getLastDiffBackupDate() {
+    return getFormattedDateFromDirectoryName(diffBackupsNames.get(diffBackupsNames.size() - 1));
+  }
+
+  private String getFormattedDateFromDirectoryName(final String directoryName) {
+    String result = "";
+
+    try {
+      result = Utils.DIRECTORY_NAME_DATE_FORMAT.format(Utils.getDateFromBackupDirectory(directoryName));
+    } catch (final ParseException e) {
+      LOGGER.warning(String.format("Could not retrieve date component of directory '%s'.", directoryName));
+    }
+
+    return result;
+  }
+
+  /**
+   * Compares the backup sets by using the sets' associated full backups' backup date.
+   * 
+   * @return -1 if this BackupSet's full backup date is before the other's, 0 if they are equal, 1 if is after the
+   *         other's.
+   */
+  public int compareTo(final BackupSet other) {
+    final String otherFullBackupName = other.getFullBackupName();
+    if ((other == this) || ((fullBackupName == null) && (otherFullBackupName == null))) {
+      return 0;
+    } else if (fullBackupName == null) {
+      return -1;
+    } else if (otherFullBackupName == null) {
+      return 1;
+    }
+
+    return fullBackupName.compareTo(otherFullBackupName);
+  }
+
+  /**
+   * @param directory
+   * @return true if this BackupSet contains a backup directory with the same name. Note that only the top level backup
+   *         directories are checked, not any other contents of the BackupSet.
+   */
+  public boolean containsDirectory(final File directory) {
+    if ((directory == null) || (!directory.isDirectory()) || !isValid()) {
+      return false;
+    }
+
+    final String directoryName = directory.getName();
+
+    boolean inDiffs = false;
+    if (diffBackupsNames != null) {
+      for (final String diffBackupName : diffBackupsNames) {
+        inDiffs = directoryName.equals(diffBackupName);
+        if (inDiffs) {
+          break;
+        }
+      }
+    }
+
+    return inDiffs || ((fullBackupName != null) && directoryName.equals(fullBackupName));
+  }
+
+  /**
+   * @return true if this BackupSet was constructed from a ZIP file.
+   */
+  public boolean isInZipFile() {
+    return inZipFile;
+  }
+
+  /**
+   * @return the full backup directory reference, or null if this BackupSet is in a ZIP file.
+   */
   public File getFullBackup() {
     return fullBackup;
   }
 
+  /**
+   * @return the name of full backup directory.
+   */
+  public String getFullBackupName() {
+    return fullBackupName;
+  }
+
+  /**
+   * @return a List of diff backup directory references, or null if this BackupSet is in a ZIP file.
+   */
   public List<File> getDiffBackups() {
     return diffBackups;
   }
 
   /**
-   * Compares the backup sets by using the sets' associated full backups' last modification date.
+   * @return a List of diff backup directory names.
    */
-  public int compareTo(final BackupSet other) {
-    final File otherFullBackup = other.getFullBackup();
-    if ((other == this) || ((fullBackup == null) && (otherFullBackup == null))) {
-      return 0;
-    } else if (fullBackup == null) {
-      return -1;
-    } else if (otherFullBackup == null) {
-      return 1;
-    }
-
-    return LastModifiedFileComparator.LASTMODIFIED_COMPARATOR.compare(fullBackup, otherFullBackup);
+  public List<String> getDiffBackupsNames() {
+    return diffBackupsNames;
   }
 
-  public boolean containsDirectory(final File directory) {
-    if ((directory == null) || (!directory.isDirectory())) {
-      return false;
-    }
-
-    final String directoryPath = directory.getAbsolutePath();
-
-    boolean inDiffs = false;
-    for (final File diffBackup : diffBackups) {
-      inDiffs = directoryPath.equals(diffBackup.getAbsolutePath());
-      if (inDiffs) {
-        break;
-      }
-    }
-
-    return inDiffs || (directoryPath.equals(fullBackup.getAbsolutePath()));
+  /**
+   * @return a reference to the directory where this BackupSet was unzipped, or null if it either was not yet unzipped
+   *         or if this BackupSet is not in a ZIP file.
+   */
+  public File getUnzipDir() {
+    return unzipDir;
   }
+
 }

@@ -16,16 +16,12 @@
  */
 package org.jvnet.hudson.plugins.thinbackup.backup;
 
-import static org.jvnet.hudson.plugins.thinbackup.utils.Utils.getFormattedDirectory;
-
 import java.io.File;
 import java.io.IOException;
-import java.util.Calendar;
 
 import junit.framework.Assert;
 
 import org.junit.Test;
-import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 
 public class TestBackupSet extends BackupDirStructureSetup {
 
@@ -62,14 +58,15 @@ public class TestBackupSet extends BackupDirStructureSetup {
 
   @Test
   public void testInvalidSet() throws Exception {
-    final BackupSet setFromFull = new BackupSet(diff41);
-    Assert.assertFalse(setFromFull.isValid());
-    Assert.assertNull(setFromFull.getFullBackup());
-    Assert.assertEquals(1, setFromFull.getDiffBackups().size());
+    final BackupSet setFromDiff = new BackupSet(diff41);
+    Assert.assertFalse(setFromDiff.isValid());
+    Assert.assertFalse(setFromDiff.isValid());
+    Assert.assertNull(setFromDiff.getFullBackup());
+    Assert.assertNull(setFromDiff.getDiffBackups());
 
     Assert.assertEquals(10, backupDir.list().length);
-    setFromFull.delete();
-    Assert.assertEquals(9, backupDir.list().length);
+    setFromDiff.delete();
+    Assert.assertEquals(10, backupDir.list().length);
   }
 
   @Test
@@ -84,16 +81,6 @@ public class TestBackupSet extends BackupDirStructureSetup {
     Assert.assertEquals(1, backupSet1.compareTo(invalidBackupSet));
     Assert.assertEquals(1, backupSet2.compareTo(invalidBackupSet));
     Assert.assertEquals(-1, invalidBackupSet.compareTo(backupSet1));
-
-    final Calendar cal = Calendar.getInstance();
-    cal.set(2011, 8, 1, 0, 0);
-    final File full5 = getFormattedDirectory(backupDir, BackupType.FULL, cal.getTime());
-    full5.mkdir();
-    full5.setLastModified(full1.lastModified());
-
-    final BackupSet backupSet5 = new BackupSet(full5);
-    Assert.assertEquals(0, backupSet1.compareTo(backupSet5));
-    Assert.assertEquals(0, backupSet5.compareTo(backupSet1));
   }
 
   @Test
@@ -112,7 +99,7 @@ public class TestBackupSet extends BackupDirStructureSetup {
     Assert.assertFalse(backupSet1.containsDirectory(new File(diff21.getAbsolutePath())));
 
     final BackupSet invalidBackupSet = new BackupSet(diff41);
-    Assert.assertTrue(invalidBackupSet.containsDirectory(diff41));
+    Assert.assertFalse(invalidBackupSet.containsDirectory(diff41));
 
     final File tempDir = new File(System.getProperty("java.io.tmpdir"));
     backupDir = new File(tempDir, "BackupDirForHudsonBackupTest");

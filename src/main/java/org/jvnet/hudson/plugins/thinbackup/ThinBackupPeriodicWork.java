@@ -142,7 +142,7 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
           new Date(currentTime), nextExecution.getTime(), TimeUnit2.MILLISECONDS.toSeconds(delay), backupType));
 
       if (delay < 0) {
-        final String msg = "Delay is a negative number, which means the next execution is in the past! Something bad happened.";
+        final String msg = "Delay is a negative number, which means the next execution is in the past! This happens for Hudson/Jenkins installations with version 1.395 or below. Please upgrade to fix this.";
         LOGGER.severe(msg);
         throw new IllegalStateException(msg);
       }
