@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.io.FileUtils;
@@ -86,7 +87,7 @@ public class HudsonBackup {
   }
 
   /**
-   * package visible constructor only for unit testing purposes!
+   * Package visible constructor only for unit testing purposes!
    * 
    * @param date
    *          date for which the backup directory should use
@@ -311,9 +312,10 @@ public class HudsonBackup {
     }
   }
 
-  private void moveOldBackupsToZipFile(final File currentBackup) throws IOException {
+  private void moveOldBackupsToZipFile(final File currentBackup) {
     if (moveOldBackupsToZipFile) {
-      Utils.moveOldBackupsToZipFile(backupRoot, currentBackup);
+      final ZipperThread zipperThread = new ZipperThread(backupRoot, currentBackup);
+      zipperThread.start();
     }
   }
 
@@ -348,6 +350,33 @@ public class HudsonBackup {
     }
 
     return result;
+  }
+
+}
+
+/**
+ * Zipping the old backups is done in a thread so the rest of Hudson/Jenkins is not blocked.
+ */
+class ZipperThread extends Thread {
+  private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
+
+  private final File backupRoot;
+  private final File currentBackup;
+
+  public ZipperThread(final File backupRoot, final File currentBackup) {
+    this.backupRoot = backupRoot;
+    this.currentBackup = currentBackup;
+  }
+
+  @Override
+  public void run() {
+    LOGGER.info("Starting zipper thread...");
+    try {
+      Utils.moveOldBackupsToZipFile(backupRoot, currentBackup);
+    } catch (final IOException ioe) {
+      LOGGER.log(Level.SEVERE, "Cannot zip old backups.", ioe);
+    }
+    LOGGER.info("DONE zipping.");
   }
 
 }
