@@ -221,9 +221,9 @@ public class Utils {
     }
 
     IOFileFilter zipFileFilter = FileFilterUtils.prefixFileFilter(BackupSet.BACKUPSET_ZIPFILE_PREFIX);
-    zipFileFilter = FileFilterUtils.andFileFilter(directoryFilter,
+    zipFileFilter = FileFilterUtils.andFileFilter(zipFileFilter,
         FileFilterUtils.suffixFileFilter(BackupSet.BACKUPSET_ZIPFILE_SUFFIX));
-    zipFileFilter = FileFilterUtils.andFileFilter(directoryFilter, FileFileFilter.FILE);
+    zipFileFilter = FileFilterUtils.andFileFilter(zipFileFilter, FileFileFilter.FILE);
     final String[] backupSets = directory.list(zipFileFilter);
     for (final String name : backupSets) {
       final BackupSet set = new BackupSet(new File(directory, name));

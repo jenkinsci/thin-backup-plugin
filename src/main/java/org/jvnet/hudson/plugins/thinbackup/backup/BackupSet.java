@@ -384,8 +384,14 @@ public class BackupSet implements Comparable<BackupSet> {
   }
 
   private String getFormattedLatestDiffBackupDate() {
-    return Utils.DIRECTORY_NAME_DATE_FORMAT.format(getDateFromDirectoryName(diffBackupsNames.get(diffBackupsNames
-        .size() - 1)));
+    String result = "";
+
+    if ((diffBackupsNames != null) && (diffBackupsNames.size() > 0)) {
+      result = Utils.DIRECTORY_NAME_DATE_FORMAT.format(getDateFromDirectoryName(diffBackupsNames.get(diffBackupsNames
+          .size() - 1)));
+    }
+
+    return result;
   }
 
   private Date getDateFromDirectoryName(final String directoryName) {
