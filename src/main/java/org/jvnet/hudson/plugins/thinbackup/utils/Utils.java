@@ -44,10 +44,10 @@ public class Utils {
   private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
 
   private static final int COMPUTER_TIMEOUT_WAIT_IN_MS = 500;
-  private static SimpleDateFormat DISPLAY_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");
   private static final String DIRECTORY_NAME_DATE_EXTRACTION_REGEX = String.format("(%s|%s)-", BackupType.FULL,
       BackupType.DIFF);
 
+  public static SimpleDateFormat DISPLAY_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");
   public static SimpleDateFormat DIRECTORY_NAME_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HH-mm");
   public static final String THINBACKUP_TMP_DIR = System.getProperty("java.io.tmpdir") + File.separator
       + "thinBackupTmpDir";
@@ -286,6 +286,7 @@ public class Utils {
    * 
    * @param backupRoot
    * @param currentBackup
+   *          specified which backup should be omitted from being moved. If null, all backups are moved to ZIP files.
    * @throws IOException
    */
   public static void moveOldBackupsToZipFile(final File backupRoot, final File currentBackup) throws IOException {

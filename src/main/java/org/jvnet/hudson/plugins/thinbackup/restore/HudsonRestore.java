@@ -19,52 +19,119 @@ package org.jvnet.hudson.plugins.thinbackup.restore;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.text.ParseException;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
+import org.apache.commons.io.filefilter.FileFileFilter;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.lang.StringUtils;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
+import org.jvnet.hudson.plugins.thinbackup.backup.BackupSet;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 
 public class HudsonRestore {
   private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
+
   private final String backupPath;
-  private final String restoreBackupFrom;
   private final File hudsonHome;
+  private Date restoreFromDate;
+
+  public HudsonRestore(final File hudsonConfigurationPath, final String backupPath, final Date restoreFromDate) {
+    this.hudsonHome = hudsonConfigurationPath;
+    this.backupPath = backupPath;
+    this.restoreFromDate = restoreFromDate;
+  }
 
   public HudsonRestore(final File hudsonConfigurationPath, final String backupPath, final String restoreBackupFrom) {
     this.hudsonHome = hudsonConfigurationPath;
     this.backupPath = backupPath;
-    this.restoreBackupFrom = restoreBackupFrom;
+    try {
+      restoreFromDate = Utils.DISPLAY_DATE_FORMAT.parse(restoreBackupFrom);
+    } catch (final ParseException e) {
+      restoreFromDate = null;
+    }
   }
 
-  public void restore() throws IOException {
-    try {
-      final String directoryDateFormat = Utils.convertToDirectoryNameDateFormat(restoreBackupFrom);
-      IOFileFilter suffixFilter = FileFilterUtils.suffixFileFilter(directoryDateFormat);
-      suffixFilter = FileFilterUtils.andFileFilter(suffixFilter, DirectoryFileFilter.DIRECTORY);
-
-      if (!StringUtils.isEmpty(backupPath)) {
-        final File[] candidates = new File(backupPath).listFiles((FileFilter) suffixFilter);
-        if (candidates.length == 1) {
-          final File toRestore = candidates[0];
-          if (toRestore.getName().startsWith(BackupType.DIFF.toString())) {
-            restore(Utils.getReferencedFullBackup(toRestore));
-          }
-          restore(toRestore);
-        }
-      }
-    } catch (final ParseException e) {
-      LOGGER
-          .log(Level.SEVERE, MessageFormat.format("Cannot convert display date format ({0}) to directory date format.",
-              restoreBackupFrom));
+  public void restore() {
+    if (StringUtils.isEmpty(backupPath)) {
+      LOGGER.severe("Backup path not specified for restoration. Aborting.");
+      return;
     }
+    if (restoreFromDate == null) {
+      LOGGER.severe("Backup date to restore from was not specified. Aborting.");
+      return;
+    }
+
+    try {
+      boolean success = restoreFromDirectories(backupPath);
+      if (!success) {
+        success = restoreFromZipFile();
+      }
+      if (!success) {
+        LOGGER.severe("Could not restore backup.");
+      }
+    } catch (final IOException ioe) {
+      LOGGER.log(Level.SEVERE, "Could not restore backup.", ioe);
+    }
+  }
+
+  private boolean restoreFromDirectories(final String parentDirectory) throws IOException {
+    boolean success = false;
+
+    IOFileFilter suffixFilter = FileFilterUtils.suffixFileFilter(Utils.DIRECTORY_NAME_DATE_FORMAT
+        .format(restoreFromDate));
+    suffixFilter = FileFilterUtils.andFileFilter(suffixFilter, DirectoryFileFilter.DIRECTORY);
+
+    final File[] candidates = new File(parentDirectory).listFiles((FileFilter) suffixFilter);
+    if (candidates.length > 1) {
+      LOGGER
+          .warning(String
+              .format(
+                  "More than one backup with date '%s' found. Using the first backup in the list. This may have unintended consequences.",
+                  Utils.DISPLAY_DATE_FORMAT.format(restoreFromDate)));
+    }
+    if (candidates.length >= 1) {
+      final File toRestore = candidates[0];
+      if (toRestore.getName().startsWith(BackupType.DIFF.toString())) {
+        restore(Utils.getReferencedFullBackup(toRestore));
+      }
+      restore(toRestore);
+      success = true;
+    } else {
+      LOGGER.info(String.format(
+          "No backups directories with date '%s' found. Will try to find a backup in ZIP files next...",
+          Utils.DISPLAY_DATE_FORMAT.format(restoreFromDate)));
+    }
+
+    return success;
+  }
+
+  private boolean restoreFromZipFile() throws IOException {
+    boolean success = false;
+
+    IOFileFilter zippedBackupSetsFilter = FileFilterUtils.prefixFileFilter(BackupSet.BACKUPSET_ZIPFILE_PREFIX);
+    zippedBackupSetsFilter = FileFilterUtils.andFileFilter(zippedBackupSetsFilter,
+        FileFilterUtils.suffixFileFilter(BackupSet.BACKUPSET_ZIPFILE_SUFFIX));
+    zippedBackupSetsFilter = FileFilterUtils.andFileFilter(zippedBackupSetsFilter, FileFileFilter.FILE);
+
+    final File[] candidates = new File(backupPath).listFiles((FileFilter) zippedBackupSetsFilter);
+    for (final File candidate : candidates) {
+      final BackupSet backupSet = new BackupSet(candidate);
+      if (backupSet.isValid() && backupSet.containsBackupForDate(restoreFromDate)) {
+        final BackupSet unzippedBackup = backupSet.unzip();
+        if (unzippedBackup.isValid()) {
+          success = restoreFromDirectories(backupSet.getUnzipDir().getAbsolutePath());
+        }
+        backupSet.deleteUnzipDir();
+      }
+    }
+
+    return success;
   }
 
   private void restore(final File toRestore) throws IOException {

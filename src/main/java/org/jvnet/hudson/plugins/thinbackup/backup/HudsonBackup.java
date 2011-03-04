@@ -85,6 +85,38 @@ public class HudsonBackup {
     backupDirectory = Utils.getFormattedDirectory(backupRoot, backupType, date);
   }
 
+  /**
+   * package visible constructor only for unit testing purposes!
+   * 
+   * @param date
+   *          date for which the backup directory should use
+   */
+  HudsonBackup(final File backupRoot, final File hudsonHome, final BackupType backupType, final int nrMaxStoredFull,
+      final boolean cleanupDiff, final boolean moveOldBackupsToZipFile, final Date date) {
+    hudson = Hudson.getInstance();
+
+    hudsonDirectory = hudsonHome;
+    this.cleanupDiff = cleanupDiff;
+    this.moveOldBackupsToZipFile = moveOldBackupsToZipFile;
+    this.nrMaxStoredFull = nrMaxStoredFull;
+
+    this.backupRoot = backupRoot;
+    if (!backupRoot.exists()) {
+      backupRoot.mkdir();
+    }
+
+    latestFullBackupDate = getLatestFullBackupDate();
+    // if no full backup has been done yet, do a FULL backup
+    if (latestFullBackupDate == null) {
+      LOGGER.info("No previous full backup found, thus creating one.");
+      this.backupType = BackupType.FULL;
+    } else {
+      this.backupType = backupType;
+    }
+
+    backupDirectory = Utils.getFormattedDirectory(backupRoot, backupType, date);
+  }
+
   public void backup() throws IOException {
     if (backupType == BackupType.NONE) {
       final String msg = "Backup type must be FULL or DIFF. Backup cannot be performed.";

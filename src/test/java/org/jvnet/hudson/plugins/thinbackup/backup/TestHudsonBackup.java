@@ -18,18 +18,23 @@ package org.jvnet.hudson.plugins.thinbackup.backup;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.util.Calendar;
 
 import junit.framework.Assert;
 
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.junit.Test;
+import org.jvnet.hudson.plugins.thinbackup.HudsonDirectoryStructureSetup;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 
 public class TestHudsonBackup extends HudsonDirectoryStructureSetup {
 
   @Test
   public void testBackup() throws Exception {
-    new HudsonBackup(backupDir, root, BackupType.FULL, -1, false, false).backup();
+    final Calendar cal = Calendar.getInstance();
+    cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE - 10));
+
+    new HudsonBackup(backupDir, root, BackupType.FULL, -1, false, false, cal.getTime()).backup();
 
     String[] list = backupDir.list();
     Assert.assertEquals(1, list.length);
@@ -48,7 +53,10 @@ public class TestHudsonBackup extends HudsonDirectoryStructureSetup {
 
   @Test
   public void testHudsonDiffBackup() throws Exception {
-    new HudsonBackup(backupDir, root, BackupType.FULL, -1, false, false).backup();
+    final Calendar cal = Calendar.getInstance();
+    cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE - 10));
+
+    new HudsonBackup(backupDir, root, BackupType.FULL, -1, false, false, cal.getTime()).backup();
 
     // fake modification
     backupDir.listFiles((FileFilter) FileFilterUtils.prefixFileFilter(BackupType.FULL.toString()))[0]

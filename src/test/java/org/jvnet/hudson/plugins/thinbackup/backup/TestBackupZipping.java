@@ -10,6 +10,7 @@ import java.util.zip.ZipFile;
 import junit.framework.Assert;
 
 import org.junit.Test;
+import org.jvnet.hudson.plugins.thinbackup.HudsonDirectoryStructureSetup;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 
 public class TestBackupZipping extends HudsonDirectoryStructureSetup {
@@ -19,7 +20,7 @@ public class TestBackupZipping extends HudsonDirectoryStructureSetup {
     // create a backed up structure with DIFF back ups
     new HudsonBackup(backupDir, root, BackupType.FULL, -1, false, false).backup();
     final TestHudsonBackup tester = new TestHudsonBackup();
-    tester.setUp();
+    tester.setup();
     tester.testHudsonDiffBackup();
 
     File[] files = backupDir.listFiles();

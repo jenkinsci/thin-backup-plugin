@@ -1,8 +1,9 @@
-package org.jvnet.hudson.plugins.thinbackup.backup;
+package org.jvnet.hudson.plugins.thinbackup;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
@@ -16,12 +17,14 @@ public class HudsonDirectoryStructureSetup {
   protected File root;
   protected File backupDir;
 
+  protected List<String> originalFiles;
+
   public HudsonDirectoryStructureSetup() {
     super();
   }
 
   @Before
-  public void setUp() throws Exception {
+  public void setup() throws Exception {
     final File tempDir = new File(System.getProperty("java.io.tmpdir"));
     root = new File(tempDir, "RootDirForHudsonBackupTest");
     root.mkdir();
@@ -56,6 +59,9 @@ public class HudsonDirectoryStructureSetup {
     new File(build, "changelog.xml").createNewFile();
     new File(build, "log").createNewFile();
     new File(build, "revision.txt").createNewFile();
+
+    final FileCollector fc = new FileCollector();
+    originalFiles = fc.getFilesAsString(root);
   }
 
   @After

@@ -29,7 +29,7 @@ public class BackupDirStructureSetup {
   protected File diff41;
 
   @Before
-  public void setUp() throws Exception {
+  public void setup() throws Exception {
     final File tempDir = new File(System.getProperty("java.io.tmpdir"));
     backupDir = new File(tempDir, "BackupDirForHudsonBackupTest");
     backupDir.mkdir();

@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Level;
@@ -35,6 +36,11 @@ import org.apache.commons.io.FileUtils;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 
+/**
+ * A BackupSet contains references to a full and zero or more diff backups. It can be created from either a reference to
+ * a full or diff backup directory or from a reference to a ZIP file. If it is created from a ZIP file, the BackupSet
+ * must be unzipped before the data contained can be actually accessed (it is never unzipped automatically).
+ */
 public class BackupSet implements Comparable<BackupSet> {
   private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
 
@@ -51,6 +57,10 @@ public class BackupSet implements Comparable<BackupSet> {
   private List<File> diffBackups;
   private List<String> diffBackupsNames;
 
+  /**
+   * @param initial
+   *          either a FULL or DIFF backup directory, or a BackupSet ZIP file.
+   */
   public BackupSet(final File initial) {
     fullBackup = null;
     diffBackups = null;
@@ -325,8 +335,8 @@ public class BackupSet implements Comparable<BackupSet> {
 
   /**
    * @param directory
-   * @return a reference to the created ZIP file, the current ZIP file if the BackupSet was created from one, or null if
-   *         this BackupSet is invalid.
+   * @return a reference to the created ZIP file, the current ZIP file if the BackupSet was created from one (because no
+   *         zipping is performed in this case), or null if this BackupSet is invalid.
    * @throws IOException
    */
   public File zipTo(final File directory) throws IOException {
@@ -365,23 +375,24 @@ public class BackupSet implements Comparable<BackupSet> {
   }
 
   private String getBackupSetZipFileName() {
-    return String.format("%s_%s_%s%s", BACKUPSET_ZIPFILE_PREFIX, getFullBackupDate(), getLastDiffBackupDate(),
-        BACKUPSET_ZIPFILE_SUFFIX);
+    return String.format("%s_%s_%s%s", BACKUPSET_ZIPFILE_PREFIX, getFormattedFullBackupDate(),
+        getFormattedLatestDiffBackupDate(), BACKUPSET_ZIPFILE_SUFFIX);
   }
 
-  private String getFullBackupDate() {
-    return getFormattedDateFromDirectoryName(fullBackupName);
+  private String getFormattedFullBackupDate() {
+    return Utils.DIRECTORY_NAME_DATE_FORMAT.format(getDateFromDirectoryName(fullBackupName));
   }
 
-  private String getLastDiffBackupDate() {
-    return getFormattedDateFromDirectoryName(diffBackupsNames.get(diffBackupsNames.size() - 1));
+  private String getFormattedLatestDiffBackupDate() {
+    return Utils.DIRECTORY_NAME_DATE_FORMAT.format(getDateFromDirectoryName(diffBackupsNames.get(diffBackupsNames
+        .size() - 1)));
   }
 
-  private String getFormattedDateFromDirectoryName(final String directoryName) {
-    String result = "";
+  private Date getDateFromDirectoryName(final String directoryName) {
+    Date result = null;
 
     try {
-      result = Utils.DIRECTORY_NAME_DATE_FORMAT.format(Utils.getDateFromBackupDirectory(directoryName));
+      result = Utils.getDateFromBackupDirectory(directoryName);
     } catch (final ParseException e) {
       LOGGER.warning(String.format("Could not retrieve date component of directory '%s'.", directoryName));
     }
@@ -410,8 +421,8 @@ public class BackupSet implements Comparable<BackupSet> {
 
   /**
    * @param directory
-   * @return true if this BackupSet contains a backup directory with the same name. Note that only the top level backup
-   *         directories are checked, not any other contents of the BackupSet.
+   * @return true if this BackupSet contains a backup directory with the same name or if directory is null. Note that
+   *         only the top level backup directories are checked, not any other contents of the BackupSet.
    */
   public boolean containsDirectory(final File directory) {
     if ((directory == null) || (!directory.isDirectory()) || !isValid()) {
@@ -430,7 +441,29 @@ public class BackupSet implements Comparable<BackupSet> {
       }
     }
 
-    return inDiffs || ((fullBackupName != null) && directoryName.equals(fullBackupName));
+    return (inDiffs || directoryName.equals(fullBackupName));
+  }
+
+  /**
+   * @param date
+   * @return true if a backup for the given date exists in this BackupSet.
+   */
+  public boolean containsBackupForDate(final Date date) {
+    if ((date == null) || !isValid()) {
+      return false;
+    }
+
+    boolean inDiffs = false;
+    if (diffBackupsNames != null) {
+      for (final String diffBackupName : diffBackupsNames) {
+        inDiffs = date.equals(getDateFromDirectoryName(diffBackupName));
+        if (inDiffs) {
+          break;
+        }
+      }
+    }
+
+    return (inDiffs || date.equals(getDateFromDirectoryName(fullBackupName)));
   }
 
   /**
