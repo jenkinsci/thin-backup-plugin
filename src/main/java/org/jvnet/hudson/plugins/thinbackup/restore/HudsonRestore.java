@@ -89,13 +89,9 @@ public class HudsonRestore {
 
     final File[] candidates = new File(parentDirectory).listFiles((FileFilter) suffixFilter);
     if (candidates.length > 1) {
-      LOGGER
-          .warning(String
-              .format(
-                  "More than one backup with date '%s' found. Using the first backup in the list. This may have unintended consequences.",
-                  Utils.DISPLAY_DATE_FORMAT.format(restoreFromDate)));
-    }
-    if (candidates.length >= 1) {
+      LOGGER.severe(String.format("More than one backup with date '%s' found. This is not allowed. Aborting restore.",
+          Utils.DISPLAY_DATE_FORMAT.format(restoreFromDate)));
+    } else if (candidates.length == 1) {
       final File toRestore = candidates[0];
       if (toRestore.getName().startsWith(BackupType.DIFF.toString())) {
         restore(Utils.getReferencedFullBackup(toRestore));
