@@ -61,6 +61,8 @@ public class TestThinBackupPeriodicWork {
 
   /**
    * Test is ignored as it testing for a known issue in J/H <= 1.395
+   * 
+   * @throws ANTLRException
    */
   @Test
   @Ignore
