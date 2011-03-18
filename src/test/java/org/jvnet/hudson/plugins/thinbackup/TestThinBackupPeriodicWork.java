@@ -23,6 +23,7 @@ import java.util.Calendar;
 import junit.framework.Assert;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import antlr.ANTLRException;
@@ -44,7 +45,11 @@ public class TestThinBackupPeriodicWork {
     thinBackupPeriodicWork.getNextScheduledBackup(currentTime, fullCron, diffCron);
   }
 
+  /**
+   * Test is ignored as it testing for a known issue in J/H <= 1.395
+   */
   @Test
+  @Ignore
   public void testGetWeekendScheduledBackup() {
     final Calendar cal = Calendar.getInstance();
     cal.set(2011, 0, 16, 0, 0, 0);
@@ -54,7 +59,11 @@ public class TestThinBackupPeriodicWork {
     thinBackupPeriodicWork.getNextScheduledBackup(testTime, fullCron, diffCron);
   }
 
+  /**
+   * Test is ignored as it testing for a known issue in J/H <= 1.395
+   */
   @Test
+  @Ignore
   public void testHudsonCeil() throws ANTLRException {
     final Calendar cal = Calendar.getInstance();
     cal.set(2011, 0, 16, 0, 0, 0); // Sunday, Jan 16th 2011, 00:00
