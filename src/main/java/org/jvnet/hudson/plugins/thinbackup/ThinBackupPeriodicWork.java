@@ -69,8 +69,10 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
   }
 
   protected void backupNow(final BackupType type) {
+    final Hudson hudson = Hudson.getInstance();
+    String backupPath = null;
     try {
-      final String backupPath = plugin.getBackupPath();
+      backupPath = plugin.getBackupPath();
       final boolean cleanupDiff = plugin.isCleanupDiff();
       final String noMaxStoredFull = plugin.getNrMaxStoredFull();
       int maxStoredFull;
@@ -85,18 +87,22 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
       }
 
       if (!StringUtils.isEmpty(backupPath)) {
-        final Hudson hudson = Hudson.getInstance();
         hudson.doQuietDown();
         LOGGER.fine("Wait until executors are idle to perform backup.");
         Utils.waitUntilIdle();
         new HudsonBackup(new File(backupPath), Hudson.getInstance().getRootDir(), type, maxStoredFull, cleanupDiff,
             plugin.isMoveOldBackupsToZipFile()).backup();
-        hudson.doCancelQuietDown();
       } else {
         LOGGER.warning("ThinBackup is not configured yet: No backup path set.");
       }
     } catch (final IOException e) {
-      LOGGER.log(Level.SEVERE, e.getMessage(), e);
+      String msg = MessageFormat
+          .format(
+              "Cannot perform a backup. Please be sure jenkins/hudson has write privileges in the configured backup path '{0}'.",
+              backupPath);
+      LOGGER.log(Level.SEVERE, msg, e);
+    } finally {
+      hudson.doCancelQuietDown();
     }
   }
 
