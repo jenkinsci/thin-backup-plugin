@@ -59,6 +59,12 @@
                         checked="${it.configuration.moveOldBackupsToZipFile}"
                         name="moveOldBackupsToZipFile"
                         />
+                    
+                    <f:optionalBlock title="Backup build results"
+                        help="/plugin/thinBackup/help/help-backupBuildResults.html"
+                        checked="${it.configuration.backupBuildResults}"
+                        name="backupBuildResults"
+                        />
                 </f:section>
                 
                 <!-- Save! -->

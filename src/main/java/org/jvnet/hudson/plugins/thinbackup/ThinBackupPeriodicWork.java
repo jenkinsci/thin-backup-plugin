@@ -91,12 +91,12 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
         LOGGER.fine("Wait until executors are idle to perform backup.");
         Utils.waitUntilIdle();
         new HudsonBackup(new File(backupPath), Hudson.getInstance().getRootDir(), type, maxStoredFull, cleanupDiff,
-            plugin.isMoveOldBackupsToZipFile()).backup();
+            plugin.isMoveOldBackupsToZipFile(), plugin.isBackupBuildResults()).backup();
       } else {
         LOGGER.warning("ThinBackup is not configured yet: No backup path set.");
       }
     } catch (final IOException e) {
-      String msg = MessageFormat
+      final String msg = MessageFormat
           .format(
               "Cannot perform a backup. Please be sure jenkins/hudson has write privileges in the configured backup path '{0}'.",
               backupPath);

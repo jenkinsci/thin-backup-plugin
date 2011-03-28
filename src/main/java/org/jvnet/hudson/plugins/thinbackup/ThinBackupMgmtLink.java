@@ -108,7 +108,8 @@ public class ThinBackupMgmtLink extends ManagementLink {
       @QueryParameter("diffBackupSchedule") final String diffBackupSchedule,
       @QueryParameter("nrMaxStoredFull") final String nrMaxStoredFull,
       @QueryParameter("moveOldBackupsToZipFile") final boolean moveOldBackupsToZipFile,
-      @QueryParameter("cleanupDiff") final boolean cleanupDiff) throws IOException {
+      @QueryParameter("cleanupDiff") final boolean cleanupDiff,
+      @QueryParameter("backupBuildResults") final boolean backupBuildResults) throws IOException {
     Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
 
     final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.getInstance();
@@ -118,6 +119,7 @@ public class ThinBackupMgmtLink extends ManagementLink {
     plugin.setNrMaxStoredFull(nrMaxStoredFull);
     plugin.setCleanupDiff(cleanupDiff);
     plugin.setMoveOldBackupsToZipFile(moveOldBackupsToZipFile);
+    plugin.setBackupBuildResults(backupBuildResults);
     plugin.save();
     LOGGER.fine("Saving backup settings done.");
     rsp.sendRedirect(res.getContextPath() + "/thinBackup");

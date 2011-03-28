@@ -58,15 +58,18 @@ public class HudsonBackup {
   private final boolean cleanupDiff;
   private final int nrMaxStoredFull; // stores nr of backup sets that will be kept
   private final boolean moveOldBackupsToZipFile;
+  private final boolean backupBuildResults;
 
   public HudsonBackup(final File backupRoot, final File hudsonHome, final BackupType backupType,
-      final int nrMaxStoredFull, final boolean cleanupDiff, final boolean moveOldBackupsToZipFile) {
+      final int nrMaxStoredFull, final boolean cleanupDiff, final boolean moveOldBackupsToZipFile,
+      final boolean backupBuildResults) {
     hudson = Hudson.getInstance();
 
     hudsonDirectory = hudsonHome;
     this.cleanupDiff = cleanupDiff;
     this.moveOldBackupsToZipFile = moveOldBackupsToZipFile;
     this.nrMaxStoredFull = nrMaxStoredFull;
+    this.backupBuildResults = backupBuildResults;
 
     this.backupRoot = backupRoot;
     if (!backupRoot.exists()) {
@@ -93,13 +96,15 @@ public class HudsonBackup {
    *          date for which the backup directory should use
    */
   HudsonBackup(final File backupRoot, final File hudsonHome, final BackupType backupType, final int nrMaxStoredFull,
-      final boolean cleanupDiff, final boolean moveOldBackupsToZipFile, final Date date) {
+      final boolean cleanupDiff, final boolean moveOldBackupsToZipFile, final boolean backupBuildResults,
+      final Date date) {
     hudson = Hudson.getInstance();
 
     hudsonDirectory = hudsonHome;
     this.cleanupDiff = cleanupDiff;
     this.moveOldBackupsToZipFile = moveOldBackupsToZipFile;
     this.nrMaxStoredFull = nrMaxStoredFull;
+    this.backupBuildResults = backupBuildResults;
 
     this.backupRoot = backupRoot;
     if (!backupRoot.exists()) {
@@ -199,18 +204,20 @@ public class HudsonBackup {
 
   private void backupBuildsFor(final String jobName, final File jobsDirectory, final File jobsBackupDirectory)
       throws IOException {
-    final File buildsDir = new File(new File(jobsDirectory, jobName), BUILDS_DIR_NAME);
-    if (buildsDir.exists() && buildsDir.isDirectory()) {
-      final Collection<String> builds = Arrays.asList(buildsDir.list());
-      if (builds != null) {
-        for (final String build : builds) {
-          final File srcDir = new File(buildsDir, build);
-          if (!isSymLinkFile(srcDir)) {
-            final File destDir = new File(new File(new File(jobsBackupDirectory, jobName), BUILDS_DIR_NAME), build);
-            IOFileFilter buildFilter = FileFilterUtils.andFileFilter(FileFileFilter.FILE, getDiffFilter());
-            buildFilter = FileFilterUtils.andFileFilter(buildFilter,
-                FileFilterUtils.notFileFilter(FileFilterUtils.suffixFileFilter(".zip")));
-            FileUtils.copyDirectory(srcDir, destDir, buildFilter);
+    if (backupBuildResults) {
+      final File buildsDir = new File(new File(jobsDirectory, jobName), BUILDS_DIR_NAME);
+      if (buildsDir.exists() && buildsDir.isDirectory()) {
+        final Collection<String> builds = Arrays.asList(buildsDir.list());
+        if (builds != null) {
+          for (final String build : builds) {
+            final File srcDir = new File(buildsDir, build);
+            if (!isSymLinkFile(srcDir)) {
+              final File destDir = new File(new File(new File(jobsBackupDirectory, jobName), BUILDS_DIR_NAME), build);
+              IOFileFilter buildFilter = FileFilterUtils.andFileFilter(FileFileFilter.FILE, getDiffFilter());
+              buildFilter = FileFilterUtils.andFileFilter(buildFilter,
+                  FileFilterUtils.notFileFilter(FileFilterUtils.suffixFileFilter(".zip")));
+              FileUtils.copyDirectory(srcDir, destDir, buildFilter);
+            }
           }
         }
       }
