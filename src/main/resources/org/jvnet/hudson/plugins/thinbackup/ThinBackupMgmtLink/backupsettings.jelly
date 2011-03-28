@@ -44,7 +44,7 @@
                         <f:textbox value="${it.configuration.diffBackupSchedule}" name="diffBackupSchedule"/>
                     </f:entry>
                     
-                    <f:entry title="Max number of stored full backups"
+                    <f:entry title="Max number of backup sets"
                         help="/plugin/thinBackup/help/help-nrMaxStoredFull.html">
                         <f:textbox value="${it.configuration.nrMaxStoredFull}" name="nrMaxStoredFull"/>
                     </f:entry>

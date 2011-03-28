@@ -99,7 +99,7 @@ public class TestUtils extends BackupDirStructureSetup {
   @Test
   public void testGetBackups() {
     final List<String> backups = Utils.getBackupsAsDates(backupDir);
-    Assert.assertEquals(10, backups.size());
+    Assert.assertEquals(9, backups.size());
   }
 
   @Test

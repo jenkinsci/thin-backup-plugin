@@ -56,7 +56,7 @@ public class HudsonBackup {
   private final BackupType backupType;
   private final Date latestFullBackupDate;
   private final boolean cleanupDiff;
-  private final int nrMaxStoredFull;
+  private final int nrMaxStoredFull; // stores nr of backup sets that will be kept
   private final boolean moveOldBackupsToZipFile;
 
   public HudsonBackup(final File backupRoot, final File hudsonHome, final BackupType backupType,
@@ -149,9 +149,9 @@ public class HudsonBackup {
     new DirectoryCleaner().removeEmptyDirectories(backupDirectory);
 
     if (backupType == BackupType.FULL) {
-      removeSuperfluousBackups();
-      moveOldBackupsToZipFile(backupDirectory);
       cleanupDiffs();
+      moveOldBackupsToZipFile(backupDirectory);
+      removeSuperfluousBackupSets();
     }
   }
 
@@ -282,11 +282,11 @@ public class HudsonBackup {
     return latestFullPlugins;
   }
 
-  private void removeSuperfluousBackups() throws IOException {
+  private void removeSuperfluousBackupSets() throws IOException {
     if (nrMaxStoredFull > 0) {
-      LOGGER.fine("Removing superfluous backups...");
+      LOGGER.fine("Removing superfluous backup sets...");
       final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.getInstance();
-      final List<BackupSet> validBackupSets = Utils.getValidBackupSetsFromDirectories(new File(plugin.getBackupPath()));
+      final List<BackupSet> validBackupSets = Utils.getValidBackupSets(new File(plugin.getBackupPath()));
       int nrOfRemovedBackups = 0;
       while (validBackupSets.size() > nrMaxStoredFull) {
         final BackupSet set = validBackupSets.get(0);
@@ -294,7 +294,7 @@ public class HudsonBackup {
         validBackupSets.remove(set);
         ++nrOfRemovedBackups;
       }
-      LOGGER.fine(String.format("DONE. Removed %d superfluous backup(s).", nrOfRemovedBackups));
+      LOGGER.fine(String.format("DONE. Removed %d superfluous backup sets.", nrOfRemovedBackups));
     }
   }
 

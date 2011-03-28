@@ -398,7 +398,7 @@ public class BackupSet implements Comparable<BackupSet> {
     Date result = null;
 
     try {
-      result = Utils.getDateFromBackupDirectory(directoryName);
+      result = Utils.getDateFromBackupDirectoryName(directoryName);
     } catch (final ParseException e) {
       LOGGER.warning(String.format("Could not retrieve date component of directory '%s'.", directoryName));
     }

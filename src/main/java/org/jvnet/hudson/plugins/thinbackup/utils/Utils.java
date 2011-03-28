@@ -83,7 +83,7 @@ public class Utils {
    *           if the name could not be parsed
    */
   public static Date getDateFromBackupDirectory(final File directory) throws ParseException {
-    return getDateFromBackupDirectory(directory.getName());
+    return getDateFromBackupDirectoryName(directory.getName());
   }
 
   /**
@@ -92,7 +92,7 @@ public class Utils {
    * @throws ParseException
    *           if the name could not be parsed
    */
-  public static Date getDateFromBackupDirectory(final String directoryName) throws ParseException {
+  public static Date getDateFromBackupDirectoryName(final String directoryName) throws ParseException {
     Date result = null;
 
     if (directoryName.startsWith(BackupType.FULL.toString()) || directoryName.startsWith(BackupType.DIFF.toString())) {
@@ -130,12 +130,25 @@ public class Utils {
   /**
    * @param parentDir
    * @param backupType
-   * @return an (unordered) list of backup directories of the given backup type.
+   * @return an unordered list of backup directories of the given backup type.
    */
   public static List<File> getBackupTypeDirectories(final File parentDir, final BackupType backupType) {
     IOFileFilter prefixFilter = FileFilterUtils.prefixFileFilter(backupType.toString());
     prefixFilter = FileFilterUtils.andFileFilter(prefixFilter, DirectoryFileFilter.DIRECTORY);
     return Arrays.asList(parentDir.listFiles((FilenameFilter) prefixFilter));
+  }
+
+  /**
+   * @param parentDir
+   * @return an unordered list of zipped backupsets in the given directory.
+   */
+  public static List<File> getBackupSetZipFiles(final File parentDir) {
+    IOFileFilter zipFileFilter = FileFilterUtils.prefixFileFilter(BackupSet.BACKUPSET_ZIPFILE_PREFIX);
+    zipFileFilter = FileFilterUtils.andFileFilter(zipFileFilter,
+        FileFilterUtils.suffixFileFilter(BackupSet.BACKUPSET_ZIPFILE_SUFFIX));
+    zipFileFilter = FileFilterUtils.andFileFilter(zipFileFilter, FileFileFilter.FILE);
+
+    return Arrays.asList(parentDir.listFiles((FilenameFilter) zipFileFilter));
   }
 
   /**
@@ -168,7 +181,6 @@ public class Utils {
         }
       }
     } catch (final ParseException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
 
@@ -203,54 +215,28 @@ public class Utils {
    *         from both directories and ZIP files, ordered descending by the date encoded in the backups' name.
    */
   public static List<String> getBackupsAsDates(final File directory) {
-    IOFileFilter directoryFilter = FileFilterUtils.prefixFileFilter(BackupType.FULL.toString());
-    directoryFilter = FileFilterUtils.orFileFilter(directoryFilter,
-        FileFilterUtils.prefixFileFilter(BackupType.DIFF.toString()));
-    directoryFilter = FileFilterUtils.andFileFilter(directoryFilter, DirectoryFileFilter.DIRECTORY);
-    final String[] backups = directory.list(directoryFilter);
+    final List<String> backupDates = new ArrayList<String>();
 
-    final List<String> backupDates = new ArrayList<String>(backups.length);
-    for (final String name : backups) {
+    final List<BackupSet> backupSets = getValidBackupSets(directory);
+    for (final BackupSet backupSet : backupSets) {
+      final String fullName = backupSet.getFullBackupName();
       try {
-        final Date tmp = getDateFromBackupDirectory(name);
+        final Date tmp = getDateFromBackupDirectoryName(fullName);
         backupDates.add(DISPLAY_DATE_FORMAT.format(tmp));
       } catch (final ParseException e) {
-        LOGGER.warning("Cannot parse directory name '" + name
-            + "', therefore it will not show up in the list of available backups.");
+        LOGGER.warning(String.format(
+            "Cannot parse directory name '%s' , therefore it will not show up in the list of available backups.",
+            fullName));
       }
-    }
 
-    IOFileFilter zipFileFilter = FileFilterUtils.prefixFileFilter(BackupSet.BACKUPSET_ZIPFILE_PREFIX);
-    zipFileFilter = FileFilterUtils.andFileFilter(zipFileFilter,
-        FileFilterUtils.suffixFileFilter(BackupSet.BACKUPSET_ZIPFILE_SUFFIX));
-    zipFileFilter = FileFilterUtils.andFileFilter(zipFileFilter, FileFileFilter.FILE);
-    final String[] backupSets = directory.list(zipFileFilter);
-    for (final String name : backupSets) {
-      final BackupSet set = new BackupSet(new File(directory, name));
-      if (set.isValid()) {
-        final String fullName = set.getFullBackupName();
+      for (final String diffName : backupSet.getDiffBackupsNames()) {
         try {
-          final Date tmp = getDateFromBackupDirectory(fullName);
+          final Date tmp = getDateFromBackupDirectoryName(diffName);
           backupDates.add(DISPLAY_DATE_FORMAT.format(tmp));
         } catch (final ParseException e) {
-          LOGGER
-              .warning(String
-                  .format(
-                      "Cannot parse directory name '%s' contained in ZIP file '%s', therefore it will not show up in the list of available backups.",
-                      fullName, name));
-        }
-
-        for (final String diffName : set.getDiffBackupsNames()) {
-          try {
-            final Date tmp = getDateFromBackupDirectory(diffName);
-            backupDates.add(DISPLAY_DATE_FORMAT.format(tmp));
-          } catch (final ParseException e) {
-            LOGGER
-                .warning(String
-                    .format(
-                        "Cannot parse directory name '%s' contained in ZIP file '%s', therefore it will not show up in the list of available backups.",
-                        diffName, name));
-          }
+          LOGGER.warning(String.format(
+              "Cannot parse directory name '%s' , therefore it will not show up in the list of available backups.",
+              diffName));
         }
       }
     }
@@ -277,6 +263,42 @@ public class Utils {
       }
     }
     Collections.sort(validSets);
+
+    return validSets;
+  }
+
+  /**
+   * @param directory
+   * @return a list of valid (@see BackupSet#isValid) backup sets that exists as ZIP files (not as directories) in the
+   *         given directory, ordered ascending by the backup date of the BackupSets' full backup.
+   */
+  public static List<BackupSet> getValidBackupSetsFromZips(final File directory) {
+    final Collection<File> backups = Utils.getBackupSetZipFiles(directory);
+
+    final List<BackupSet> validSets = new ArrayList<BackupSet>();
+    for (final File backup : backups) {
+      final BackupSet set = new BackupSet(backup);
+      if (set.isValid()) {
+        validSets.add(set);
+      }
+    }
+    Collections.sort(validSets);
+
+    return validSets;
+  }
+
+  /**
+   * @param directory
+   * @return a list of valid (@see BackupSet#isValid) backup sets in the given directory, ordered ascending by the
+   *         backup date of the BackupSets' full backup.
+   */
+  public static List<BackupSet> getValidBackupSets(final File directory) {
+    final List<BackupSet> validSets = new ArrayList<BackupSet>();
+
+    validSets.addAll(getValidBackupSetsFromDirectories(directory));
+    validSets.addAll(getValidBackupSetsFromZips(directory));
+    Collections.sort(validSets);
+
     return validSets;
   }
 
