@@ -45,7 +45,7 @@ public class DirectoriesZipper extends DirectoryWalker implements Closeable {
 
       // make entry relative to the root directory
       String entryPath = file.getAbsolutePath();
-      entryPath = entryPath.replace(rootPath + "\\", "");
+      entryPath = entryPath.replace(rootPath + File.separator, "");
       final ZipEntry entry = new ZipEntry(entryPath);
 
       zipStream.putNextEntry(entry);
