@@ -100,7 +100,7 @@ public class HudsonRestore {
       success = true;
     } else {
       LOGGER.info(String.format(
-          "No backups directories with date '%s' found. Will try to find a backup in ZIP files next...",
+          "No backup directories with date '%s' found. Will try to find a backup in ZIP files next...",
           Utils.DISPLAY_DATE_FORMAT.format(restoreFromDate)));
     }
 
