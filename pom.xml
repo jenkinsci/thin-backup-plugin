@@ -4,7 +4,7 @@
     <groupId>org.jvnet.hudson.plugins</groupId>
     <artifactId>plugin</artifactId>
     <version>1.395</version><!-- which version of Hudson is this plugin built against? -->
-    <relativePath>../pom.xml</relativePath>
+    <relativePath></relativePath>
   </parent>
   <groupId>org.jvnet.hudson.plugins</groupId>
   <artifactId>thinBackup</artifactId>

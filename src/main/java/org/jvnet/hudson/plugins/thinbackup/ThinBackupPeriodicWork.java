@@ -17,7 +17,6 @@
 package org.jvnet.hudson.plugins.thinbackup;
 
 import hudson.Extension;
-import hudson.model.AsyncPeriodicWork;
 import hudson.model.TaskListener;
 import hudson.model.Hudson;
 import hudson.scheduler.CronTab;
@@ -33,6 +32,7 @@ import java.util.logging.Logger;
 
 import org.apache.commons.lang.StringUtils;
 import org.jvnet.hudson.plugins.thinbackup.backup.HudsonBackup;
+import org.jvnet.hudson.plugins.thinbackup.hudson.model.AsyncPeriodicWork;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 
 import antlr.ANTLRException;
