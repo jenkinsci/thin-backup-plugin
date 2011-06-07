@@ -39,7 +39,9 @@ import antlr.ANTLRException;
 
 @Extension
 public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
+
   private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
+
   private final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.getInstance();
 
   public enum BackupType {
@@ -91,7 +93,7 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
         LOGGER.fine("Wait until executors are idle to perform backup.");
         Utils.waitUntilIdle();
         new HudsonBackup(new File(backupPath), Hudson.getInstance().getRootDir(), type, maxStoredFull, cleanupDiff,
-            plugin.isMoveOldBackupsToZipFile(), plugin.isBackupBuildResults()).backup();
+            plugin.isMoveOldBackupsToZipFile(), plugin.isBackupBuildResults(), plugin.getExcludedFilesRegex()).backup();
       } else {
         LOGGER.warning("ThinBackup is not configured yet: No backup path set.");
       }

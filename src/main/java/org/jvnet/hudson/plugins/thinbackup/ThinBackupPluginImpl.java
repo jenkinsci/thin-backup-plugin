@@ -30,7 +30,9 @@ import org.kohsuke.stapler.StaplerResponse;
 import antlr.ANTLRException;
 
 public class ThinBackupPluginImpl extends Plugin {
+
   private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
+
   private static ThinBackupPluginImpl instance = null;
 
   private String fullBackupSchedule;
@@ -40,6 +42,7 @@ public class ThinBackupPluginImpl extends Plugin {
   private boolean cleanupDiff;
   private boolean moveOldBackupsToZipFile;
   private boolean backupBuildResults = true;
+  private String excludedFilesRegex;
 
   public ThinBackupPluginImpl() {
     instance = this;
@@ -110,6 +113,14 @@ public class ThinBackupPluginImpl extends Plugin {
 
   public boolean isBackupBuildResults() {
     return backupBuildResults;
+  }
+
+  public void setExcludedFilesRegex(final String excludedFilesRegex) {
+    this.excludedFilesRegex = excludedFilesRegex;
+  }
+
+  public String getExcludedFilesRegex() {
+    return excludedFilesRegex;
   }
 
   public FormValidation doCheckBackupPath(final StaplerRequest res, final StaplerResponse rsp,

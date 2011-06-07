@@ -107,6 +107,7 @@ public class ThinBackupMgmtLink extends ManagementLink {
       @QueryParameter("fullBackupSchedule") final String fullBackupSchedule,
       @QueryParameter("diffBackupSchedule") final String diffBackupSchedule,
       @QueryParameter("nrMaxStoredFull") final String nrMaxStoredFull,
+      @QueryParameter("excludedFilesRegex") final String excludedFilesRegex,
       @QueryParameter("moveOldBackupsToZipFile") final boolean moveOldBackupsToZipFile,
       @QueryParameter("cleanupDiff") final boolean cleanupDiff,
       @QueryParameter("backupBuildResults") final boolean backupBuildResults) throws IOException {
@@ -117,6 +118,7 @@ public class ThinBackupMgmtLink extends ManagementLink {
     plugin.setFullBackupSchedule(fullBackupSchedule);
     plugin.setDiffBackupSchedule(diffBackupSchedule);
     plugin.setNrMaxStoredFull(nrMaxStoredFull);
+    plugin.setExcludedFilesRegex(excludedFilesRegex);
     plugin.setCleanupDiff(cleanupDiff);
     plugin.setMoveOldBackupsToZipFile(moveOldBackupsToZipFile);
     plugin.setBackupBuildResults(backupBuildResults);

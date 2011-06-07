@@ -31,12 +31,15 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.FileFileFilter;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
+import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
@@ -59,10 +62,11 @@ public class HudsonBackup {
   private final int nrMaxStoredFull; // stores nr of backup sets that will be kept
   private final boolean moveOldBackupsToZipFile;
   private final boolean backupBuildResults;
+  private Pattern excludedFilesRegexPattern = null;
 
   public HudsonBackup(final File backupRoot, final File hudsonHome, final BackupType backupType,
       final int nrMaxStoredFull, final boolean cleanupDiff, final boolean moveOldBackupsToZipFile,
-      final boolean backupBuildResults) {
+      final boolean backupBuildResults, final String excludedFilesRegex) {
     hudson = Hudson.getInstance();
 
     hudsonDirectory = hudsonHome;
@@ -70,6 +74,12 @@ public class HudsonBackup {
     this.moveOldBackupsToZipFile = moveOldBackupsToZipFile;
     this.nrMaxStoredFull = nrMaxStoredFull;
     this.backupBuildResults = backupBuildResults;
+    try {
+      excludedFilesRegexPattern = Pattern.compile(excludedFilesRegex);
+    } catch (final PatternSyntaxException pse) {
+      LOGGER.log(Level.INFO, "Regex pattern for excluding files is invalid.", pse);
+      excludedFilesRegexPattern = null;
+    }
 
     this.backupRoot = backupRoot;
     if (!backupRoot.exists()) {
@@ -97,7 +107,7 @@ public class HudsonBackup {
    */
   HudsonBackup(final File backupRoot, final File hudsonHome, final BackupType backupType, final int nrMaxStoredFull,
       final boolean cleanupDiff, final boolean moveOldBackupsToZipFile, final boolean backupBuildResults,
-      final Date date) {
+      final Date date, final String excludedFilesRegex) {
     hudson = Hudson.getInstance();
 
     hudsonDirectory = hudsonHome;
@@ -105,6 +115,12 @@ public class HudsonBackup {
     this.moveOldBackupsToZipFile = moveOldBackupsToZipFile;
     this.nrMaxStoredFull = nrMaxStoredFull;
     this.backupBuildResults = backupBuildResults;
+    try {
+      excludedFilesRegexPattern = Pattern.compile(excludedFilesRegex);
+    } catch (final PatternSyntaxException pse) {
+      pse.printStackTrace();
+      excludedFilesRegexPattern = null;
+    }
 
     this.backupRoot = backupRoot;
     if (!backupRoot.exists()) {
@@ -166,6 +182,7 @@ public class HudsonBackup {
     IOFileFilter suffixFileFilter = FileFilterUtils.suffixFileFilter(".xml");
     suffixFileFilter = FileFilterUtils.andFileFilter(FileFileFilter.FILE, suffixFileFilter);
     suffixFileFilter = FileFilterUtils.andFileFilter(suffixFileFilter, getDiffFilter());
+    suffixFileFilter = FileFilterUtils.andFileFilter(suffixFileFilter, getExcludedFilesFilter());
     FileUtils.copyDirectory(hudsonDirectory, backupDirectory, suffixFileFilter);
 
     LOGGER.fine("DONE backing up global configuration files.");
@@ -196,6 +213,7 @@ public class HudsonBackup {
       throws IOException {
     IOFileFilter filter = FileFilterUtils.suffixFileFilter(".xml");
     filter = FileFilterUtils.andFileFilter(filter, getDiffFilter());
+    filter = FileFilterUtils.andFileFilter(filter, getExcludedFilesFilter());
     final File srcDir = new File(jobsDirectory, jobName);
     if (srcDir.exists()) { // sub jobs e.g. maven modules need not be copied
       FileUtils.copyDirectory(srcDir, new File(jobsBackupDirectory, jobName), filter);
@@ -214,6 +232,7 @@ public class HudsonBackup {
             if (!isSymLinkFile(srcDir)) {
               final File destDir = new File(new File(new File(jobsBackupDirectory, jobName), BUILDS_DIR_NAME), build);
               IOFileFilter buildFilter = FileFilterUtils.andFileFilter(FileFileFilter.FILE, getDiffFilter());
+              buildFilter = FileFilterUtils.andFileFilter(buildFilter, getExcludedFilesFilter());
               buildFilter = FileFilterUtils.andFileFilter(buildFilter,
                   FileFilterUtils.notFileFilter(FileFilterUtils.suffixFileFilter(".zip")));
               FileUtils.copyDirectory(srcDir, destDir, buildFilter);
@@ -231,6 +250,7 @@ public class HudsonBackup {
       final File usersBackupDirectory = new File(backupDirectory.getAbsolutePath(), USERS_DIR_NAME);
       IOFileFilter filter = FileFilterUtils.suffixFileFilter(".xml");
       filter = FileFilterUtils.andFileFilter(filter, getDiffFilter());
+      filter = FileFilterUtils.andFileFilter(filter, getExcludedFilesFilter());
       filter = FileFilterUtils.orFileFilter(filter, DirectoryFileFilter.DIRECTORY);
       FileUtils.copyDirectory(usersDirectory, usersBackupDirectory, filter);
       LOGGER.fine("DONE backing up users specific configuration files.");
@@ -331,6 +351,16 @@ public class HudsonBackup {
 
     if (backupType == BackupType.DIFF) {
       result = FileFilterUtils.ageFileFilter(latestFullBackupDate, false);
+    }
+
+    return result;
+  }
+
+  private IOFileFilter getExcludedFilesFilter() {
+    IOFileFilter result = FileFilterUtils.trueFileFilter();
+
+    if (excludedFilesRegexPattern != null) {
+      result = FileFilterUtils.notFileFilter(new RegexFileFilter(excludedFilesRegexPattern));
     }
 
     return result;

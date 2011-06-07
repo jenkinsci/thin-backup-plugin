@@ -13,8 +13,7 @@ import java.util.logging.Level;
 import org.acegisecurity.context.SecurityContextHolder;
 
 /**
- * duplicated because the log levels in {@link #doRun()} are reduced from INFO to FINEST to not spam the logs every
- * minute.
+ * Duplicated to reduce the log levels in {@link #doRun()} from INFO to FINEST so the logs are not spammed every minute.
  * 
  * {@link PeriodicWork} that takes a long time to run.
  * 
@@ -25,6 +24,7 @@ import org.acegisecurity.context.SecurityContextHolder;
  * @author Kohsuke Kawaguchi
  */
 public abstract class AsyncPeriodicWork extends PeriodicWork {
+
   /**
    * Name of the work.
    */
@@ -32,7 +32,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
 
   private Thread thread;
 
-  protected AsyncPeriodicWork(String name) {
+  protected AsyncPeriodicWork(final String name) {
     this.name = name;
   }
 
@@ -42,23 +42,23 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
   @Override
   public final void doRun() {
     try {
-      if (thread != null && thread.isAlive()) {
+      if ((thread != null) && thread.isAlive()) {
         logger.log(Level.WARNING, name + " thread is still running. Execution aborted.");
         return;
       }
       thread = new Thread(new Runnable() {
         public void run() {
           logger.log(Level.FINEST, "Started " + name);
-          long startTime = System.currentTimeMillis();
+          final long startTime = System.currentTimeMillis();
 
-          StreamTaskListener l = createListener();
+          final StreamTaskListener l = createListener();
           try {
             SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
 
             execute(l);
-          } catch (IOException e) {
+          } catch (final IOException e) {
             e.printStackTrace(l.fatalError(e.getMessage()));
-          } catch (InterruptedException e) {
+          } catch (final InterruptedException e) {
             e.printStackTrace(l.fatalError("aborted"));
           } finally {
             l.closeQuietly();
@@ -68,7 +68,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
         }
       }, name + " thread");
       thread.start();
-    } catch (Throwable t) {
+    } catch (final Throwable t) {
       logger.log(Level.SEVERE, name + " thread failed with error", t);
     }
   }
@@ -76,7 +76,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
   protected StreamTaskListener createListener() {
     try {
       return new StreamTaskListener(getLogFile());
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new Error(e);
     }
   }
@@ -99,4 +99,5 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
    *           The caller will record the exception and moves on.
    */
   protected abstract void execute(TaskListener listener) throws IOException, InterruptedException;
+
 }

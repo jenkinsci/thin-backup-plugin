@@ -59,6 +59,8 @@ public class HudsonDirectoryStructureSetup {
     new File(build, "changelog.xml").createNewFile();
     new File(build, "log").createNewFile();
     new File(build, "revision.txt").createNewFile();
+    new File(build, "logfile.log").createNewFile();
+    new File(build, "logfile.xlog").createNewFile();
 
     final FileCollector fc = new FileCollector();
     originalFiles = fc.getFilesAsString(root);
