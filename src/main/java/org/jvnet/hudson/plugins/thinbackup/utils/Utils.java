@@ -135,7 +135,13 @@ public class Utils {
   public static List<File> getBackupTypeDirectories(final File parentDir, final BackupType backupType) {
     IOFileFilter prefixFilter = FileFilterUtils.prefixFileFilter(backupType.toString());
     prefixFilter = FileFilterUtils.andFileFilter(prefixFilter, DirectoryFileFilter.DIRECTORY);
-    return Arrays.asList(parentDir.listFiles((FilenameFilter) prefixFilter));
+
+    final File[] existingDirs = parentDir.listFiles((FilenameFilter) prefixFilter);
+    if (existingDirs == null) {
+      return Collections.EMPTY_LIST;
+    }
+
+    return Arrays.asList(existingDirs);
   }
 
   /**
@@ -148,7 +154,12 @@ public class Utils {
         FileFilterUtils.suffixFileFilter(BackupSet.BACKUPSET_ZIPFILE_SUFFIX));
     zipFileFilter = FileFilterUtils.andFileFilter(zipFileFilter, FileFileFilter.FILE);
 
-    return Arrays.asList(parentDir.listFiles((FilenameFilter) zipFileFilter));
+    final File[] existingZips = parentDir.listFiles((FilenameFilter) zipFileFilter);
+    if (existingZips == null) {
+      return Collections.EMPTY_LIST;
+    }
+
+    return Arrays.asList(existingZips);
   }
 
   /**
