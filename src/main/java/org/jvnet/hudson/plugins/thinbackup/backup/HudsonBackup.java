@@ -40,6 +40,7 @@ import org.apache.commons.io.filefilter.FileFileFilter;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.io.filefilter.RegexFileFilter;
+import org.apache.commons.lang.StringUtils;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
@@ -67,37 +68,8 @@ public class HudsonBackup {
   public HudsonBackup(final File backupRoot, final File hudsonHome, final BackupType backupType,
       final int nrMaxStoredFull, final boolean cleanupDiff, final boolean moveOldBackupsToZipFile,
       final boolean backupBuildResults, final String excludedFilesRegex) {
-    hudson = Hudson.getInstance();
-
-    hudsonDirectory = hudsonHome;
-    this.cleanupDiff = cleanupDiff;
-    this.moveOldBackupsToZipFile = moveOldBackupsToZipFile;
-    this.nrMaxStoredFull = nrMaxStoredFull;
-    this.backupBuildResults = backupBuildResults;
-    final String tmpExpression = (excludedFilesRegex != null) ? excludedFilesRegex : "";
-    try {
-      excludedFilesRegexPattern = Pattern.compile(tmpExpression);
-    } catch (final PatternSyntaxException pse) {
-      LOGGER.log(Level.INFO, "Regex pattern for excluding files is invalid.", pse);
-      excludedFilesRegexPattern = null;
-    }
-
-    this.backupRoot = backupRoot;
-    if (!backupRoot.exists()) {
-      backupRoot.mkdir();
-    }
-
-    latestFullBackupDate = getLatestFullBackupDate();
-    // if no full backup has been done yet, do a FULL backup
-    if (latestFullBackupDate == null) {
-      LOGGER.info("No previous full backup found, thus creating one.");
-      this.backupType = BackupType.FULL;
-    } else {
-      this.backupType = backupType;
-    }
-
-    final Date date = new Date();
-    backupDirectory = Utils.getFormattedDirectory(backupRoot, backupType, date);
+    this(backupRoot, hudsonHome, backupType, nrMaxStoredFull, cleanupDiff, moveOldBackupsToZipFile, backupBuildResults,
+        new Date(), excludedFilesRegex);
   }
 
   /**
@@ -120,7 +92,7 @@ public class HudsonBackup {
     try {
       excludedFilesRegexPattern = Pattern.compile(tmpExpression);
     } catch (final PatternSyntaxException pse) {
-      pse.printStackTrace();
+      LOGGER.log(Level.SEVERE, "Regex pattern for excluding files is invalid.", pse);
       excludedFilesRegexPattern = null;
     }
 
