@@ -121,4 +121,18 @@ public class TestHudsonBackup extends HudsonDirectoryStructureSetup {
     Assert.assertEquals(1, lastDiffBackup.list().length);
   }
 
+  @Test
+  public void testNullFileExclusionRegexTestConstructor() {
+    final Calendar cal = Calendar.getInstance();
+    cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE - 10));
+    final HudsonBackup backup = new HudsonBackup(backupDir, root, BackupType.FULL, -1, false, false, true, cal.getTime(), null);
+    Assert.assertNotNull(backup);
+  }
+  
+  @Test
+  public void testNullFileExclusionRegex() {
+    final HudsonBackup backup = new HudsonBackup(backupDir, root, BackupType.FULL, -1, false, false, true, null);
+    Assert.assertNotNull(backup);
+  }
+  
 }

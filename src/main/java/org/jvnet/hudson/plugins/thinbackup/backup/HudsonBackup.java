@@ -74,8 +74,9 @@ public class HudsonBackup {
     this.moveOldBackupsToZipFile = moveOldBackupsToZipFile;
     this.nrMaxStoredFull = nrMaxStoredFull;
     this.backupBuildResults = backupBuildResults;
+    final String tmpExpression = (excludedFilesRegex != null) ? excludedFilesRegex : "";
     try {
-      excludedFilesRegexPattern = Pattern.compile(excludedFilesRegex);
+      excludedFilesRegexPattern = Pattern.compile(tmpExpression);
     } catch (final PatternSyntaxException pse) {
       LOGGER.log(Level.INFO, "Regex pattern for excluding files is invalid.", pse);
       excludedFilesRegexPattern = null;
@@ -115,8 +116,9 @@ public class HudsonBackup {
     this.moveOldBackupsToZipFile = moveOldBackupsToZipFile;
     this.nrMaxStoredFull = nrMaxStoredFull;
     this.backupBuildResults = backupBuildResults;
+    final String tmpExpression = (excludedFilesRegex != null) ? excludedFilesRegex : "";
     try {
-      excludedFilesRegexPattern = Pattern.compile(excludedFilesRegex);
+      excludedFilesRegexPattern = Pattern.compile(tmpExpression);
     } catch (final PatternSyntaxException pse) {
       pse.printStackTrace();
       excludedFilesRegexPattern = null;
