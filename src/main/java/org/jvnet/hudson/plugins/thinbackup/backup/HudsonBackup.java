@@ -109,7 +109,7 @@ public class HudsonBackup {
       this.backupType = backupType;
     }
 
-    backupDirectory = Utils.getFormattedDirectory(backupRoot, backupType, date);
+    backupDirectory = Utils.getFormattedDirectory(backupRoot, this.backupType, date);
   }
 
   public void backup() throws IOException {
@@ -380,13 +380,13 @@ class ZipperThread extends Thread {
 
   @Override
   public void run() {
-    LOGGER.info("Starting zipper thread...");
+    LOGGER.fine("Starting zipper thread...");
     try {
       Utils.moveOldBackupsToZipFile(backupRoot, currentBackup);
     } catch (final IOException ioe) {
       LOGGER.log(Level.SEVERE, "Cannot zip old backups.", ioe);
     }
-    LOGGER.info("DONE zipping.");
+    LOGGER.fine("DONE zipping.");
   }
 
 }
