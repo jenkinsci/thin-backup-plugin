@@ -121,8 +121,9 @@ public class BackupSet implements Comparable<BackupSet> {
   private boolean initializeFromZipFile() {
     boolean success = true;
 
+    ZipFile zipFile = null;
     try {
-      final ZipFile zipFile = new ZipFile(backupSetzipFile);
+      zipFile = new ZipFile(backupSetzipFile);
       final Enumeration<? extends ZipEntry> zipEntries = zipFile.entries();
       while (zipEntries.hasMoreElements() && success) {
         final ZipEntry entry = zipEntries.nextElement();
@@ -142,10 +143,19 @@ public class BackupSet implements Comparable<BackupSet> {
           }
         }
       }
-      zipFile.close();
     } catch (final IOException e) {
       LOGGER.log(Level.SEVERE,
           String.format("Cannot initialize BackupSet from ZIP file '%s'.", backupSetzipFile.getName()), e);
+      success = false;
+    } finally {
+      try {
+        if (zipFile != null) {
+          zipFile.close();
+        }
+      } catch (final IOException e) {
+        LOGGER.log(Level.SEVERE, String.format("Cannot close ZIP file '%s'.", backupSetzipFile.getName()), e);
+        success = false;
+      }
     }
 
     return success;
@@ -337,13 +347,13 @@ public class BackupSet implements Comparable<BackupSet> {
    * @param directory
    * @return a reference to the created ZIP file, the current ZIP file if the BackupSet was created from one (because no
    *         zipping is performed in this case), or null if this BackupSet is invalid.
-   * @throws IOException
    */
-  public File zipTo(final File directory) throws IOException {
+  public File zipTo(final File directory) {
     File zipFile = null;
 
     if (isValid()) {
       if (!inZipFile) {
+        DirectoriesZipper zipper = null;
         try {
           if (!directory.exists()) {
             final boolean success = directory.mkdirs();
@@ -354,17 +364,20 @@ public class BackupSet implements Comparable<BackupSet> {
 
           final String zipFileName = getBackupSetZipFileName();
           zipFile = new File(directory, zipFileName);
-          final DirectoriesZipper zipper = new DirectoriesZipper(zipFile);
+          zipper = new DirectoriesZipper(zipFile);
 
           zipper.addToZip(getFullBackup());
           for (final File diffBackup : getDiffBackups()) {
             zipper.addToZip(diffBackup);
           }
-
-          zipper.close();
         } catch (final IOException ioe) {
-          LOGGER.log(Level.WARNING, "Could not zip backup set.", ioe);
-          throw ioe;
+          LOGGER.log(Level.SEVERE, "Could not zip backup set.", ioe);
+        } finally {
+          try {
+            zipper.close();
+          } catch (final IOException ioe) {
+            LOGGER.log(Level.SEVERE, "Could not zip backup set.", ioe);
+          }
         }
       } else {
         zipFile = backupSetzipFile;

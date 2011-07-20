@@ -326,16 +326,19 @@ public class Utils {
     LOGGER.fine("Moving old backups to zip files...");
 
     final List<BackupSet> validBackupSets = Utils.getValidBackupSetsFromDirectories(backupRoot);
-
+    int numberOfZippedBackupSets = 0;
+    int numberOfMovedBackupSets = 0;
     for (final BackupSet backupSet : validBackupSets) {
       if ((!backupSet.containsDirectory(currentBackup)) && (!backupSet.isInZipFile())) {
         final File zippedBackupSet = backupSet.zipTo(backupRoot);
+        ++numberOfZippedBackupSets;
         if (zippedBackupSet != null) {
           LOGGER.fine(String.format("Successfully zipped backup set %s to '%s'.", backupSet,
               zippedBackupSet.getAbsolutePath()));
           try {
             backupSet.delete();
-            LOGGER.fine(String.format("Deleted backup set %s.", backupSet));
+            LOGGER.fine(String.format("Deleted backup set %s after zipping it.", backupSet));
+            ++numberOfMovedBackupSets;
           } catch (final IOException ioe) {
             LOGGER.log(Level.WARNING, String.format("Could not delete backup set %s.", backupSet));
           }
@@ -343,7 +346,14 @@ public class Utils {
       }
     }
 
-    LOGGER.fine("DONE moving old backups to zip files.");
+    if (numberOfMovedBackupSets == numberOfZippedBackupSets) {
+      LOGGER.info(String.format("DONE moving %d backup set(s) to ZIP files.", numberOfMovedBackupSets));
+    } else {
+      LOGGER
+          .info(String
+              .format(
+                  "DONE zipping %d backup set(s). %d of those could be moved to ZIP files, the rest remain as files/directories as well.",
+                  numberOfZippedBackupSets, numberOfMovedBackupSets));
+    }
   }
-
 }
