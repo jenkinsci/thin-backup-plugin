@@ -54,24 +54,23 @@
                         <f:textbox value="${it.configuration.excludedFilesRegex}" name="excludedFilesRegex"/>
                     </f:entry>
 
-                    <f:optionalBlock title="Clean up differential backups"
-                        help="/plugin/thinBackup/help/help-cleanupDiff.html"
-                        checked="${it.configuration.cleanupDiff}"
-                        name="cleanupDiff" />
-                    
-                    <f:optionalBlock title="Move old backups to ZIP file"
-                        help="/plugin/thinBackup/help/help-moveOldBackupsToZipFile.html"
-                        checked="${it.configuration.moveOldBackupsToZipFile}"
-                        name="moveOldBackupsToZipFile"
-                        />
-                    
                     <f:optionalBlock title="Backup build results"
                         help="/plugin/thinBackup/help/help-backupBuildResults.html"
                         checked="${it.configuration.backupBuildResults}"
                         name="backupBuildResults"
                         />
 
+                    <f:optionalBlock title="Clean up differential backups"
+                        help="/plugin/thinBackup/help/help-cleanupDiff.html"
+                        checked="${it.configuration.cleanupDiff}"
+                        name="cleanupDiff" />
                     
+                    <f:optionalBlock title="Move old backups to ZIP files"
+                        help="/plugin/thinBackup/help/help-moveOldBackupsToZipFile.html"
+                        checked="${it.configuration.moveOldBackupsToZipFile}"
+                        name="moveOldBackupsToZipFile"
+                        />
+                                        
                 </f:section>
                 
                 <!-- Save! -->
