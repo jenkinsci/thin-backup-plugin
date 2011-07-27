@@ -138,7 +138,7 @@ public class Utils {
 
     final File[] existingDirs = parentDir.listFiles((FilenameFilter) prefixFilter);
     if (existingDirs == null) {
-      return Collections.EMPTY_LIST;
+      return Collections.emptyList();
     }
 
     return Arrays.asList(existingDirs);
@@ -156,7 +156,7 @@ public class Utils {
 
     final File[] existingZips = parentDir.listFiles((FilenameFilter) zipFileFilter);
     if (existingZips == null) {
-      return Collections.EMPTY_LIST;
+      return Collections.emptyList();
     }
 
     return Arrays.asList(existingZips);
