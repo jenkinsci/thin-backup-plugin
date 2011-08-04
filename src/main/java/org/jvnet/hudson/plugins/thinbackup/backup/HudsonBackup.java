@@ -87,17 +87,18 @@ public class HudsonBackup {
     this.moveOldBackupsToZipFile = moveOldBackupsToZipFile;
     this.nrMaxStoredFull = nrMaxStoredFull;
     this.backupBuildResults = backupBuildResults;
-    final String tmpExpression = (excludedFilesRegex != null) ? excludedFilesRegex : "";
-    try {
-      excludedFilesRegexPattern = Pattern.compile(tmpExpression);
-    } catch (final PatternSyntaxException pse) {
-      LOGGER.log(Level.SEVERE, "Regex pattern for excluding files is invalid.", pse);
-      excludedFilesRegexPattern = null;
+    if ((excludedFilesRegex != null) && !excludedFilesRegex.isEmpty()) {
+      try {
+        excludedFilesRegexPattern = Pattern.compile(excludedFilesRegex);
+      } catch (final PatternSyntaxException pse) {
+        LOGGER.log(Level.SEVERE, "Regex pattern for excluding files is invalid, and will be disregarded.", pse);
+        excludedFilesRegexPattern = null;
+      }
     }
 
     this.backupRoot = backupRoot;
     if (!backupRoot.exists()) {
-      backupRoot.mkdir();
+      backupRoot.mkdirs();
     }
 
     latestFullBackupDate = getLatestFullBackupDate();

@@ -22,6 +22,8 @@ import hudson.util.FormValidation;
 
 import java.io.File;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -124,38 +126,30 @@ public class ThinBackupPluginImpl extends Plugin {
   }
 
   public FormValidation doCheckBackupPath(final StaplerRequest res, final StaplerResponse rsp,
-      @QueryParameter("value") final String value) {
-    if ((value == null) || value.isEmpty()) {
-      return FormValidation.error("'Backup Path' is not mandatory.");
+      @QueryParameter("value") final String path) {
+    if ((path == null) || path.trim().isEmpty()) {
+      return FormValidation.error("Backup path must not be empty.");
     }
 
-    final File backupdir = new File(value);
+    final File backupdir = new File(path);
     if (!backupdir.exists()) {
-      return FormValidation.warning("The given directory does not exist, it will be created during the first run.");
+      return FormValidation.warning("The directory does not exist, but will be created before the first run.");
     }
     if (!backupdir.isDirectory()) {
       return FormValidation.error("A file with this name already exists.");
     }
+
     return FormValidation.ok();
   }
 
-  public FormValidation doCheckFullBackupSchedule(final StaplerRequest res, final StaplerResponse rsp,
-      @QueryParameter("fullBackupSchedule") final String backupSchedule) {
-    return validateCronSchedule(backupSchedule);
-  }
-
-  public FormValidation doCheckDiffBackupSchedule(final StaplerRequest res, final StaplerResponse rsp,
-      @QueryParameter("diffBackupSchedule") final String backupSchedule) {
-    return validateCronSchedule(backupSchedule);
-  }
-
-  private FormValidation validateCronSchedule(final String backupTime) {
-    if ((backupTime != null) && !backupTime.isEmpty()) {
+  public FormValidation doCheckBackupSchedule(final StaplerRequest res, final StaplerResponse rsp,
+      @QueryParameter("value") final String schedule) {
+    if ((schedule != null) && !schedule.isEmpty()) {
       String message;
       try {
-        message = new CronTab(backupTime).checkSanity();
+        message = new CronTab(schedule).checkSanity();
       } catch (final ANTLRException e) {
-        return FormValidation.error(e.getMessage());
+        return FormValidation.error("Invalid cron schedule. " + e.getMessage());
       }
       if (message != null) {
         return FormValidation.warning(message);
@@ -165,6 +159,31 @@ public class ThinBackupPluginImpl extends Plugin {
     } else {
       return FormValidation.ok();
     }
+  }
+
+  public FormValidation doCheckExcludedFilesRegex(final StaplerRequest res, final StaplerResponse rsp,
+      @QueryParameter("value") final String regex) {
+
+    if ((regex == null) || (regex.isEmpty())) {
+      return FormValidation.ok();
+    }
+
+    try {
+      Pattern.compile(excludedFilesRegex);
+    } catch (final PatternSyntaxException pse) {
+      return FormValidation.error("Regex syntax is invalid.");
+    }
+
+    if (regex.trim().isEmpty()) {
+      return FormValidation.warning("Regex is valid, but consists entirely of whitespaces - is this intentional?");
+    }
+
+    if (!regex.trim().equals(regex)) {
+      return FormValidation
+          .warning("Regex is valid, but contains starting and/or trailing whitespaces - is this intentional?");
+    }
+
+    return FormValidation.ok();
   }
 
 }
