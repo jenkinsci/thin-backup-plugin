@@ -13,15 +13,10 @@ import java.util.logging.Level;
 import org.acegisecurity.context.SecurityContextHolder;
 
 /**
- * Duplicated to reduce the log levels in {@link #doRun()} from INFO to FINEST so the logs are not spammed every minute.
+ * Duplicated code from <i>hudson.model.AsyncPeriodicWork<i> to reduce the log levels in {@link #doRun()} from INFO to
+ * FINEST so the logs are not spammed.
  * 
- * {@link PeriodicWork} that takes a long time to run.
- * 
- * <p>
- * Subclasses will implement the {@link #execute(TaskListener)} method and can carry out a long-running task. This runs
- * in a separate thread so as not to block the timer thread, and this class handles all those details.
- * 
- * @author Kohsuke Kawaguchi
+ * All other functionality is exactly the same as in the original class.
  */
 public abstract class AsyncPeriodicWork extends PeriodicWork {
 
@@ -89,7 +84,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
   }
 
   /**
-   * Executes the task.
+   * Executes the task. Subclasses implement this method and can carry out a long-running task.
    * 
    * @param listener
    *          Output sent will be reported to the users. (this work is TBD.)
