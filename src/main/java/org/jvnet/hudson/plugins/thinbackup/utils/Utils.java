@@ -79,33 +79,36 @@ public class Utils {
   /**
    * @param directory
    * @return the date component of a directory name formatted in the thinBackup standard
-   * @throws ParseException
-   *           if the name could not be parsed
    */
-  public static Date getDateFromBackupDirectory(final File directory) throws ParseException {
+  public static Date getDateFromBackupDirectory(final File directory) {
     return getDateFromBackupDirectoryName(directory.getName());
   }
 
   /**
    * @param directoryName
    * @return the date component of a directory name formatted in the thinBackup standard
-   * @throws ParseException
-   *           if the name could not be parsed
    */
-  public static Date getDateFromBackupDirectoryName(final String directoryName) throws ParseException {
+  public static Date getDateFromBackupDirectoryName(final String directoryName) {
     Date result = null;
 
-    if (directoryName.startsWith(BackupType.FULL.toString()) || directoryName.startsWith(BackupType.DIFF.toString())) {
-      final String dateOnly = directoryName.replaceFirst(DIRECTORY_NAME_DATE_EXTRACTION_REGEX, "");
-      result = DIRECTORY_NAME_DATE_FORMAT.parse(dateOnly);
+    try {
+      if (directoryName.startsWith(BackupType.FULL.toString()) || directoryName.startsWith(BackupType.DIFF.toString())) {
+        final String dateOnly = directoryName.replaceFirst(DIRECTORY_NAME_DATE_EXTRACTION_REGEX, "");
+        if (!dateOnly.isEmpty()) {
+          result = DIRECTORY_NAME_DATE_FORMAT.parse(dateOnly);
+        }
+      }
+    } catch (final ParseException pe) {
+      LOGGER.log(Level.WARNING, String.format("Could not parse directory name '%s'.", directoryName));
+    } catch (final NumberFormatException nfe) {
+      LOGGER.log(Level.WARNING, String.format("Could not parse directory name '%s'.", directoryName));
     }
 
     return result;
   }
 
   /**
-   * @param displayFormattedDate
-   *          a String in the display format date
+   * @param displayFormattedDate a String in the display format date
    * @return the string formatted in the directory names' date format
    * @throws ParseException
    */
@@ -179,10 +182,8 @@ public class Utils {
 
     File referencedFullBackup = null;
 
-    Date curBackupDate;
-    try {
-      curBackupDate = getDateFromBackupDirectory(diffBackup);
-
+    final Date curBackupDate = getDateFromBackupDirectory(diffBackup);
+    if (curBackupDate != null) {
       Date closestPreviousBackupDate = new Date(0);
       for (final File fullBackupDir : backups) {
         final Date tmpBackupDate = getDateFromBackupDirectory(fullBackupDir);
@@ -191,8 +192,6 @@ public class Utils {
           referencedFullBackup = fullBackupDir;
         }
       }
-    } catch (final ParseException e) {
-      e.printStackTrace();
     }
 
     return referencedFullBackup;
@@ -233,7 +232,11 @@ public class Utils {
       final String fullName = backupSet.getFullBackupName();
       try {
         final Date tmp = getDateFromBackupDirectoryName(fullName);
-        backupDates.add(DISPLAY_DATE_FORMAT.format(tmp));
+        if (tmp != null) {
+          backupDates.add(DISPLAY_DATE_FORMAT.format(tmp));
+        } else {
+          throw new ParseException("", 0);
+        }
       } catch (final ParseException e) {
         LOGGER.warning(String.format(
             "Cannot parse directory name '%s' , therefore it will not show up in the list of available backups.",
@@ -243,7 +246,11 @@ public class Utils {
       for (final String diffName : backupSet.getDiffBackupsNames()) {
         try {
           final Date tmp = getDateFromBackupDirectoryName(diffName);
-          backupDates.add(DISPLAY_DATE_FORMAT.format(tmp));
+          if (tmp != null) {
+            backupDates.add(DISPLAY_DATE_FORMAT.format(tmp));
+          } else {
+            throw new ParseException("", 0);
+          }
         } catch (final ParseException e) {
           LOGGER.warning(String.format(
               "Cannot parse directory name '%s' , therefore it will not show up in the list of available backups.",
@@ -318,8 +325,8 @@ public class Utils {
    * located in backupRoot.
    * 
    * @param backupRoot
-   * @param currentBackup
-   *          specified which backup should be omitted from being moved. If null, all backups are moved to ZIP files.
+   * @param currentBackup specified which backup should be omitted from being moved. If null, all backups are moved to
+   *          ZIP files.
    * @throws IOException
    */
   public static void moveOldBackupsToZipFile(final File backupRoot, final File currentBackup) throws IOException {

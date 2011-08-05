@@ -136,7 +136,23 @@ public class ThinBackupPluginImpl extends Plugin {
       return FormValidation.warning("The directory does not exist, but will be created before the first run.");
     }
     if (!backupdir.isDirectory()) {
-      return FormValidation.error("A file with this name already exists.");
+      return FormValidation
+          .error("A file with this name exists, thus a directory with the same name cannot be created.");
+    }
+    final File tmp = new File(path + File.separator + "test.txt");
+    try {
+      tmp.createNewFile();
+    } catch (final Exception e) {
+      if (!tmp.canWrite()) {
+        return FormValidation.error("The directory exists, but is not writable.");
+      }
+    } finally {
+      if (tmp.exists()) {
+        tmp.delete();
+      }
+    }
+    if (!path.trim().equals(path)) {
+      return FormValidation.warning("Path contains leading and/or trailing whitespaces - is this intentional?");
     }
 
     return FormValidation.ok();
@@ -152,7 +168,7 @@ public class ThinBackupPluginImpl extends Plugin {
         return FormValidation.error("Invalid cron schedule. " + e.getMessage());
       }
       if (message != null) {
-        return FormValidation.warning(message);
+        return FormValidation.warning("Cron schedule warning: " + message);
       } else {
         return FormValidation.ok();
       }
@@ -161,6 +177,14 @@ public class ThinBackupPluginImpl extends Plugin {
     }
   }
 
+  /**
+   * @param res
+   * @param rsp
+   * @param regex
+   * @return FormValidation.Kind.OK if the regex is valid, FormValidation.Kind.WARNING if the regex is valid but
+   *         consists only of whitespaces or has leading and/or trailing whitespaces, and FormValidation.Kind.ERROR if
+   *         the regex syntax is invalid.
+   */
   public FormValidation doCheckExcludedFilesRegex(final StaplerRequest res, final StaplerResponse rsp,
       @QueryParameter("value") final String regex) {
 
@@ -180,10 +204,10 @@ public class ThinBackupPluginImpl extends Plugin {
 
     if (!regex.trim().equals(regex)) {
       return FormValidation
-          .warning("Regex is valid, but contains starting and/or trailing whitespaces - is this intentional?");
+          .warning("Regex is valid, but contains leading and/or trailing whitespaces - is this intentional?");
     }
 
-    return FormValidation.ok();
+    return FormValidation.ok("http://test.com");
   }
 
 }

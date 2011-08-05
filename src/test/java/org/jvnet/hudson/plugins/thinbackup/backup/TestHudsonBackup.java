@@ -34,7 +34,7 @@ public class TestHudsonBackup extends HudsonDirectoryStructureSetup {
     final Calendar cal = Calendar.getInstance();
     cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE - 10));
 
-    new HudsonBackup(backupDir, root, BackupType.FULL, -1, false, false, true, cal.getTime(), "").backup();
+    new HudsonBackup(backupDir, root, BackupType.FULL, -1, false, false, true, "", cal.getTime()).backup();
 
     String[] list = backupDir.list();
     Assert.assertEquals(1, list.length);
@@ -56,7 +56,7 @@ public class TestHudsonBackup extends HudsonDirectoryStructureSetup {
     final Calendar cal = Calendar.getInstance();
     cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE - 10));
 
-    new HudsonBackup(backupDir, root, BackupType.FULL, -1, false, false, true, cal.getTime(), "^.*\\.(log)$").backup();
+    new HudsonBackup(backupDir, root, BackupType.FULL, -1, false, false, true, "^.*\\.(log)$", cal.getTime()).backup();
 
     String[] list = backupDir.list();
     Assert.assertEquals(1, list.length);
@@ -86,7 +86,7 @@ public class TestHudsonBackup extends HudsonDirectoryStructureSetup {
     final Calendar cal = Calendar.getInstance();
     cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE - 10));
 
-    new HudsonBackup(backupDir, root, BackupType.FULL, -1, false, false, false, cal.getTime(), "").backup();
+    new HudsonBackup(backupDir, root, BackupType.FULL, -1, false, false, false, "", cal.getTime()).backup();
 
     String[] list = backupDir.list();
     Assert.assertEquals(1, list.length);
@@ -105,7 +105,7 @@ public class TestHudsonBackup extends HudsonDirectoryStructureSetup {
     final Calendar cal = Calendar.getInstance();
     cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE - 10));
 
-    new HudsonBackup(backupDir, root, BackupType.FULL, -1, false, false, true, cal.getTime(), "").backup();
+    new HudsonBackup(backupDir, root, BackupType.FULL, -1, false, false, true, null, cal.getTime()).backup();
 
     // fake modification
     backupDir.listFiles((FileFilter) FileFilterUtils.prefixFileFilter(BackupType.FULL.toString()))[0]
@@ -125,14 +125,15 @@ public class TestHudsonBackup extends HudsonDirectoryStructureSetup {
   public void testNullFileExclusionRegexTestConstructor() {
     final Calendar cal = Calendar.getInstance();
     cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE - 10));
-    final HudsonBackup backup = new HudsonBackup(backupDir, root, BackupType.FULL, -1, false, false, true, cal.getTime(), null);
+    final HudsonBackup backup = new HudsonBackup(backupDir, root, BackupType.FULL, -1, false, false, true, null,
+        cal.getTime());
     Assert.assertNotNull(backup);
   }
-  
+
   @Test
   public void testNullFileExclusionRegex() {
     final HudsonBackup backup = new HudsonBackup(backupDir, root, BackupType.FULL, -1, false, false, true, null);
     Assert.assertNotNull(backup);
   }
-  
+
 }

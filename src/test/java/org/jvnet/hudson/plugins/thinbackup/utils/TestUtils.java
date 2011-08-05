@@ -18,6 +18,8 @@ package org.jvnet.hudson.plugins.thinbackup.utils;
 
 import java.io.File;
 import java.text.ParseException;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import junit.framework.Assert;
@@ -51,6 +53,31 @@ public class TestUtils extends BackupDirStructureSetup {
   @Test(expected = ParseException.class)
   public void testEmptyDateConvertToDirectoryNameDateFormat() throws ParseException {
     Utils.convertToDirectoryNameDateFormat("");
+  }
+
+  @Test
+  public void testGetDateFromValidBackupDir() {
+    final Calendar cal = Calendar.getInstance();
+    cal.clear();
+    cal.set(2011, 1, 13, 10, 48);
+    final Date expected = cal.getTime();
+
+    String displayDate = "FULL-2011-02-13_10-48";
+    Date tmp = Utils.getDateFromBackupDirectoryName(displayDate);
+    Assert.assertNotNull(tmp);
+    Assert.assertEquals(expected, tmp);
+
+    displayDate = "DIFF-2011-02-13_10-48";
+    tmp = Utils.getDateFromBackupDirectoryName(displayDate);
+    Assert.assertNotNull(tmp);
+    Assert.assertEquals(expected, tmp);
+  }
+
+  @Test
+  public void testGetDateFromInvalidBackupDir() {
+    final String displayDate = "DWDWD-2011-02-13_10-48";
+    final Date tmp = Utils.getDateFromBackupDirectoryName(displayDate);
+    Assert.assertNull(tmp);
   }
 
   @Test

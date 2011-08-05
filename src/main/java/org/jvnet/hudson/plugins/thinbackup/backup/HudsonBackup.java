@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -64,22 +63,39 @@ public class HudsonBackup {
   private final boolean backupBuildResults;
   private Pattern excludedFilesRegexPattern = null;
 
+  /**
+   * @param backupRoot
+   * @param hudsonHome
+   * @param backupType
+   * @param nrMaxStoredFull
+   * @param cleanupDiff
+   * @param moveOldBackupsToZipFile
+   * @param backupBuildResults
+   * @param excludedFilesRegex if null or empty all files will be included
+   */
   public HudsonBackup(final File backupRoot, final File hudsonHome, final BackupType backupType,
       final int nrMaxStoredFull, final boolean cleanupDiff, final boolean moveOldBackupsToZipFile,
       final boolean backupBuildResults, final String excludedFilesRegex) {
     this(backupRoot, hudsonHome, backupType, nrMaxStoredFull, cleanupDiff, moveOldBackupsToZipFile, backupBuildResults,
-        new Date(), excludedFilesRegex);
+        excludedFilesRegex, new Date());
   }
 
   /**
    * Package visible constructor only for unit testing purposes!
    * 
-   * @param date
-   *          date for which the backup directory should use
+   * @param backupRoot
+   * @param hudsonHome
+   * @param backupType
+   * @param nrMaxStoredFull
+   * @param cleanupDiff
+   * @param moveOldBackupsToZipFile
+   * @param backupBuildResults
+   * @param excludedFilesRegex if null or empty all files will be included
+   * @param date the backup should use
    */
   HudsonBackup(final File backupRoot, final File hudsonHome, final BackupType backupType, final int nrMaxStoredFull,
       final boolean cleanupDiff, final boolean moveOldBackupsToZipFile, final boolean backupBuildResults,
-      final Date date, final String excludedFilesRegex) {
+      final String excludedFilesRegex, final Date date) {
     hudson = Hudson.getInstance();
 
     hudsonDirectory = hudsonHome;
@@ -91,7 +107,8 @@ public class HudsonBackup {
       try {
         excludedFilesRegexPattern = Pattern.compile(excludedFilesRegex);
       } catch (final PatternSyntaxException pse) {
-        LOGGER.log(Level.SEVERE, "Regex pattern for excluding files is invalid, and will be disregarded.", pse);
+        LOGGER.log(Level.SEVERE, String.format(
+            "Regex pattern '%s' for excluding files is invalid, and will be disregarded.", excludedFilesRegex), pse);
         excludedFilesRegexPattern = null;
       }
     }
@@ -348,12 +365,12 @@ public class HudsonBackup {
 
     Date result = new Date(0);
     for (final File fullBackup : fullBackups) {
-      try {
-        final Date tmp = Utils.getDateFromBackupDirectory(fullBackup);
+      final Date tmp = Utils.getDateFromBackupDirectory(fullBackup);
+      if (tmp != null) {
         if (tmp.after(result)) {
           result = tmp;
         }
-      } catch (final ParseException e) {
+      } else {
         LOGGER
             .info(String.format("Cannot parse directory name '%s', thus ignoring it when getting latest backup date.",
                 fullBackup.getName()));
@@ -362,7 +379,6 @@ public class HudsonBackup {
 
     return result;
   }
-
 }
 
 /**

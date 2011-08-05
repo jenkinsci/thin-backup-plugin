@@ -21,7 +21,6 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -58,8 +57,7 @@ public class BackupSet implements Comparable<BackupSet> {
   private List<String> diffBackupsNames;
 
   /**
-   * @param initial
-   *          either a FULL or DIFF backup directory, or a BackupSet ZIP file.
+   * @param initial either a FULL or DIFF backup directory, or a BackupSet ZIP file.
    */
   public BackupSet(final File initial) {
     fullBackup = null;
@@ -393,27 +391,24 @@ public class BackupSet implements Comparable<BackupSet> {
   }
 
   private String getFormattedFullBackupDate() {
-    return Utils.DIRECTORY_NAME_DATE_FORMAT.format(getDateFromDirectoryName(fullBackupName));
+    String result = "";
+
+    final Date tmp = Utils.getDateFromBackupDirectoryName(fullBackupName);
+    if (tmp != null) {
+      result = Utils.DIRECTORY_NAME_DATE_FORMAT.format(tmp);
+    }
+
+    return result;
   }
 
   private String getFormattedLatestDiffBackupDate() {
     String result = "";
 
     if ((diffBackupsNames != null) && (diffBackupsNames.size() > 0)) {
-      result = Utils.DIRECTORY_NAME_DATE_FORMAT.format(getDateFromDirectoryName(diffBackupsNames.get(diffBackupsNames
-          .size() - 1)));
-    }
-
-    return result;
-  }
-
-  private Date getDateFromDirectoryName(final String directoryName) {
-    Date result = null;
-
-    try {
-      result = Utils.getDateFromBackupDirectoryName(directoryName);
-    } catch (final ParseException e) {
-      LOGGER.warning(String.format("Could not retrieve date component of directory '%s'.", directoryName));
+      final Date tmp = Utils.getDateFromBackupDirectoryName(diffBackupsNames.get(diffBackupsNames.size() - 1));
+      if (tmp != null) {
+        result = Utils.DIRECTORY_NAME_DATE_FORMAT.format(tmp);
+      }
     }
 
     return result;
@@ -472,17 +467,21 @@ public class BackupSet implements Comparable<BackupSet> {
       return false;
     }
 
+    Date tmp = null;
+
     boolean inDiffs = false;
     if (diffBackupsNames != null) {
       for (final String diffBackupName : diffBackupsNames) {
-        inDiffs = date.equals(getDateFromDirectoryName(diffBackupName));
+        tmp = Utils.getDateFromBackupDirectoryName(diffBackupName);
+        inDiffs = (tmp != null) && date.equals(tmp);
         if (inDiffs) {
           break;
         }
       }
     }
 
-    return (inDiffs || date.equals(getDateFromDirectoryName(fullBackupName)));
+    tmp = Utils.getDateFromBackupDirectoryName(fullBackupName);
+    return (inDiffs || ((tmp != null) && date.equals(tmp)));
   }
 
   /**
