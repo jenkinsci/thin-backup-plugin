@@ -207,7 +207,7 @@ public class ThinBackupPluginImpl extends Plugin {
           .warning("Regex is valid, but contains leading and/or trailing whitespaces - is this intentional?");
     }
 
-    return FormValidation.ok("http://test.com");
+    return FormValidation.ok();
   }
 
 }
