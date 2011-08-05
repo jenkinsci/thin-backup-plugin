@@ -22,7 +22,6 @@ import hudson.model.Hudson;
 import hudson.scheduler.CronTab;
 import hudson.util.TimeUnit2;
 
-import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Calendar;
@@ -64,7 +63,7 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
     final String fullCron = plugin.getFullBackupSchedule();
     final String diffCron = plugin.getDiffBackupSchedule();
 
-    final BackupType type = getNextScheduledBackup(currentTime, fullCron, diffCron);
+    final BackupType type = getNextScheduledBackupType(currentTime, fullCron, diffCron);
     if (type != BackupType.NONE) {
       backupNow(type);
     }
@@ -75,25 +74,12 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
     String backupPath = null;
     try {
       backupPath = plugin.getBackupPath();
-      final boolean cleanupDiff = plugin.isCleanupDiff();
-      final String noMaxStoredFull = plugin.getNrMaxStoredFull();
-      int maxStoredFull;
-      if (StringUtils.isEmpty(noMaxStoredFull)) {
-        maxStoredFull = -1;
-      } else {
-        try {
-          maxStoredFull = Integer.parseInt(noMaxStoredFull);
-        } catch (final NumberFormatException nfe) {
-          maxStoredFull = -1;
-        }
-      }
 
       if (!StringUtils.isEmpty(backupPath)) {
         hudson.doQuietDown();
         LOGGER.fine("Wait until executors are idle to perform backup.");
         Utils.waitUntilIdle();
-        new HudsonBackup(new File(backupPath), Hudson.getInstance().getRootDir(), type, maxStoredFull, cleanupDiff,
-            plugin.isMoveOldBackupsToZipFile(), plugin.isBackupBuildResults(), plugin.getExcludedFilesRegex()).backup();
+        new HudsonBackup(type, plugin.getConfig()).backup();
       } else {
         LOGGER.warning("ThinBackup is not configured yet: No backup path set.");
       }
@@ -108,7 +94,7 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
     }
   }
 
-  BackupType getNextScheduledBackup(final long currentTime, final String fullCron, final String diffCron) {
+  BackupType getNextScheduledBackupType(final long currentTime, final String fullCron, final String diffCron) {
     final long fullDelay = calculateDelay(currentTime, BackupType.FULL, fullCron);
     final long diffDelay = calculateDelay(currentTime, BackupType.DIFF, diffCron);
 

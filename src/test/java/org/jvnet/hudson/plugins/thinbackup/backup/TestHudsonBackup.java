@@ -25,6 +25,7 @@ import junit.framework.Assert;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.junit.Test;
 import org.jvnet.hudson.plugins.thinbackup.HudsonDirectoryStructureSetup;
+import org.jvnet.hudson.plugins.thinbackup.ThinBackupConfig;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 
 public class TestHudsonBackup extends HudsonDirectoryStructureSetup {
@@ -34,7 +35,10 @@ public class TestHudsonBackup extends HudsonDirectoryStructureSetup {
     final Calendar cal = Calendar.getInstance();
     cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE - 10));
 
-    new HudsonBackup(backupDir, root, BackupType.FULL, -1, false, false, true, "", cal.getTime()).backup();
+    final ThinBackupConfig config = new ThinBackupConfig();
+    config.setBackupPath(backupDir.getAbsolutePath());
+
+    new HudsonBackup(root, BackupType.FULL, config, cal.getTime()).backup();
 
     String[] list = backupDir.list();
     Assert.assertEquals(1, list.length);
@@ -56,7 +60,11 @@ public class TestHudsonBackup extends HudsonDirectoryStructureSetup {
     final Calendar cal = Calendar.getInstance();
     cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE - 10));
 
-    new HudsonBackup(backupDir, root, BackupType.FULL, -1, false, false, true, "^.*\\.(log)$", cal.getTime()).backup();
+    final ThinBackupConfig config = new ThinBackupConfig();
+    config.setBackupPath(backupDir.getAbsolutePath());
+    config.setExcludedFilesRegex("^.*\\.(log)$");
+
+    new HudsonBackup(root, BackupType.FULL, config, cal.getTime()).backup();
 
     String[] list = backupDir.list();
     Assert.assertEquals(1, list.length);
@@ -86,7 +94,11 @@ public class TestHudsonBackup extends HudsonDirectoryStructureSetup {
     final Calendar cal = Calendar.getInstance();
     cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE - 10));
 
-    new HudsonBackup(backupDir, root, BackupType.FULL, -1, false, false, false, "", cal.getTime()).backup();
+    final ThinBackupConfig config = new ThinBackupConfig();
+    config.setBackupPath(backupDir.getAbsolutePath());
+    config.setBackupBuildResults(false);
+
+    new HudsonBackup(root, BackupType.FULL, config, cal.getTime()).backup();
 
     String[] list = backupDir.list();
     Assert.assertEquals(1, list.length);
@@ -105,7 +117,10 @@ public class TestHudsonBackup extends HudsonDirectoryStructureSetup {
     final Calendar cal = Calendar.getInstance();
     cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE - 10));
 
-    new HudsonBackup(backupDir, root, BackupType.FULL, -1, false, false, true, null, cal.getTime()).backup();
+    final ThinBackupConfig config = new ThinBackupConfig();
+    config.setBackupPath(backupDir.getAbsolutePath());
+
+    new HudsonBackup(root, BackupType.FULL, config, cal.getTime()).backup();
 
     // fake modification
     backupDir.listFiles((FileFilter) FileFilterUtils.prefixFileFilter(BackupType.FULL.toString()))[0]
@@ -115,24 +130,21 @@ public class TestHudsonBackup extends HudsonDirectoryStructureSetup {
       globalConfigFile.setLastModified(System.currentTimeMillis() - 60000 * 120);
     }
 
-    new HudsonBackup(backupDir, root, BackupType.DIFF, -1, false, false, true, "").backup();
+    new HudsonBackup(root, BackupType.DIFF, config, Calendar.getInstance().getTime()).backup();
     final File lastDiffBackup = backupDir.listFiles((FileFilter) FileFilterUtils.prefixFileFilter(BackupType.DIFF
         .toString()))[0];
     Assert.assertEquals(1, lastDiffBackup.list().length);
   }
 
   @Test
-  public void testNullFileExclusionRegexTestConstructor() {
+  public void testEmptyFileExclusionRegexTestConstructor() {
     final Calendar cal = Calendar.getInstance();
     cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE - 10));
-    final HudsonBackup backup = new HudsonBackup(backupDir, root, BackupType.FULL, -1, false, false, true, null,
-        cal.getTime());
-    Assert.assertNotNull(backup);
-  }
+    final ThinBackupConfig config = new ThinBackupConfig();
+    config.setBackupPath(backupDir.getAbsolutePath());
+    config.setExcludedFilesRegex("");
 
-  @Test
-  public void testNullFileExclusionRegex() {
-    final HudsonBackup backup = new HudsonBackup(backupDir, root, BackupType.FULL, -1, false, false, true, null);
+    final HudsonBackup backup = new HudsonBackup(root, BackupType.FULL, config, cal.getTime());
     Assert.assertNotNull(backup);
   }
 

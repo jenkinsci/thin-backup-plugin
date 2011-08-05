@@ -26,7 +26,6 @@
             </h1>
 
             <f:form method="post" action="saveSettings">
-                 <!-- Backup configuration -->
                  <f:section title="Backup settings">
                     <f:entry title="Backup directory" field="backupPath"
                         help="/plugin/thinBackup/help/help-backupPath.html">
@@ -60,8 +59,18 @@
                     <f:optionalBlock title="Backup build results"
                         help="/plugin/thinBackup/help/help-backupBuildResults.html"
                         checked="${it.configuration.backupBuildResults}"
-                        name="backupBuildResults"
-                        />
+                        name="backupBuildResults" >
+                        <f:optionalBlock title="Backup build archive"
+                            help="/plugin/thinBackup/help/help-backupBuildArchive.html"
+                            checked="${it.configuration.backupBuildArchive}"
+                            name="backupBuildArchive" />
+                    </f:optionalBlock>
+
+                    <f:optionalBlock title="Backup next build number file"
+                        help="/plugin/thinBackup/help/help-backupNextBuildNumber.html"
+                        checked="${it.configuration.backupNextBuildNumber}"
+                        name="backupNextBuildNumber"
+                        checkUrl="'${rootUrl}/plugin/thinBackup/checkBackupNextBuildNumber?value='+escape(this.value)" />
 
                     <f:optionalBlock title="Clean up differential backups"
                         help="/plugin/thinBackup/help/help-cleanupDiff.html"
@@ -71,16 +80,13 @@
                     <f:optionalBlock title="Move old backups to ZIP files"
                         help="/plugin/thinBackup/help/help-moveOldBackupsToZipFile.html"
                         checked="${it.configuration.moveOldBackupsToZipFile}"
-                        name="moveOldBackupsToZipFile"
-                        />
-                                        
+                        name="moveOldBackupsToZipFile" />
                 </f:section>
                 
-                <!-- Save! -->
                 <f:section>
-		              <f:entry>
-		                <f:submit value="Save"/>
-		              </f:entry>
+  		              <f:entry>
+    		                <f:submit value="Save"/>
+  		              </f:entry>
                 </f:section>
             </f:form>
         </l:main-panel>

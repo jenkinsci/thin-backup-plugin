@@ -37,14 +37,7 @@ public class ThinBackupPluginImpl extends Plugin {
 
   private static ThinBackupPluginImpl instance = null;
 
-  private String fullBackupSchedule;
-  private String diffBackupSchedule;
-  private String backupPath;
-  private String nrMaxStoredFull;
-  private boolean cleanupDiff;
-  private boolean moveOldBackupsToZipFile;
-  private boolean backupBuildResults = true;
-  private String excludedFilesRegex;
+  private final ThinBackupConfig config = new ThinBackupConfig();
 
   public ThinBackupPluginImpl() {
     instance = this;
@@ -61,68 +54,88 @@ public class ThinBackupPluginImpl extends Plugin {
     return instance;
   }
 
+  public ThinBackupConfig getConfig() {
+    return config;
+  }
+
   public void setBackupPath(final String backupPath) {
-    this.backupPath = backupPath;
+    config.setBackupPath(backupPath);
   }
 
   public String getBackupPath() {
-    return backupPath;
+    return config.getBackupPath();
   }
 
   public void setFullBackupSchedule(final String fullBackupSchedule) {
-    this.fullBackupSchedule = fullBackupSchedule;
+    config.setFullBackupSchedule(fullBackupSchedule);
   }
 
   public String getFullBackupSchedule() {
-    return fullBackupSchedule;
+    return config.getFullBackupSchedule();
   }
 
   public void setDiffBackupSchedule(final String diffBackupSchedule) {
-    this.diffBackupSchedule = diffBackupSchedule;
+    config.setDiffBackupSchedule(diffBackupSchedule);
   }
 
   public String getDiffBackupSchedule() {
-    return diffBackupSchedule;
+    return config.getDiffBackupSchedule();
   }
 
   public void setNrMaxStoredFull(final String nrMaxStoredFull) {
-    this.nrMaxStoredFull = nrMaxStoredFull;
+    config.setNrMaxStoredFullAsString(nrMaxStoredFull);
   }
 
-  public String getNrMaxStoredFull() {
-    return nrMaxStoredFull;
+  public int getNrMaxStoredFull() {
+    return config.getNrMaxStoredFull();
   }
 
   public void setCleanupDiff(final boolean cleanupDiff) {
-    this.cleanupDiff = cleanupDiff;
+    config.setCleanupDiff(cleanupDiff);
   }
 
   public boolean isCleanupDiff() {
-    return cleanupDiff;
+    return config.isCleanupDiff();
   }
 
   public void setMoveOldBackupsToZipFile(final boolean moveOldBackupsToZipFile) {
-    this.moveOldBackupsToZipFile = moveOldBackupsToZipFile;
+    config.setMoveOldBackupsToZipFile(moveOldBackupsToZipFile);
   }
 
   public boolean isMoveOldBackupsToZipFile() {
-    return moveOldBackupsToZipFile;
+    return config.isMoveOldBackupsToZipFile();
   }
 
   public void setBackupBuildResults(final boolean backupBuildResults) {
-    this.backupBuildResults = backupBuildResults;
+    config.setBackupBuildResults(backupBuildResults);
   }
 
   public boolean isBackupBuildResults() {
-    return backupBuildResults;
+    return config.isBackupBuildResults();
+  }
+
+  public void setBackupBuildArchive(final boolean backupBuildArchive) {
+    config.setBackupBuildArchive(backupBuildArchive);
+  }
+
+  public boolean isBackupBuildArchive() {
+    return config.isBackupBuildArchive();
+  }
+
+  public void setBackupNextBuildNumber(final boolean backupNextBuildNumber) {
+    config.setBackupNextBuildNumber(backupNextBuildNumber);
+  }
+
+  public boolean isBackupNextBuildNumber() {
+    return config.isBackupNextBuildNumber();
   }
 
   public void setExcludedFilesRegex(final String excludedFilesRegex) {
-    this.excludedFilesRegex = excludedFilesRegex;
+    config.setExcludedFilesRegex(excludedFilesRegex);
   }
 
   public String getExcludedFilesRegex() {
-    return excludedFilesRegex;
+    return config.getExcludedFilesRegex();
   }
 
   public FormValidation doCheckBackupPath(final StaplerRequest res, final StaplerResponse rsp,
@@ -193,7 +206,7 @@ public class ThinBackupPluginImpl extends Plugin {
     }
 
     try {
-      Pattern.compile(excludedFilesRegex);
+      Pattern.compile(regex);
     } catch (final PatternSyntaxException pse) {
       return FormValidation.error("Regex syntax is invalid.");
     }

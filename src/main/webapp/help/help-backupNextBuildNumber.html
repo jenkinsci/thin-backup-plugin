@@ -24,12 +24,9 @@
 
 <div>
   <p>
-    Specifies the execution schedule in a cron notation when a differential backup should be done. Look at <a href="http://en.wikipedia.org/wiki/Cron">Wikipedia</a> for more information.
+    If this option is enabled, the file <i>nextBuildNumber</i> will also be backed up. 
   </p>
   <p>
-    A differential backup stores only complete files whose modification is done after the last full backup. 
-  </p>
-  <p>
-    <b>NOTE:</b><br/> For a differential backup at least one full backup is needed. If no full backup is available it will be done instead of the first differential backup.
+    <b>NOTE:</b><br/>Take special care when restoring a backup that contains a <i>nextBuildNumber</i> file, as this may potentially cause a lot of problems.
   </p>
 </div>

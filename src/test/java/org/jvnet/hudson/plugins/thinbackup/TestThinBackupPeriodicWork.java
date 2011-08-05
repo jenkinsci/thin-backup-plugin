@@ -42,7 +42,7 @@ public class TestThinBackupPeriodicWork {
     final long currentTime = System.currentTimeMillis();
     final String fullCron = "* * * * *";
     final String diffCron = "* * * * *";
-    thinBackupPeriodicWork.getNextScheduledBackup(currentTime, fullCron, diffCron);
+    thinBackupPeriodicWork.getNextScheduledBackupType(currentTime, fullCron, diffCron);
   }
 
   /**
@@ -56,7 +56,7 @@ public class TestThinBackupPeriodicWork {
     final long testTime = cal.getTimeInMillis();
     final String fullCron = "0 23 * * 0";
     final String diffCron = "0 23 * * 1-5";
-    thinBackupPeriodicWork.getNextScheduledBackup(testTime, fullCron, diffCron);
+    thinBackupPeriodicWork.getNextScheduledBackupType(testTime, fullCron, diffCron);
   }
 
   /**

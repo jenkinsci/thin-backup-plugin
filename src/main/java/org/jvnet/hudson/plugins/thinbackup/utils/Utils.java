@@ -98,9 +98,7 @@ public class Utils {
           result = DIRECTORY_NAME_DATE_FORMAT.parse(dateOnly);
         }
       }
-    } catch (final ParseException pe) {
-      LOGGER.log(Level.WARNING, String.format("Could not parse directory name '%s'.", directoryName));
-    } catch (final NumberFormatException nfe) {
+    } catch (final Exception e) {
       LOGGER.log(Level.WARNING, String.format("Could not parse directory name '%s'.", directoryName));
     }
 
@@ -187,7 +185,8 @@ public class Utils {
       Date closestPreviousBackupDate = new Date(0);
       for (final File fullBackupDir : backups) {
         final Date tmpBackupDate = getDateFromBackupDirectory(fullBackupDir);
-        if (tmpBackupDate.after(closestPreviousBackupDate) && (tmpBackupDate.getTime() <= curBackupDate.getTime())) {
+        if ((tmpBackupDate != null)
+            && (tmpBackupDate.after(closestPreviousBackupDate) && (tmpBackupDate.getTime() <= curBackupDate.getTime()))) {
           closestPreviousBackupDate = tmpBackupDate;
           referencedFullBackup = fullBackupDir;
         }
