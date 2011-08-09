@@ -91,13 +91,16 @@ public class Utils {
   public static Date getDateFromBackupDirectoryName(final String directoryName) {
     Date result = null;
 
+    String dateOnly = "";
     try {
       if (directoryName.startsWith(BackupType.FULL.toString()) || directoryName.startsWith(BackupType.DIFF.toString())) {
-        final String dateOnly = directoryName.replaceFirst(DIRECTORY_NAME_DATE_EXTRACTION_REGEX, "");
+        dateOnly = directoryName.replaceFirst(DIRECTORY_NAME_DATE_EXTRACTION_REGEX, "");
         if (!dateOnly.isEmpty()) {
           result = DIRECTORY_NAME_DATE_FORMAT.parse(dateOnly);
         }
       }
+    } catch (final NumberFormatException nfe) {
+      LOGGER.log(Level.FINEST, "Unexplained NFE...", nfe);
     } catch (final Exception e) {
       LOGGER.log(Level.WARNING, String.format("Could not parse directory name '%s'.", directoryName));
     }
