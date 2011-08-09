@@ -1,6 +1,7 @@
 package org.jvnet.hudson.plugins.thinbackup;
 
-import org.apache.commons.lang.StringUtils;
+import java.io.File;
+import java.util.Date;
 
 public class ThinBackupConfig {
   private String fullBackupSchedule = "";
@@ -13,6 +14,15 @@ public class ThinBackupConfig {
   private boolean backupBuildArchive = false;
   private boolean backupNextBuildNumber = false;
   private String excludedFilesRegex = null;
+  private File hudsonHome = null;
+  private Date date = null;
+
+  /**
+   * Default constructor sets date to date the object was created.
+   */
+  public ThinBackupConfig() {
+    this.date = new Date();
+  }
 
   public void setFullBackupSchedule(final String fullBackupSchedule) {
     this.fullBackupSchedule = fullBackupSchedule;
@@ -40,22 +50,6 @@ public class ThinBackupConfig {
 
   public void setNrMaxStoredFull(final int nrMaxStoredFull) {
     this.nrMaxStoredFull = nrMaxStoredFull;
-  }
-
-  /**
-   * @param nrMaxStoredFull if this string can be parsed as an Integer, nrMaxStoredFull is set to this value, otherwise
-   *          it is set to -1.
-   */
-  public void setNrMaxStoredFullAsString(final String nrMaxStoredFull) {
-    if (StringUtils.isEmpty(nrMaxStoredFull)) {
-      this.nrMaxStoredFull = -1;
-    } else {
-      try {
-        this.nrMaxStoredFull = Integer.parseInt(nrMaxStoredFull);
-      } catch (final NumberFormatException nfe) {
-        this.nrMaxStoredFull = -1;
-      }
-    }
   }
 
   public int getNrMaxStoredFull() {
@@ -108,6 +102,22 @@ public class ThinBackupConfig {
 
   public String getExcludedFilesRegex() {
     return excludedFilesRegex;
+  }
+
+  public void setHudsonHome(final File hudsonHome) {
+    this.hudsonHome = hudsonHome;
+  }
+
+  public File getHudsonHome() {
+    return hudsonHome;
+  }
+
+  public void setDate(final Date date) {
+    this.date = date;
+  }
+
+  public Date getDate() {
+    return date;
   }
 
 }

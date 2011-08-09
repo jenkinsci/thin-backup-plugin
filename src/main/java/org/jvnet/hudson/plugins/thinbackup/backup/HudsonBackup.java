@@ -60,15 +60,31 @@ public class HudsonBackup {
   private Pattern excludedFilesRegexPattern = null;
   private final ThinBackupConfig config;
 
-  public HudsonBackup(final BackupType backupType, final ThinBackupConfig config) {
-    this(Hudson.getInstance().getRootDir(), backupType, config, new Date());
+  public HudsonBackup(final BackupType backupType, final ThinBackupPluginImpl plugin) {
+    this(backupType, createConfig(Hudson.getInstance().getRootDir(), plugin));
+  }
+
+  private static ThinBackupConfig createConfig(final File hudsonHome, final ThinBackupPluginImpl plugin) {
+    final ThinBackupConfig tmp = new ThinBackupConfig();
+    tmp.setHudsonHome(hudsonHome);
+    tmp.setBackupPath(plugin.getBackupPath());
+    tmp.setFullBackupSchedule(plugin.getFullBackupSchedule());
+    tmp.setDiffBackupSchedule(plugin.getDiffBackupSchedule());
+    tmp.setNrMaxStoredFull(plugin.getNrMaxStoredFull());
+    tmp.setExcludedFilesRegex(plugin.getExcludedFilesRegex());
+    tmp.setCleanupDiff(plugin.isCleanupDiff());
+    tmp.setMoveOldBackupsToZipFile(plugin.isMoveOldBackupsToZipFile());
+    tmp.setBackupBuildResults(plugin.isBackupBuildResults());
+    tmp.setBackupBuildArchive(plugin.isBackupBuildArchive());
+    tmp.setBackupNextBuildNumber(plugin.isBackupNextBuildNumber());
+    return tmp;
   }
 
   /**
    * Package visible constructor for unit testing purposes only.
    */
-  HudsonBackup(final File hudsonHome, final BackupType backupType, final ThinBackupConfig config, final Date date) {
-    this.hudsonHome = hudsonHome;
+  HudsonBackup(final BackupType backupType, final ThinBackupConfig config) {
+    this.hudsonHome = config.getHudsonHome();
     this.config = config;
 
     final String excludedFilesRegex = config.getExcludedFilesRegex();
@@ -96,7 +112,7 @@ public class HudsonBackup {
       this.backupType = backupType;
     }
 
-    backupDirectory = Utils.getFormattedDirectory(backupRoot, this.backupType, date);
+    backupDirectory = Utils.getFormattedDirectory(backupRoot, this.backupType, config.getDate());
   }
 
   public void backup() throws IOException {

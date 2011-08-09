@@ -36,9 +36,11 @@ public class TestHudsonBackup extends HudsonDirectoryStructureSetup {
     cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE - 10));
 
     final ThinBackupConfig config = new ThinBackupConfig();
+    config.setHudsonHome(root);
+    config.setDate(cal.getTime());
     config.setBackupPath(backupDir.getAbsolutePath());
 
-    new HudsonBackup(root, BackupType.FULL, config, cal.getTime()).backup();
+    new HudsonBackup(BackupType.FULL, config).backup();
 
     String[] list = backupDir.list();
     Assert.assertEquals(1, list.length);
@@ -61,10 +63,12 @@ public class TestHudsonBackup extends HudsonDirectoryStructureSetup {
     cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE - 10));
 
     final ThinBackupConfig config = new ThinBackupConfig();
+    config.setHudsonHome(root);
+    config.setDate(cal.getTime());
     config.setBackupPath(backupDir.getAbsolutePath());
     config.setExcludedFilesRegex("^.*\\.(log)$");
 
-    new HudsonBackup(root, BackupType.FULL, config, cal.getTime()).backup();
+    new HudsonBackup(BackupType.FULL, config).backup();
 
     String[] list = backupDir.list();
     Assert.assertEquals(1, list.length);
@@ -95,10 +99,12 @@ public class TestHudsonBackup extends HudsonDirectoryStructureSetup {
     cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE - 10));
 
     final ThinBackupConfig config = new ThinBackupConfig();
+    config.setHudsonHome(root);
+    config.setDate(cal.getTime());
     config.setBackupPath(backupDir.getAbsolutePath());
     config.setBackupBuildResults(false);
 
-    new HudsonBackup(root, BackupType.FULL, config, cal.getTime()).backup();
+    new HudsonBackup(BackupType.FULL, config).backup();
 
     String[] list = backupDir.list();
     Assert.assertEquals(1, list.length);
@@ -118,9 +124,11 @@ public class TestHudsonBackup extends HudsonDirectoryStructureSetup {
     cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE - 10));
 
     final ThinBackupConfig config = new ThinBackupConfig();
+    config.setHudsonHome(root);
+    config.setDate(cal.getTime());
     config.setBackupPath(backupDir.getAbsolutePath());
 
-    new HudsonBackup(root, BackupType.FULL, config, cal.getTime()).backup();
+    new HudsonBackup(BackupType.FULL, config).backup();
 
     // fake modification
     backupDir.listFiles((FileFilter) FileFilterUtils.prefixFileFilter(BackupType.FULL.toString()))[0]
@@ -130,7 +138,8 @@ public class TestHudsonBackup extends HudsonDirectoryStructureSetup {
       globalConfigFile.setLastModified(System.currentTimeMillis() - 60000 * 120);
     }
 
-    new HudsonBackup(root, BackupType.DIFF, config, Calendar.getInstance().getTime()).backup();
+    config.setDate(Calendar.getInstance().getTime());
+    new HudsonBackup(BackupType.DIFF, config).backup();
     final File lastDiffBackup = backupDir.listFiles((FileFilter) FileFilterUtils.prefixFileFilter(BackupType.DIFF
         .toString()))[0];
     Assert.assertEquals(1, lastDiffBackup.list().length);
@@ -140,11 +149,14 @@ public class TestHudsonBackup extends HudsonDirectoryStructureSetup {
   public void testEmptyFileExclusionRegexTestConstructor() {
     final Calendar cal = Calendar.getInstance();
     cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE - 10));
+
     final ThinBackupConfig config = new ThinBackupConfig();
+    config.setHudsonHome(root);
+    config.setDate(cal.getTime());
     config.setBackupPath(backupDir.getAbsolutePath());
     config.setExcludedFilesRegex("");
 
-    final HudsonBackup backup = new HudsonBackup(root, BackupType.FULL, config, cal.getTime());
+    final HudsonBackup backup = new HudsonBackup(BackupType.FULL, config);
     Assert.assertNotNull(backup);
   }
 

@@ -119,7 +119,7 @@ public class ThinBackupMgmtLink extends ManagementLink {
     plugin.setBackupPath(backupPath);
     plugin.setFullBackupSchedule(fullBackupSchedule);
     plugin.setDiffBackupSchedule(diffBackupSchedule);
-    plugin.setNrMaxStoredFull(nrMaxStoredFull);
+    plugin.setNrMaxStoredFullAsString(nrMaxStoredFull);
     plugin.setExcludedFilesRegex(excludedFilesRegex);
     plugin.setCleanupDiff(cleanupDiff);
     plugin.setMoveOldBackupsToZipFile(moveOldBackupsToZipFile);
@@ -127,7 +127,7 @@ public class ThinBackupMgmtLink extends ManagementLink {
     plugin.setBackupBuildArchive(backupBuildArchive);
     plugin.setBackupNextBuildNumber(backupNextBuildNumber);
     plugin.save();
-    LOGGER.fine("Saving backup settings done.");
+    LOGGER.finest("Saving backup settings done.");
     rsp.sendRedirect(res.getContextPath() + "/thinBackup");
   }
 

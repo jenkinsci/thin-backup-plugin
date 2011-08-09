@@ -25,6 +25,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -35,9 +36,18 @@ public class ThinBackupPluginImpl extends Plugin {
 
   private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
 
-  private static ThinBackupPluginImpl instance = null;
+  private String fullBackupSchedule = "";
+  private String diffBackupSchedule = "";
+  private String backupPath = "";
+  private int nrMaxStoredFull = -1;
+  private boolean cleanupDiff = false;
+  private boolean moveOldBackupsToZipFile = false;
+  private boolean backupBuildResults = true;
+  private boolean backupBuildArchive = false;
+  private boolean backupNextBuildNumber = false;
+  private String excludedFilesRegex = null;
 
-  private final ThinBackupConfig config = new ThinBackupConfig();
+  private static ThinBackupPluginImpl instance = null;
 
   public ThinBackupPluginImpl() {
     instance = this;
@@ -54,88 +64,100 @@ public class ThinBackupPluginImpl extends Plugin {
     return instance;
   }
 
-  public ThinBackupConfig getConfig() {
-    return config;
-  }
-
-  public void setBackupPath(final String backupPath) {
-    config.setBackupPath(backupPath);
-  }
-
-  public String getBackupPath() {
-    return config.getBackupPath();
-  }
-
   public void setFullBackupSchedule(final String fullBackupSchedule) {
-    config.setFullBackupSchedule(fullBackupSchedule);
+    this.fullBackupSchedule = fullBackupSchedule;
   }
 
   public String getFullBackupSchedule() {
-    return config.getFullBackupSchedule();
+    return fullBackupSchedule;
   }
 
   public void setDiffBackupSchedule(final String diffBackupSchedule) {
-    config.setDiffBackupSchedule(diffBackupSchedule);
+    this.diffBackupSchedule = diffBackupSchedule;
   }
 
   public String getDiffBackupSchedule() {
-    return config.getDiffBackupSchedule();
+    return diffBackupSchedule;
   }
 
-  public void setNrMaxStoredFull(final String nrMaxStoredFull) {
-    config.setNrMaxStoredFullAsString(nrMaxStoredFull);
+  public void setBackupPath(final String backupPath) {
+    this.backupPath = backupPath;
+  }
+
+  public String getBackupPath() {
+    return backupPath;
+  }
+
+  public void setNrMaxStoredFull(final int nrMaxStoredFull) {
+    this.nrMaxStoredFull = nrMaxStoredFull;
+  }
+
+  /**
+   * @param nrMaxStoredFull if this string can be parsed as an Integer, nrMaxStoredFull is set to this value, otherwise
+   *          it is set to -1.
+   */
+  public void setNrMaxStoredFullAsString(final String nrMaxStoredFull) {
+    if (StringUtils.isEmpty(nrMaxStoredFull)) {
+      this.nrMaxStoredFull = -1;
+    } else {
+      try {
+        this.nrMaxStoredFull = Integer.parseInt(nrMaxStoredFull);
+      } catch (final NumberFormatException nfe) {
+        this.nrMaxStoredFull = -1;
+      }
+    }
   }
 
   public int getNrMaxStoredFull() {
-    return config.getNrMaxStoredFull();
+    return nrMaxStoredFull;
   }
 
   public void setCleanupDiff(final boolean cleanupDiff) {
-    config.setCleanupDiff(cleanupDiff);
+    this.cleanupDiff = cleanupDiff;
   }
 
   public boolean isCleanupDiff() {
-    return config.isCleanupDiff();
+    return cleanupDiff;
   }
 
   public void setMoveOldBackupsToZipFile(final boolean moveOldBackupsToZipFile) {
-    config.setMoveOldBackupsToZipFile(moveOldBackupsToZipFile);
+    this.moveOldBackupsToZipFile = moveOldBackupsToZipFile;
   }
 
   public boolean isMoveOldBackupsToZipFile() {
-    return config.isMoveOldBackupsToZipFile();
+    return moveOldBackupsToZipFile;
   }
 
   public void setBackupBuildResults(final boolean backupBuildResults) {
-    config.setBackupBuildResults(backupBuildResults);
+    this.backupBuildResults = backupBuildResults;
   }
 
   public boolean isBackupBuildResults() {
-    return config.isBackupBuildResults();
+    return backupBuildResults;
   }
 
   public void setBackupBuildArchive(final boolean backupBuildArchive) {
-    config.setBackupBuildArchive(backupBuildArchive);
+    this.backupBuildArchive = backupBuildArchive;
   }
 
   public boolean isBackupBuildArchive() {
-    return config.isBackupBuildArchive();
+    return backupBuildArchive;
   }
 
   public void setBackupNextBuildNumber(final boolean backupNextBuildNumber) {
-    config.setBackupNextBuildNumber(backupNextBuildNumber);
+    this.backupNextBuildNumber = backupNextBuildNumber;
   }
 
   public boolean isBackupNextBuildNumber() {
-    return config.isBackupNextBuildNumber();
+    return backupNextBuildNumber;
   }
 
   public void setExcludedFilesRegex(final String excludedFilesRegex) {
-    config.setExcludedFilesRegex(excludedFilesRegex);
+    this.excludedFilesRegex = excludedFilesRegex;
   }
 
   public String getExcludedFilesRegex() {
-    return config.getExcludedFilesRegex();
+    return excludedFilesRegex;
   }
 
   public FormValidation doCheckBackupPath(final StaplerRequest res, final StaplerResponse rsp,
