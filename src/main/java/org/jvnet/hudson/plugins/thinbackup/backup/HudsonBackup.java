@@ -39,7 +39,6 @@ import org.apache.commons.io.filefilter.FileFileFilter;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.io.filefilter.RegexFileFilter;
-import org.jvnet.hudson.plugins.thinbackup.ThinBackupConfig;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
@@ -52,42 +51,26 @@ public class HudsonBackup {
   private static final String JOBS_DIR_NAME = "jobs";
   private static final String USERS_DIR_NAME = "users";
 
+  private final ThinBackupPluginImpl plugin;
   private final File hudsonHome;
   private final File backupRoot;
   private final File backupDirectory;
   private final BackupType backupType;
   private final Date latestFullBackupDate;
   private Pattern excludedFilesRegexPattern = null;
-  private final ThinBackupConfig config;
 
-  public HudsonBackup(final BackupType backupType, final ThinBackupPluginImpl plugin) {
-    this(backupType, createConfig(Hudson.getInstance().getRootDir(), plugin));
-  }
-
-  private static ThinBackupConfig createConfig(final File hudsonHome, final ThinBackupPluginImpl plugin) {
-    final ThinBackupConfig tmp = new ThinBackupConfig();
-    tmp.setHudsonHome(hudsonHome);
-    tmp.setBackupPath(plugin.getBackupPath());
-    tmp.setFullBackupSchedule(plugin.getFullBackupSchedule());
-    tmp.setDiffBackupSchedule(plugin.getDiffBackupSchedule());
-    tmp.setNrMaxStoredFull(plugin.getNrMaxStoredFull());
-    tmp.setExcludedFilesRegex(plugin.getExcludedFilesRegex());
-    tmp.setCleanupDiff(plugin.isCleanupDiff());
-    tmp.setMoveOldBackupsToZipFile(plugin.isMoveOldBackupsToZipFile());
-    tmp.setBackupBuildResults(plugin.isBackupBuildResults());
-    tmp.setBackupBuildArchive(plugin.isBackupBuildArchive());
-    tmp.setBackupNextBuildNumber(plugin.isBackupNextBuildNumber());
-    return tmp;
+  public HudsonBackup(final ThinBackupPluginImpl plugin, final BackupType backupType) {
+    this(plugin, backupType, new Date());
   }
 
   /**
-   * Package visible constructor for unit testing purposes only.
+   * package visible constructor for unit testing purposes only.
    */
-  HudsonBackup(final BackupType backupType, final ThinBackupConfig config) {
-    this.hudsonHome = config.getHudsonHome();
-    this.config = config;
+  HudsonBackup(final ThinBackupPluginImpl plugin, final BackupType backupType, final Date date) {
+    this.plugin = plugin;
+    this.hudsonHome = plugin.getHudsonHome();
 
-    final String excludedFilesRegex = config.getExcludedFilesRegex();
+    final String excludedFilesRegex = plugin.getExcludedFilesRegex();
     if ((excludedFilesRegex != null) && !excludedFilesRegex.isEmpty()) {
       try {
         excludedFilesRegexPattern = Pattern.compile(excludedFilesRegex);
@@ -98,7 +81,7 @@ public class HudsonBackup {
       }
     }
 
-    this.backupRoot = new File(config.getBackupPath());
+    this.backupRoot = new File(plugin.getBackupPath());
     if (!backupRoot.exists()) {
       backupRoot.mkdirs();
     }
@@ -112,7 +95,7 @@ public class HudsonBackup {
       this.backupType = backupType;
     }
 
-    backupDirectory = Utils.getFormattedDirectory(backupRoot, this.backupType, config.getDate());
+    backupDirectory = Utils.getFormattedDirectory(backupRoot, this.backupType, date);
   }
 
   public void backup() throws IOException {
@@ -199,7 +182,7 @@ public class HudsonBackup {
 
   private void backupBuildsFor(final String jobName, final File jobsDirectory, final File jobsBackupDirectory)
       throws IOException {
-    if (config.isBackupBuildResults()) {
+    if (plugin.isBackupBuildResults()) {
       final File buildsDir = new File(new File(jobsDirectory, jobName), BUILDS_DIR_NAME);
       if (buildsDir.exists() && buildsDir.isDirectory()) {
         final Collection<String> builds = Arrays.asList(buildsDir.list());
@@ -272,8 +255,8 @@ public class HudsonBackup {
     } else {
       installedPlugins = Collections.emptyList();
     }
-    for (final PluginWrapper plugin : installedPlugins) {
-      newPluginList.add(plugin.getShortName(), plugin.getVersion());
+    for (final PluginWrapper pluginWrapper : installedPlugins) {
+      newPluginList.add(pluginWrapper.getShortName(), pluginWrapper.getVersion());
     }
 
     return newPluginList;
@@ -288,12 +271,11 @@ public class HudsonBackup {
   }
 
   private void removeSuperfluousBackupSets() throws IOException {
-    if (config.getNrMaxStoredFull() > 0) {
+    if (plugin.getNrMaxStoredFull() > 0) {
       LOGGER.fine("Removing superfluous backup sets...");
-      final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.getInstance();
       final List<BackupSet> validBackupSets = Utils.getValidBackupSets(new File(plugin.getBackupPath()));
       int nrOfRemovedBackups = 0;
-      while (validBackupSets.size() > config.getNrMaxStoredFull()) {
+      while (validBackupSets.size() > plugin.getNrMaxStoredFull()) {
         final BackupSet set = validBackupSets.get(0);
         set.delete();
         validBackupSets.remove(set);
@@ -304,7 +286,7 @@ public class HudsonBackup {
   }
 
   private void cleanupDiffs() throws IOException {
-    if (config.isCleanupDiff()) {
+    if (plugin.isCleanupDiff()) {
       LOGGER.fine("Cleaning up diffs...");
 
       final Collection<File> diffDirs = Utils
@@ -318,7 +300,7 @@ public class HudsonBackup {
   }
 
   private void moveOldBackupsToZipFile(final File currentBackup) {
-    if (config.isMoveOldBackupsToZipFile()) {
+    if (plugin.isMoveOldBackupsToZipFile()) {
       final ZipperThread zipperThread = new ZipperThread(backupRoot, currentBackup);
       zipperThread.start();
     }

@@ -17,6 +17,7 @@
 package org.jvnet.hudson.plugins.thinbackup;
 
 import hudson.Plugin;
+import hudson.model.Hudson;
 import hudson.scheduler.CronTab;
 import hudson.util.FormValidation;
 
@@ -62,6 +63,10 @@ public class ThinBackupPluginImpl extends Plugin {
 
   public static ThinBackupPluginImpl getInstance() {
     return instance;
+  }
+
+  public File getHudsonHome() {
+    return Hudson.getInstance().getRootDir();
   }
 
   public void setFullBackupSchedule(final String fullBackupSchedule) {
