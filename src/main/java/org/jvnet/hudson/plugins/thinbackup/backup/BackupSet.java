@@ -44,7 +44,6 @@ public class BackupSet implements Comparable<BackupSet> {
   private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
 
   public static final String BACKUPSET_ZIPFILE_PREFIX = "BACKUPSET";
-  public static final String BACKUPSET_ZIPFILE_SUFFIX = ".zip";
 
   private boolean inZipFile = false;
 
@@ -66,7 +65,7 @@ public class BackupSet implements Comparable<BackupSet> {
     boolean success = false;
 
     final String name = initial.getName();
-    if ((name.startsWith(BACKUPSET_ZIPFILE_PREFIX)) && (name.endsWith(BACKUPSET_ZIPFILE_SUFFIX))) {
+    if ((name.startsWith(BACKUPSET_ZIPFILE_PREFIX)) && (name.endsWith(HudsonBackup.ZIP_FILE_EXTENSION))) {
       inZipFile = true;
       backupSetzipFile = initial;
     } else {
@@ -295,7 +294,7 @@ public class BackupSet implements Comparable<BackupSet> {
       if (!directory.exists()) {
         directory.mkdirs();
       }
-      unzipDir = new File(directory, getBackupSetZipFileName().replace(BACKUPSET_ZIPFILE_SUFFIX, ""));
+      unzipDir = new File(directory, getBackupSetZipFileName().replace(HudsonBackup.ZIP_FILE_EXTENSION, ""));
       if (!unzipDir.exists()) {
         unzipDir.mkdirs();
       }
@@ -387,7 +386,7 @@ public class BackupSet implements Comparable<BackupSet> {
 
   private String getBackupSetZipFileName() {
     return String.format("%s_%s_%s%s", BACKUPSET_ZIPFILE_PREFIX, getFormattedFullBackupDate(),
-        getFormattedLatestDiffBackupDate(), BACKUPSET_ZIPFILE_SUFFIX);
+        getFormattedLatestDiffBackupDate(), HudsonBackup.ZIP_FILE_EXTENSION);
   }
 
   private String getFormattedFullBackupDate() {

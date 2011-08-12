@@ -32,6 +32,7 @@ import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.lang.StringUtils;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 import org.jvnet.hudson.plugins.thinbackup.backup.BackupSet;
+import org.jvnet.hudson.plugins.thinbackup.backup.HudsonBackup;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 
 public class HudsonRestore {
@@ -94,7 +95,8 @@ public class HudsonRestore {
     } else if (candidates.length == 1) {
       final File toRestore = candidates[0];
       if (toRestore.getName().startsWith(BackupType.DIFF.toString())) {
-        restore(Utils.getReferencedFullBackup(toRestore));
+        final File referencedFullBackup = Utils.getReferencedFullBackup(toRestore);
+        restore(referencedFullBackup);
       }
       restore(toRestore);
       success = true;
@@ -112,7 +114,7 @@ public class HudsonRestore {
 
     IOFileFilter zippedBackupSetsFilter = FileFilterUtils.prefixFileFilter(BackupSet.BACKUPSET_ZIPFILE_PREFIX);
     zippedBackupSetsFilter = FileFilterUtils.andFileFilter(zippedBackupSetsFilter,
-        FileFilterUtils.suffixFileFilter(BackupSet.BACKUPSET_ZIPFILE_SUFFIX));
+        FileFilterUtils.suffixFileFilter(HudsonBackup.ZIP_FILE_EXTENSION));
     zippedBackupSetsFilter = FileFilterUtils.andFileFilter(zippedBackupSetsFilter, FileFileFilter.FILE);
 
     final File[] candidates = new File(backupPath).listFiles((FileFilter) zippedBackupSetsFilter);

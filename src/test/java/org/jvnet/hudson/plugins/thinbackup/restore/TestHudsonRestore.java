@@ -41,7 +41,7 @@ public class TestHudsonRestore extends HudsonDirectoryStructureSetup {
     final FileCollector fc = new FileCollector();
     final List<String> restoredFiles = fc.getFilesAsString(root);
     final int nrRestored = restoredFiles.size();
-    Assert.assertEquals(originalFiles.size(), nrRestored + 1); // + 1 because original has one more file that was not
+    Assert.assertEquals(originalFiles.size(), nrRestored + 2); // + 2 because original has more files that were not
                                                                // backed up on purpose
   }
 
@@ -77,7 +77,7 @@ public class TestHudsonRestore extends HudsonDirectoryStructureSetup {
     final FileCollector fc = new FileCollector();
     final List<String> restoredFiles = fc.getFilesAsString(root);
     final int nrRestored = restoredFiles.size();
-    Assert.assertEquals(originalFiles.size(), nrRestored + 1); // + 1 because original has one more file that was not
+    Assert.assertEquals(originalFiles.size(), nrRestored + 2); // + 2 because original has more files that were not
                                                                // backed up on purpose
   }
 

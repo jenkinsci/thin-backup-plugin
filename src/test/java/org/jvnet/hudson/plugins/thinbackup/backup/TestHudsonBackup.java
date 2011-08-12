@@ -21,8 +21,10 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import junit.framework.Assert;
 
@@ -67,11 +69,12 @@ public class TestHudsonBackup extends HudsonDirectoryStructureSetup {
     list = backup.list();
     Assert.assertEquals(6, list.length);
 
-    final File job = new File(new File(backup, "jobs"), "test");
-    list = job.list();
-    Assert.assertEquals(2, list.length);
+    final File job = new File(new File(backup, HudsonBackup.JOBS_DIR_NAME), TEST_JOB_NAME);
+    final List<String> arrayList = Arrays.asList(job.list());
+    Assert.assertEquals(2, arrayList.size());
+    Assert.assertFalse(arrayList.contains(HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME));
 
-    final File build = new File(new File(job, "builds"), "2011-01-08_22-26-40");
+    final File build = new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), BACKUP_DIRECTORY_NAME);
     list = build.list();
     Assert.assertEquals(6, list.length);
   }
@@ -92,11 +95,11 @@ public class TestHudsonBackup extends HudsonDirectoryStructureSetup {
     list = backup.list();
     Assert.assertEquals(6, list.length);
 
-    final File job = new File(new File(backup, "jobs"), "test");
+    final File job = new File(new File(backup, HudsonBackup.JOBS_DIR_NAME), TEST_JOB_NAME);
     list = job.list();
     Assert.assertEquals(2, list.length);
 
-    final File build = new File(new File(job, "builds"), "2011-01-08_22-26-40");
+    final File build = new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), BACKUP_DIRECTORY_NAME);
     list = build.list();
     Assert.assertEquals(5, list.length);
     boolean containsLogfile = false;
@@ -125,7 +128,7 @@ public class TestHudsonBackup extends HudsonDirectoryStructureSetup {
     list = backup.list();
     Assert.assertEquals(6, list.length);
 
-    final File job = new File(new File(backup, "jobs"), "test");
+    final File job = new File(new File(backup, HudsonBackup.JOBS_DIR_NAME), TEST_JOB_NAME);
     list = job.list();
     Assert.assertEquals(1, list.length);
     Assert.assertEquals("config.xml", list[0]);
@@ -152,6 +155,58 @@ public class TestHudsonBackup extends HudsonDirectoryStructureSetup {
     final File lastDiffBackup = backupDir.listFiles((FileFilter) FileFilterUtils.prefixFileFilter(BackupType.DIFF
         .toString()))[0];
     Assert.assertEquals(1, lastDiffBackup.list().length);
+  }
+
+  @Test
+  public void testBackupNextBuildNumber() throws Exception {
+    final Calendar cal = Calendar.getInstance();
+    cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE - 10));
+
+    final ThinBackupPluginImpl mockPlugin = createMockPlugin();
+    when(mockPlugin.isBackupNextBuildNumber()).thenReturn(true);
+
+    new HudsonBackup(mockPlugin, BackupType.FULL, cal.getTime()).backup();
+
+    String[] list = backupDir.list();
+    Assert.assertEquals(1, list.length);
+    final File backup = new File(backupDir, list[0]);
+    list = backup.list();
+    Assert.assertEquals(6, list.length);
+
+    final File job = new File(new File(backup, HudsonBackup.JOBS_DIR_NAME), TEST_JOB_NAME);
+    final List<String> arrayList = Arrays.asList(job.list());
+    Assert.assertEquals(3, arrayList.size());
+    Assert.assertTrue(arrayList.contains(HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME));
+
+    final File build = new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), BACKUP_DIRECTORY_NAME);
+    list = build.list();
+    Assert.assertEquals(6, list.length);
+  }
+
+  @Test
+  public void testBackupArchive() throws Exception {
+    final Calendar cal = Calendar.getInstance();
+    cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE - 10));
+
+    final ThinBackupPluginImpl mockPlugin = createMockPlugin();
+    when(mockPlugin.isBackupBuildArchive()).thenReturn(true);
+
+    new HudsonBackup(mockPlugin, BackupType.FULL, cal.getTime()).backup();
+
+    String[] list = backupDir.list();
+    Assert.assertEquals(1, list.length);
+    final File backup = new File(backupDir, list[0]);
+    list = backup.list();
+    Assert.assertEquals(6, list.length);
+
+    final File job = new File(new File(backup, HudsonBackup.JOBS_DIR_NAME), TEST_JOB_NAME);
+    List<String> arrayList = Arrays.asList(job.list());
+    Assert.assertEquals(2, arrayList.size());
+    Assert.assertFalse(arrayList.contains(HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME));
+
+    final File build = new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), BACKUP_DIRECTORY_NAME);
+    arrayList = Arrays.asList(build.list());
+    Assert.assertEquals(7, arrayList.size());
   }
 
 }

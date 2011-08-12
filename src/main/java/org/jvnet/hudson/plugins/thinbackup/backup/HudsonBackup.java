@@ -46,10 +46,14 @@ import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 public class HudsonBackup {
   private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
 
-  private static final String INSTALLED_PLUGINS_XML = "installedPlugins.xml";
-  private static final String BUILDS_DIR_NAME = "builds";
-  private static final String JOBS_DIR_NAME = "jobs";
-  private static final String USERS_DIR_NAME = "users";
+  public static final String BUILDS_DIR_NAME = "builds";
+  public static final String JOBS_DIR_NAME = "jobs";
+  public static final String USERS_DIR_NAME = "users";
+  public static final String NEXT_BUILD_NUMBER_FILE_NAME = "nextBuildNumber";
+  public static final String ARCHIVE_DIR_NAME = "archive";
+  public static final String XML_FILE_EXTENSION = ".xml";
+  public static final String ZIP_FILE_EXTENSION = ".zip";
+  public static final String INSTALLED_PLUGINS_XML = "installedPlugins" + XML_FILE_EXTENSION;
 
   private final ThinBackupPluginImpl plugin;
   private final File hudsonHome;
@@ -138,9 +142,9 @@ public class HudsonBackup {
   private void backupGlobalXmls() throws IOException {
     LOGGER.fine("Backing up global configuration files...");
 
-    IOFileFilter suffixFileFilter = FileFilterUtils.suffixFileFilter(".xml");
+    IOFileFilter suffixFileFilter = FileFilterUtils.suffixFileFilter(XML_FILE_EXTENSION);
     suffixFileFilter = FileFilterUtils.andFileFilter(FileFileFilter.FILE, suffixFileFilter);
-    suffixFileFilter = FileFilterUtils.andFileFilter(suffixFileFilter, getDiffFilter());
+    suffixFileFilter = FileFilterUtils.andFileFilter(suffixFileFilter, getFileAgeDiffFilter());
     suffixFileFilter = FileFilterUtils.andFileFilter(suffixFileFilter, getExcludedFilesFilter());
     FileUtils.copyDirectory(hudsonHome, backupDirectory, suffixFileFilter);
 
@@ -163,42 +167,71 @@ public class HudsonBackup {
     LOGGER.info(String.format("Found %d jobs to back up.", jobNames.size()));
     LOGGER.fine(String.format("\t%s", jobNames));
     for (final String jobName : jobNames) {
-      backupJobConfigFor(jobName, jobsDirectory, jobsBackupDirectory);
-      backupBuildsFor(jobName, jobsDirectory, jobsBackupDirectory);
+      final File jobDirectory = new File(jobsDirectory, jobName);
+      if (jobDirectory.exists()) { // sub jobs e.g. maven modules need not be copied
+        if (jobDirectory.canRead()) {
+          final File jobBackupDirectory = new File(jobsBackupDirectory, jobName);
+          backupJobConfigFor(jobDirectory, jobBackupDirectory);
+          backupBuildsFor(jobDirectory, jobBackupDirectory);
+        } else {
+          final String msg = String.format("Read access denied on directory '%s', cannot back up the job '%s'.",
+              jobDirectory.getAbsolutePath(), jobName);
+          LOGGER.severe(msg);
+        }
+      }
     }
     LOGGER.fine("DONE backing up job specific configuration files.");
   }
 
-  private void backupJobConfigFor(final String jobName, final File jobsDirectory, final File jobsBackupDirectory)
-      throws IOException {
-    IOFileFilter filter = FileFilterUtils.suffixFileFilter(".xml");
-    filter = FileFilterUtils.andFileFilter(filter, getDiffFilter());
+  private void backupJobConfigFor(final File jobDirectory, final File jobBackupDirectory) throws IOException {
+    IOFileFilter filter = FileFilterUtils.suffixFileFilter(XML_FILE_EXTENSION);
+    filter = FileFilterUtils.andFileFilter(filter, getFileAgeDiffFilter());
     filter = FileFilterUtils.andFileFilter(filter, getExcludedFilesFilter());
-    final File srcDir = new File(jobsDirectory, jobName);
-    if (srcDir.exists()) { // sub jobs e.g. maven modules need not be copied
-      FileUtils.copyDirectory(srcDir, new File(jobsBackupDirectory, jobName), filter);
+    FileUtils.copyDirectory(jobDirectory, jobBackupDirectory, filter);
+    backupNextBuildNumberFile(jobDirectory, jobBackupDirectory);
+  }
+
+  private void backupNextBuildNumberFile(final File jobDirectory, final File jobBackupDirectory) throws IOException {
+    if (plugin.isBackupNextBuildNumber()) {
+      final File nextBuildNumberFile = new File(jobDirectory, NEXT_BUILD_NUMBER_FILE_NAME);
+      if (nextBuildNumberFile.exists()) {
+        FileUtils.copyFileToDirectory(nextBuildNumberFile, jobBackupDirectory, true);
+      }
     }
   }
 
-  private void backupBuildsFor(final String jobName, final File jobsDirectory, final File jobsBackupDirectory)
-      throws IOException {
+  private void backupBuildsFor(final File jobDirectory, final File jobBackupDirectory) throws IOException {
     if (plugin.isBackupBuildResults()) {
-      final File buildsDir = new File(new File(jobsDirectory, jobName), BUILDS_DIR_NAME);
+      final File buildsDir = new File(jobDirectory, BUILDS_DIR_NAME);
       if (buildsDir.exists() && buildsDir.isDirectory()) {
         final Collection<String> builds = Arrays.asList(buildsDir.list());
         if (builds != null) {
           for (final String build : builds) {
             final File srcDir = new File(buildsDir, build);
             if (!isSymLinkFile(srcDir)) {
-              final File destDir = new File(new File(new File(jobsBackupDirectory, jobName), BUILDS_DIR_NAME), build);
-              IOFileFilter buildFilter = FileFilterUtils.andFileFilter(FileFileFilter.FILE, getDiffFilter());
-              buildFilter = FileFilterUtils.andFileFilter(buildFilter, getExcludedFilesFilter());
-              buildFilter = FileFilterUtils.andFileFilter(buildFilter,
-                  FileFilterUtils.notFileFilter(FileFilterUtils.suffixFileFilter(".zip")));
-              FileUtils.copyDirectory(srcDir, destDir, buildFilter);
+              final File destDir = new File(new File(jobBackupDirectory, BUILDS_DIR_NAME), build);
+              backupBuildFiles(srcDir, destDir);
+              backupBuildArchive(srcDir, destDir);
             }
           }
         }
+      }
+    }
+  }
+
+  private void backupBuildFiles(final File srcDir, final File destDir) throws IOException {
+    IOFileFilter filter = FileFilterUtils.andFileFilter(FileFileFilter.FILE, getFileAgeDiffFilter());
+    filter = FileFilterUtils.andFileFilter(filter, getExcludedFilesFilter());
+    filter = FileFilterUtils.andFileFilter(filter,
+        FileFilterUtils.notFileFilter(FileFilterUtils.suffixFileFilter(ZIP_FILE_EXTENSION)));
+    FileUtils.copyDirectory(srcDir, destDir, filter);
+  }
+
+  private void backupBuildArchive(final File buildSrcDir, final File buildDestDir) throws IOException {
+    if (plugin.isBackupBuildArchive()) {
+      final File archiveSrcDir = new File(buildSrcDir, ARCHIVE_DIR_NAME);
+      if (archiveSrcDir.exists() && archiveSrcDir.isDirectory()) {
+        FileUtils.copyDirectory(archiveSrcDir, buildDestDir);
       }
     }
   }
@@ -208,8 +241,8 @@ public class HudsonBackup {
     if (usersDirectory.exists() && usersDirectory.isDirectory()) {
       LOGGER.fine("Backing up users specific configuration files...");
       final File usersBackupDirectory = new File(backupDirectory.getAbsolutePath(), USERS_DIR_NAME);
-      IOFileFilter filter = FileFilterUtils.suffixFileFilter(".xml");
-      filter = FileFilterUtils.andFileFilter(filter, getDiffFilter());
+      IOFileFilter filter = FileFilterUtils.suffixFileFilter(XML_FILE_EXTENSION);
+      filter = FileFilterUtils.andFileFilter(filter, getFileAgeDiffFilter());
       filter = FileFilterUtils.andFileFilter(filter, getExcludedFilesFilter());
       filter = FileFilterUtils.orFileFilter(filter, DirectoryFileFilter.DIRECTORY);
       FileUtils.copyDirectory(usersDirectory, usersBackupDirectory, filter);
@@ -306,7 +339,7 @@ public class HudsonBackup {
     }
   }
 
-  private IOFileFilter getDiffFilter() {
+  private IOFileFilter getFileAgeDiffFilter() {
     IOFileFilter result = FileFilterUtils.trueFileFilter();
 
     if (backupType == BackupType.DIFF) {

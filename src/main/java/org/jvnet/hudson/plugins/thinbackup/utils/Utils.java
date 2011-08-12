@@ -39,6 +39,7 @@ import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 import org.jvnet.hudson.plugins.thinbackup.backup.BackupSet;
+import org.jvnet.hudson.plugins.thinbackup.backup.HudsonBackup;
 
 public class Utils {
   private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
@@ -155,7 +156,7 @@ public class Utils {
   public static List<File> getBackupSetZipFiles(final File parentDir) {
     IOFileFilter zipFileFilter = FileFilterUtils.prefixFileFilter(BackupSet.BACKUPSET_ZIPFILE_PREFIX);
     zipFileFilter = FileFilterUtils.andFileFilter(zipFileFilter,
-        FileFilterUtils.suffixFileFilter(BackupSet.BACKUPSET_ZIPFILE_SUFFIX));
+        FileFilterUtils.suffixFileFilter(HudsonBackup.ZIP_FILE_EXTENSION));
     zipFileFilter = FileFilterUtils.andFileFilter(zipFileFilter, FileFileFilter.FILE);
 
     final File[] existingZips = parentDir.listFiles((FilenameFilter) zipFileFilter);
