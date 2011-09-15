@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -366,4 +367,52 @@ public class Utils {
                   numberOfZippedBackupSets, numberOfMovedBackupSets));
     }
   }
+
+  public static String expandEnvironmentVariables(final String path) {
+    return internalExpandEnvironmentVariables(path, System.getenv());
+  }
+
+  static String internalExpandEnvironmentVariables(final String path, final Map<String, String> environmentVariables) {
+    final String os = environmentVariables.get("os.name");
+
+    String startEnvVarToken = "";
+    String endEnvVarToken = "";
+    if (os.toUpperCase().contains("UNIX") || os.toUpperCase().contains("LINUX")) {
+      startEnvVarToken = "${";
+      endEnvVarToken = "}";
+    } else if (os.toUpperCase().contains("WINDOWS")) {
+      startEnvVarToken = "%";
+      endEnvVarToken = "%";
+    } else {
+      LOGGER.fine("Environment variable expansion not supported");
+    }
+
+    String tmpPath = path;
+    final StringBuilder newPath = new StringBuilder();
+    boolean done = false;
+    while (!done) {
+      if (tmpPath.contains(startEnvVarToken)) {
+        final int startIdx = tmpPath.indexOf(startEnvVarToken);
+        final int endIdx = tmpPath.indexOf(endEnvVarToken, startIdx + startEnvVarToken.length());
+
+        if (endIdx != -1) {
+          newPath.append(tmpPath.substring(0, startIdx));
+          newPath.append(environmentVariables.get(tmpPath.substring(startIdx + startEnvVarToken.length(), endIdx)));
+          tmpPath = tmpPath.substring(endIdx + endEnvVarToken.length());
+        } else {
+          newPath.append(tmpPath);
+          done = true;
+        }
+        if (tmpPath.isEmpty()) {
+          done = true;
+        }
+      } else {
+        newPath.append(tmpPath);
+        done = true;
+      }
+    }
+
+    return newPath.toString();
+  }
+
 }

@@ -20,7 +20,9 @@ import java.io.File;
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import junit.framework.Assert;
 
@@ -133,6 +135,37 @@ public class TestUtils extends BackupDirStructureSetup {
   public void testGetValidBackupSets() {
     final List<BackupSet> validBackupSets = Utils.getValidBackupSetsFromDirectories(backupDir);
     Assert.assertEquals(3, validBackupSets.size());
+  }
+
+  @Test
+  public void testExpandEnvironmentVariables() {
+    final Map<String, String> unixMap = new HashMap<String, String>();
+    unixMap.put("os.name", "linux");
+    unixMap.put("TEST_VAR", "REPLACEMENT");
+    String unixPath = "${TEST_VAR}";
+    Assert.assertEquals("REPLACEMENT", Utils.internalExpandEnvironmentVariables(unixPath, unixMap));
+    unixPath = "1${TEST_VAR}2";
+    Assert.assertEquals("1REPLACEMENT2", Utils.internalExpandEnvironmentVariables(unixPath, unixMap));
+    unixPath = "1${TEST_VAR2";
+    Assert.assertEquals("1${TEST_VAR2", Utils.internalExpandEnvironmentVariables(unixPath, unixMap));
+    unixPath = "1${TEST_VAR}2${3";
+    Assert.assertEquals("1REPLACEMENT2${3", Utils.internalExpandEnvironmentVariables(unixPath, unixMap));
+    unixPath = "1${TEST_VAR}2${TEST_VAR}3";
+    Assert.assertEquals("1REPLACEMENT2REPLACEMENT3", Utils.internalExpandEnvironmentVariables(unixPath, unixMap));
+
+    final Map<String, String> windowsMap = new HashMap<String, String>();
+    windowsMap.put("os.name", "windows");
+    windowsMap.put("TEST_VAR", "REPLACEMENT");
+    String windowsPath = "%TEST_VAR%";
+    Assert.assertEquals("REPLACEMENT", Utils.internalExpandEnvironmentVariables(windowsPath, windowsMap));
+    windowsPath = "1%TEST_VAR%2";
+    Assert.assertEquals("1REPLACEMENT2", Utils.internalExpandEnvironmentVariables(windowsPath, windowsMap));
+    windowsPath = "1%TEST_VAR2";
+    Assert.assertEquals("1%TEST_VAR2", Utils.internalExpandEnvironmentVariables(windowsPath, windowsMap));
+    windowsPath = "1%TEST_VAR%2%3";
+    Assert.assertEquals("1REPLACEMENT2%3", Utils.internalExpandEnvironmentVariables(windowsPath, windowsMap));
+    windowsPath = "1%TEST_VAR%2%TEST_VAR%3";
+    Assert.assertEquals("1REPLACEMENT2REPLACEMENT3", Utils.internalExpandEnvironmentVariables(windowsPath, windowsMap));
   }
 
 }
