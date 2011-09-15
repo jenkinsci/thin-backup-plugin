@@ -70,7 +70,7 @@ public class HudsonBackup {
   /**
    * package visible constructor for unit testing purposes only.
    */
-  HudsonBackup(final ThinBackupPluginImpl plugin, final BackupType backupType, final Date date) {
+  protected HudsonBackup(final ThinBackupPluginImpl plugin, final BackupType backupType, final Date date) {
     this.plugin = plugin;
     this.hudsonHome = plugin.getHudsonHome();
 

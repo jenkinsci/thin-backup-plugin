@@ -152,6 +152,8 @@ public class TestUtils extends BackupDirStructureSetup {
     Assert.assertEquals("1REPLACEMENT2${3", Utils.internalExpandEnvironmentVariables(unixPath, unixMap));
     unixPath = "1${TEST_VAR}2${TEST_VAR}3";
     Assert.assertEquals("1REPLACEMENT2REPLACEMENT3", Utils.internalExpandEnvironmentVariables(unixPath, unixMap));
+    unixPath = "1${NO_VALUE}";
+    Assert.assertEquals("1", Utils.internalExpandEnvironmentVariables(unixPath, unixMap));
 
     final Map<String, String> windowsMap = new HashMap<String, String>();
     windowsMap.put("os.name", "windows");
@@ -166,6 +168,8 @@ public class TestUtils extends BackupDirStructureSetup {
     Assert.assertEquals("1REPLACEMENT2%3", Utils.internalExpandEnvironmentVariables(windowsPath, windowsMap));
     windowsPath = "1%TEST_VAR%2%TEST_VAR%3";
     Assert.assertEquals("1REPLACEMENT2REPLACEMENT3", Utils.internalExpandEnvironmentVariables(windowsPath, windowsMap));
+    windowsPath = "1%NO_VALUE%";
+    Assert.assertEquals("1", Utils.internalExpandEnvironmentVariables(windowsPath, windowsMap));
   }
 
 }

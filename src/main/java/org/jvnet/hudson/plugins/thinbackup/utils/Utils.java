@@ -372,7 +372,11 @@ public class Utils {
     return internalExpandEnvironmentVariables(path, System.getenv());
   }
 
-  static String internalExpandEnvironmentVariables(final String path, final Map<String, String> environmentVariables) {
+  /**
+   * For unit testing purposes only. Use @link {expandEnvironmentVariables}.
+   */
+  protected static String internalExpandEnvironmentVariables(final String path,
+      final Map<String, String> environmentVariables) {
     final String os = environmentVariables.get("os.name");
 
     String startEnvVarToken = "";
@@ -396,8 +400,18 @@ public class Utils {
         final int endIdx = tmpPath.indexOf(endEnvVarToken, startIdx + startEnvVarToken.length());
 
         if (endIdx != -1) {
+          final String envVar = tmpPath.substring(startIdx + startEnvVarToken.length(), endIdx);
+          String envVarValue = environmentVariables.get(envVar);
+          if (envVarValue == null) {
+            LOGGER
+                .warning(String
+                    .format(
+                        "Environment variable '%s' was specified in path '%s', but it is not defined in the system's environment variables.",
+                        envVar, path));
+            envVarValue = "";
+          }
           newPath.append(tmpPath.substring(0, startIdx));
-          newPath.append(environmentVariables.get(tmpPath.substring(startIdx + startEnvVarToken.length(), endIdx)));
+          newPath.append(envVarValue);
           tmpPath = tmpPath.substring(endIdx + endEnvVarToken.length());
         } else {
           newPath.append(tmpPath);
