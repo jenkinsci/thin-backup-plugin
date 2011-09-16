@@ -306,7 +306,7 @@ public class HudsonBackup {
   private void removeSuperfluousBackupSets() throws IOException {
     if (plugin.getNrMaxStoredFull() > 0) {
       LOGGER.fine("Removing superfluous backup sets...");
-      final List<BackupSet> validBackupSets = Utils.getValidBackupSets(new File(plugin.getBackupPath()));
+      final List<BackupSet> validBackupSets = Utils.getValidBackupSets(new File(plugin.getExpandedBackupPath()));
       int nrOfRemovedBackups = 0;
       while (validBackupSets.size() > plugin.getNrMaxStoredFull()) {
         final BackupSet set = validBackupSets.get(0);

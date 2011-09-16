@@ -92,7 +92,7 @@ public class ThinBackupMgmtLink extends ManagementLink {
 
     final File hudsonHome = hudson.getRootDir();
     final HudsonRestore hudsonRestore = new HudsonRestore(hudsonHome, ThinBackupPluginImpl.getInstance()
-        .getBackupPath(), restoreBackupFrom);
+        .getExpandedBackupPath(), restoreBackupFrom);
     hudsonRestore.restore();
 
     hudson.doCancelQuietDown();
@@ -137,7 +137,6 @@ public class ThinBackupMgmtLink extends ManagementLink {
 
   public List<String> getAvailableBackups() {
     final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.getInstance();
-    return Utils.getBackupsAsDates(new File(plugin.getBackupPath()));
+    return Utils.getBackupsAsDates(new File(plugin.getExpandedBackupPath()));
   }
-
 }

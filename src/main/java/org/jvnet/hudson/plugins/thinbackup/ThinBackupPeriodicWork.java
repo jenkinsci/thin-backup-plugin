@@ -73,7 +73,7 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
     final Hudson hudson = Hudson.getInstance();
     String backupPath = null;
     try {
-      backupPath = plugin.getBackupPath();
+      backupPath = plugin.getExpandedBackupPath();
 
       if (!StringUtils.isEmpty(backupPath)) {
         hudson.doQuietDown();

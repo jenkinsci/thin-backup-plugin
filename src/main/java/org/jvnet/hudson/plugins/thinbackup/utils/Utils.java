@@ -54,6 +54,9 @@ public class Utils {
   public static final String THINBACKUP_TMP_DIR = System.getProperty("java.io.tmpdir") + File.separator
       + "thinBackupTmpDir";
 
+  private static final String START_ENV_VAR_TOKEN = "${";
+  private static final String END_ENV_VAR_TOKEN = "}";
+
   /**
    * Waits until all Hudson slaves are idle.
    */
@@ -368,7 +371,7 @@ public class Utils {
     }
   }
 
-  public static String expandEnvironmentVariables(final String path) {
+  public static String expandEnvironmentVariables(final String path) throws EnvironmentVariableNotDefinedException {
     return internalExpandEnvironmentVariables(path, System.getenv());
   }
 
@@ -376,43 +379,30 @@ public class Utils {
    * For unit testing purposes only. Use @link {expandEnvironmentVariables}.
    */
   protected static String internalExpandEnvironmentVariables(final String path,
-      final Map<String, String> environmentVariables) {
-    final String os = environmentVariables.get("os.name");
-
-    String startEnvVarToken = "";
-    String endEnvVarToken = "";
-    if (os.toUpperCase().contains("UNIX") || os.toUpperCase().contains("LINUX")) {
-      startEnvVarToken = "${";
-      endEnvVarToken = "}";
-    } else if (os.toUpperCase().contains("WINDOWS")) {
-      startEnvVarToken = "%";
-      endEnvVarToken = "%";
-    } else {
-      LOGGER.fine("Environment variable expansion not supported");
-    }
+      final Map<String, String> environmentVariables) throws EnvironmentVariableNotDefinedException {
 
     String tmpPath = path;
     final StringBuilder newPath = new StringBuilder();
     boolean done = false;
     while (!done) {
-      if (tmpPath.contains(startEnvVarToken)) {
-        final int startIdx = tmpPath.indexOf(startEnvVarToken);
-        final int endIdx = tmpPath.indexOf(endEnvVarToken, startIdx + startEnvVarToken.length());
+      if (tmpPath.contains(START_ENV_VAR_TOKEN)) {
+        final int startIdx = tmpPath.indexOf(START_ENV_VAR_TOKEN);
+        final int endIdx = tmpPath.indexOf(END_ENV_VAR_TOKEN, startIdx + START_ENV_VAR_TOKEN.length());
 
         if (endIdx != -1) {
-          final String envVar = tmpPath.substring(startIdx + startEnvVarToken.length(), endIdx);
-          String envVarValue = environmentVariables.get(envVar);
+          final String envVar = tmpPath.substring(startIdx + START_ENV_VAR_TOKEN.length(), endIdx);
+          final String envVarValue = environmentVariables.get(envVar);
           if (envVarValue == null) {
-            LOGGER
-                .warning(String
-                    .format(
-                        "Environment variable '%s' was specified in path '%s', but it is not defined in the system's environment variables.",
-                        envVar, path));
-            envVarValue = "";
+            final String message = String
+                .format(
+                    "Environment variable '%s' was specified in path '%s', but it is not defined in the system's environment variables.",
+                    envVar, path);
+            LOGGER.warning(message);
+            throw new EnvironmentVariableNotDefinedException(message);
           }
           newPath.append(tmpPath.substring(0, startIdx));
           newPath.append(envVarValue);
-          tmpPath = tmpPath.substring(endIdx + endEnvVarToken.length());
+          tmpPath = tmpPath.substring(endIdx + END_ENV_VAR_TOKEN.length());
         } else {
           newPath.append(tmpPath);
           done = true;
@@ -428,5 +418,4 @@ public class Utils {
 
     return newPath.toString();
   }
-
 }

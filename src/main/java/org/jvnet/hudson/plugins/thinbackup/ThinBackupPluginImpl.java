@@ -27,6 +27,8 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.apache.commons.lang.StringUtils;
+import org.jvnet.hudson.plugins.thinbackup.utils.EnvironmentVariableNotDefinedException;
+import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -89,8 +91,22 @@ public class ThinBackupPluginImpl extends Plugin {
     this.backupPath = backupPath;
   }
 
+  /**
+   * Get the backup path as entered by the user. May contain traces of environment variables.
+   * 
+   * If you need a path that can be used as is (env. vars expanded), please use @link{getExpandedBackupPath}.
+   * 
+   * @return the backup path as stored in the settings page.
+   */
   public String getBackupPath() {
     return backupPath;
+  }
+
+  /**
+   * @return the backup path with possibly contained environment variables expanded.
+   */
+  public String getExpandedBackupPath() {
+    return Utils.expandEnvironmentVariables(backupPath);
   }
 
   public void setNrMaxStoredFull(final int nrMaxStoredFull) {
@@ -171,28 +187,45 @@ public class ThinBackupPluginImpl extends Plugin {
       return FormValidation.error("Backup path must not be empty.");
     }
 
-    final File backupdir = new File(path);
+    String expandedPathMessage = "";
+    String expandedPath = "";
+    try {
+      expandedPath = Utils.expandEnvironmentVariables(path);
+    } catch (final EnvironmentVariableNotDefinedException evnd) {
+      return FormValidation.error(evnd.getMessage());
+    }
+    if (!expandedPath.equals(path)) {
+      expandedPathMessage = String.format("The path will be expanded to '%s'.\n\n", expandedPath);
+    }
+
+    final File backupdir = new File(expandedPath);
     if (!backupdir.exists()) {
-      return FormValidation.warning("The directory does not exist, but will be created before the first run.");
+      return FormValidation.warning(expandedPathMessage
+          + "The directory does not exist, but will be created before the first run.");
     }
     if (!backupdir.isDirectory()) {
-      return FormValidation
-          .error("A file with this name exists, thus a directory with the same name cannot be created.");
+      return FormValidation.error(expandedPathMessage
+          + "A file with this name exists, thus a directory with the same name cannot be created.");
     }
-    final File tmp = new File(path + File.separator + "test.txt");
+    final File tmp = new File(expandedPath + File.separator + "test.txt");
     try {
       tmp.createNewFile();
     } catch (final Exception e) {
       if (!tmp.canWrite()) {
-        return FormValidation.error("The directory exists, but is not writable.");
+        return FormValidation.error(expandedPathMessage + "The directory exists, but is not writable.");
       }
     } finally {
       if (tmp.exists()) {
         tmp.delete();
       }
     }
-    if (!path.trim().equals(path)) {
-      return FormValidation.warning("Path contains leading and/or trailing whitespaces - is this intentional?");
+    if (!expandedPath.trim().equals(expandedPath)) {
+      return FormValidation.warning(expandedPathMessage
+          + "Path contains leading and/or trailing whitespaces - is this intentional?");
+    }
+
+    if (!expandedPathMessage.isEmpty()) {
+      return FormValidation.warning(expandedPathMessage.substring(0, expandedPathMessage.length() - 2));
     }
 
     return FormValidation.ok();
