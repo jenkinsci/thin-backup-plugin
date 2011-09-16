@@ -85,7 +85,7 @@ public class HudsonBackup {
       }
     }
 
-    this.backupRoot = new File(plugin.getBackupPath());
+    this.backupRoot = new File(plugin.getExpandedBackupPath());
     if (!backupRoot.exists()) {
       backupRoot.mkdirs();
     }
