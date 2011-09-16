@@ -42,7 +42,7 @@ public class TestHudsonBackup extends HudsonDirectoryStructureSetup {
     when(mockPlugin.getHudsonHome()).thenReturn(root);
     when(mockPlugin.getFullBackupSchedule()).thenReturn("");
     when(mockPlugin.getDiffBackupSchedule()).thenReturn("");
-    when(mockPlugin.getBackupPath()).thenReturn(backupDir.getAbsolutePath());
+    when(mockPlugin.getExpandedBackupPath()).thenReturn(backupDir.getAbsolutePath());
     when(mockPlugin.getNrMaxStoredFull()).thenReturn(-1);
     when(mockPlugin.isCleanupDiff()).thenReturn(false);
     when(mockPlugin.isMoveOldBackupsToZipFile()).thenReturn(false);

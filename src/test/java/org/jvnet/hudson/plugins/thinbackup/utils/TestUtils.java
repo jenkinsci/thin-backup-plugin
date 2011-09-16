@@ -127,7 +127,7 @@ public class TestUtils extends BackupDirStructureSetup {
 
   @Test
   public void testGetBackups() {
-    final List<String> backups = Utils.getBackupsAsDates(backupDir);
+    final List<String> backups = Utils.getBackupsAsDates(backupDir.getAbsoluteFile());
     Assert.assertEquals(9, backups.size());
   }
 
@@ -139,37 +139,24 @@ public class TestUtils extends BackupDirStructureSetup {
 
   @Test
   public void testExpandEnvironmentVariables() {
-    final Map<String, String> unixMap = new HashMap<String, String>();
-    unixMap.put("os.name", "linux");
-    unixMap.put("TEST_VAR", "REPLACEMENT");
-    String unixPath = "${TEST_VAR}";
-    Assert.assertEquals("REPLACEMENT", Utils.internalExpandEnvironmentVariables(unixPath, unixMap));
-    unixPath = "1${TEST_VAR}2";
-    Assert.assertEquals("1REPLACEMENT2", Utils.internalExpandEnvironmentVariables(unixPath, unixMap));
-    unixPath = "1${TEST_VAR2";
-    Assert.assertEquals("1${TEST_VAR2", Utils.internalExpandEnvironmentVariables(unixPath, unixMap));
-    unixPath = "1${TEST_VAR}2${3";
-    Assert.assertEquals("1REPLACEMENT2${3", Utils.internalExpandEnvironmentVariables(unixPath, unixMap));
-    unixPath = "1${TEST_VAR}2${TEST_VAR}3";
-    Assert.assertEquals("1REPLACEMENT2REPLACEMENT3", Utils.internalExpandEnvironmentVariables(unixPath, unixMap));
-    unixPath = "1${NO_VALUE}";
-    Assert.assertEquals("1", Utils.internalExpandEnvironmentVariables(unixPath, unixMap));
-
-    final Map<String, String> windowsMap = new HashMap<String, String>();
-    windowsMap.put("os.name", "windows");
-    windowsMap.put("TEST_VAR", "REPLACEMENT");
-    String windowsPath = "%TEST_VAR%";
-    Assert.assertEquals("REPLACEMENT", Utils.internalExpandEnvironmentVariables(windowsPath, windowsMap));
-    windowsPath = "1%TEST_VAR%2";
-    Assert.assertEquals("1REPLACEMENT2", Utils.internalExpandEnvironmentVariables(windowsPath, windowsMap));
-    windowsPath = "1%TEST_VAR2";
-    Assert.assertEquals("1%TEST_VAR2", Utils.internalExpandEnvironmentVariables(windowsPath, windowsMap));
-    windowsPath = "1%TEST_VAR%2%3";
-    Assert.assertEquals("1REPLACEMENT2%3", Utils.internalExpandEnvironmentVariables(windowsPath, windowsMap));
-    windowsPath = "1%TEST_VAR%2%TEST_VAR%3";
-    Assert.assertEquals("1REPLACEMENT2REPLACEMENT3", Utils.internalExpandEnvironmentVariables(windowsPath, windowsMap));
-    windowsPath = "1%NO_VALUE%";
-    Assert.assertEquals("1", Utils.internalExpandEnvironmentVariables(windowsPath, windowsMap));
+    final Map<String, String> map = new HashMap<String, String>();
+    map.put("TEST_VAR", "REPLACEMENT");
+    String path = "${TEST_VAR}";
+    Assert.assertEquals("REPLACEMENT", Utils.internalExpandEnvironmentVariables(path, map));
+    path = "1${TEST_VAR}2";
+    Assert.assertEquals("1REPLACEMENT2", Utils.internalExpandEnvironmentVariables(path, map));
+    path = "1${TEST_VAR2";
+    Assert.assertEquals("1${TEST_VAR2", Utils.internalExpandEnvironmentVariables(path, map));
+    path = "1${TEST_VAR}2${3";
+    Assert.assertEquals("1REPLACEMENT2${3", Utils.internalExpandEnvironmentVariables(path, map));
+    path = "1${TEST_VAR}2${TEST_VAR}3";
+    Assert.assertEquals("1REPLACEMENT2REPLACEMENT3", Utils.internalExpandEnvironmentVariables(path, map));
+    path = "1${NO_VALUE_DEFINED}";
+    try {
+      Utils.internalExpandEnvironmentVariables(path, map);
+      Assert.assertFalse("Expected an exception.", true);
+    } catch (final EnvironmentVariableNotDefinedException evnde) {
+      // if an exception is caught, everything is AOK.
+    }
   }
-
 }
