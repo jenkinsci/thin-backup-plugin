@@ -82,7 +82,7 @@
   		<artifactId>mockito-all</artifactId>
   		<version>1.9.0-rc1</version>
   		<type>jar</type>
-  		<scope>compile</scope>
+  		<scope>test</scope>
   	</dependency>
   </dependencies>
   <distributionManagement>

@@ -16,10 +16,17 @@
  */
 package org.jvnet.hudson.plugins.thinbackup.restore;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,6 +35,7 @@ import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.FileFileFilter;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
+import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.commons.lang.StringUtils;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 import org.jvnet.hudson.plugins.thinbackup.backup.BackupSet;
@@ -125,12 +133,52 @@ public class HudsonRestore {
   }
 
   private void restore(final File toRestore) throws IOException {
-    IOFileFilter restoreNextBuildNumberFilter = FileFilterUtils.trueFileFilter();
-    if (!restoreNextBuildNumber) {
-      restoreNextBuildNumberFilter = FileFilterUtils.notFileFilter(FileFilterUtils.nameFileFilter("nextBuildNumber"));
+    IOFileFilter nextBuildNumberFileFilter = FileFilterUtils.nameFileFilter("nextBuildNumber");
+    IOFileFilter restoreNextBuildNumberFilter = FileFilterUtils.notFileFilter(nextBuildNumberFileFilter);
+
+    if (restoreNextBuildNumber) {
+      Collection<File> restore = FileUtils.listFiles(toRestore, nextBuildNumberFileFilter, TrueFileFilter.INSTANCE);
+      Map<String, Integer> nextBuildNumbers = new HashMap<String, Integer>();
+      for (File file : restore) {
+        BufferedReader reader = null;
+        try {
+          reader = new BufferedReader(new FileReader(file));
+          nextBuildNumbers.put(file.getParent(), Integer.parseInt(reader.readLine()));
+        } finally {
+          if (reader != null)
+            reader.close();
+        }
+      }
+
+      Collection<File> current = FileUtils.listFiles(hudsonHome, nextBuildNumberFileFilter, TrueFileFilter.INSTANCE);
+      for (File file : current) {
+        BufferedReader reader = null;
+        try {
+          reader = new BufferedReader(new FileReader(file));
+          int currentBuildNumber = Integer.parseInt(reader.readLine());
+          Integer toRestoreNextBuildNumber = nextBuildNumbers.get(file.getParent());
+          if (currentBuildNumber < toRestoreNextBuildNumber)
+            restoreNextBuildNumber(file, toRestoreNextBuildNumber);
+        } finally {
+          if (reader != null)
+            reader.close();
+        }
+      }
     }
 
     FileUtils.copyDirectory(toRestore, this.hudsonHome, restoreNextBuildNumberFilter, true);
   }
 
+  private void restoreNextBuildNumber(File file, Integer toRestoreNextBuildNumber) throws IOException {
+    file.delete();
+    file.createNewFile();
+    Writer writer = null;
+    try {
+      writer = new FileWriter(file);
+      writer.write(toRestoreNextBuildNumber);
+    } finally {
+      if (writer != null)
+        writer.close();
+    }
+  }
 }
