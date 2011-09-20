@@ -80,4 +80,17 @@ public class HudsonDirectoryStructureSetup {
     FileUtils.deleteDirectory(new File(Utils.THINBACKUP_TMP_DIR));
   }
 
+  protected boolean containsStringEndingWith(final List<String> strings, final String pattern) {
+    boolean contains = false;
+
+    for (final String string : strings) {
+      if (string.endsWith(pattern)) {
+        contains = true;
+        break;
+      }
+    }
+
+    return contains;
+  }
+
 }

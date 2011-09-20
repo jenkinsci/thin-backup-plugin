@@ -24,6 +24,7 @@ import hudson.triggers.Trigger;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -80,7 +81,8 @@ public class ThinBackupMgmtLink extends ManagementLink {
   }
 
   public void doRestore(final StaplerRequest res, final StaplerResponse rsp,
-      @QueryParameter("restoreBackupFrom") final String restoreBackupFrom) throws IOException {
+      @QueryParameter("restoreBackupFrom") final String restoreBackupFrom,
+      @QueryParameter("restoreNextBuildNumber") final String restoreNextBuildNumber) throws IOException {
     LOGGER.info("Starting restore operation.");
 
     Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
@@ -90,14 +92,34 @@ public class ThinBackupMgmtLink extends ManagementLink {
     LOGGER.fine("Waiting until executors are idle to perform restore...");
     Utils.waitUntilIdle();
 
-    final File hudsonHome = hudson.getRootDir();
-    final HudsonRestore hudsonRestore = new HudsonRestore(hudsonHome, ThinBackupPluginImpl.getInstance()
-        .getExpandedBackupPath(), restoreBackupFrom);
-    hudsonRestore.restore();
+    try {
+      Date restoreFromDate = null;
+      try {
+        restoreFromDate = Utils.DISPLAY_DATE_FORMAT.parse(restoreBackupFrom);
+      } catch (final Exception pe) {
+        LOGGER.severe("Cannot parse.");
+        throw new IllegalStateException();
+      }
 
-    hudson.doCancelQuietDown();
+      boolean restoreNBN = false;
+      try {
+        restoreNBN = Boolean.parseBoolean(restoreNextBuildNumber);
+      } catch (final Exception pe) {
+        LOGGER.severe("Cannot parse.");
+        throw new IllegalStateException();
+      }
 
-    rsp.sendRedirect(res.getContextPath() + "/thinBackup");
+      final File hudsonHome = hudson.getRootDir();
+      final HudsonRestore hudsonRestore = new HudsonRestore(hudsonHome, ThinBackupPluginImpl.getInstance()
+          .getExpandedBackupPath(), restoreFromDate, restoreNBN);
+      hudsonRestore.restore();
+
+    } catch (final Exception ise) {
+      LOGGER.severe("Could not restore.");
+    } finally {
+      hudson.doCancelQuietDown();
+      rsp.sendRedirect(res.getContextPath() + "/thinBackup");
+    }
 
     LOGGER.info("Restore finished.");
   }

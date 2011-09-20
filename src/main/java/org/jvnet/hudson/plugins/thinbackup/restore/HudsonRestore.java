@@ -19,7 +19,6 @@ package org.jvnet.hudson.plugins.thinbackup.restore;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -40,22 +39,15 @@ public class HudsonRestore {
 
   private final String backupPath;
   private final File hudsonHome;
-  private Date restoreFromDate;
+  private final Date restoreFromDate;
+  private final boolean restoreNextBuildNumber;
 
-  public HudsonRestore(final File hudsonConfigurationPath, final String backupPath, final Date restoreFromDate) {
+  public HudsonRestore(final File hudsonConfigurationPath, final String backupPath, final Date restoreFromDate,
+      final boolean restoreNextBuildNumber) {
     this.hudsonHome = hudsonConfigurationPath;
     this.backupPath = backupPath;
     this.restoreFromDate = restoreFromDate;
-  }
-
-  public HudsonRestore(final File hudsonConfigurationPath, final String backupPath, final String restoreBackupFrom) {
-    this.hudsonHome = hudsonConfigurationPath;
-    this.backupPath = backupPath;
-    try {
-      restoreFromDate = Utils.DISPLAY_DATE_FORMAT.parse(restoreBackupFrom);
-    } catch (final ParseException e) {
-      restoreFromDate = null;
-    }
+    this.restoreNextBuildNumber = restoreNextBuildNumber;
   }
 
   public void restore() {
@@ -133,7 +125,12 @@ public class HudsonRestore {
   }
 
   private void restore(final File toRestore) throws IOException {
-    FileUtils.copyDirectory(toRestore, this.hudsonHome);
+    IOFileFilter restoreNextBuildNumberFilter = FileFilterUtils.trueFileFilter();
+    if (!restoreNextBuildNumber) {
+      restoreNextBuildNumberFilter = FileFilterUtils.notFileFilter(FileFilterUtils.nameFileFilter("nextBuildNumber"));
+    }
+
+    FileUtils.copyDirectory(toRestore, this.hudsonHome, restoreNextBuildNumberFilter, true);
   }
 
 }

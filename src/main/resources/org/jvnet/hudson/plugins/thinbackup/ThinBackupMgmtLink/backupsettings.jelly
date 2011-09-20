@@ -69,8 +69,7 @@
                     <f:optionalBlock title="Backup next build number file"
                         help="/plugin/thinBackup/help/help-backupNextBuildNumber.html"
                         checked="${it.configuration.backupNextBuildNumber}"
-                        name="backupNextBuildNumber"
-                        checkUrl="'${rootUrl}/plugin/thinBackup/checkBackupNextBuildNumber?value='+escape(this.value)" />
+                        name="backupNextBuildNumber" />
 
                     <f:optionalBlock title="Clean up differential backups"
                         help="/plugin/thinBackup/help/help-cleanupDiff.html"

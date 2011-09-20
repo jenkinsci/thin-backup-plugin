@@ -134,12 +134,9 @@ public class TestHudsonBackup extends HudsonDirectoryStructureSetup {
     Assert.assertEquals("config.xml", list[0]);
   }
 
-  @Test
-  public void testHudsonDiffBackup() throws Exception {
+  public void performHudsonDiffBackup(final ThinBackupPluginImpl mockPlugin) throws Exception {
     final Calendar cal = Calendar.getInstance();
     cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE - 10));
-
-    final ThinBackupPluginImpl mockPlugin = createMockPlugin();
 
     new HudsonBackup(mockPlugin, BackupType.FULL, cal.getTime()).backup();
 
@@ -152,6 +149,14 @@ public class TestHudsonBackup extends HudsonDirectoryStructureSetup {
     }
 
     new HudsonBackup(mockPlugin, BackupType.DIFF, new Date()).backup();
+  }
+
+  @Test
+  public void testHudsonDiffBackup() throws Exception {
+    final ThinBackupPluginImpl mockPlugin = createMockPlugin();
+
+    performHudsonDiffBackup(mockPlugin);
+
     final File lastDiffBackup = backupDir.listFiles((FileFilter) FileFilterUtils.prefixFileFilter(BackupType.DIFF
         .toString()))[0];
     Assert.assertEquals(1, lastDiffBackup.list().length);
@@ -176,7 +181,7 @@ public class TestHudsonBackup extends HudsonDirectoryStructureSetup {
     final File job = new File(new File(backup, HudsonBackup.JOBS_DIR_NAME), TEST_JOB_NAME);
     final List<String> arrayList = Arrays.asList(job.list());
     Assert.assertEquals(3, arrayList.size());
-    Assert.assertTrue(arrayList.contains(HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME));
+    Assert.assertTrue(containsStringEndingWith(arrayList, HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME));
 
     final File build = new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), BACKUP_DIRECTORY_NAME);
     list = build.list();

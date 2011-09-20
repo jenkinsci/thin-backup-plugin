@@ -36,6 +36,11 @@
                       </j:forEach>
                   </select>
                 </f:entry>
+
+                <f:optionalBlock title="Restore next build number file (if found in backup)"
+                    help="/plugin/thinBackup/help/help-restoreNextBuildNumber.html"
+                    name="restoreNextBuildNumber" />
+                    
               </f:section>
               
               <f:section>
