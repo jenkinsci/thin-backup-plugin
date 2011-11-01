@@ -33,7 +33,7 @@ public class TestHudsonRestore extends HudsonDirectoryStructureSetup {
     when(mockPlugin.isMoveOldBackupsToZipFile()).thenReturn(false);
     when(mockPlugin.isBackupBuildResults()).thenReturn(true);
     when(mockPlugin.isBackupBuildArchive()).thenReturn(false);
-    when(mockPlugin.isBackupNextBuildNumber()).thenReturn(false);
+    // when(mockPlugin.isBackupNextBuildNumber()).thenReturn(false);
     when(mockPlugin.getExcludedFilesRegex()).thenReturn("");
 
     return mockPlugin;
@@ -147,7 +147,7 @@ public class TestHudsonRestore extends HudsonDirectoryStructureSetup {
     final FileCollector fc = new FileCollector();
     final List<String> restoredFiles = fc.getFilesAsString(root);
     final int nrRestored = restoredFiles.size();
-    Assert.assertEquals(originalFiles.size(), nrRestored + 1); // + 2 because original has more files that were not
+    Assert.assertEquals(originalFiles.size(), nrRestored + 2); // + 2 because original has more files that were not
                                                                // backed up on purpose (next build number, secret.key)
     Assert.assertTrue(containsStringEndingWith(restoredFiles, HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME));
     Assert.assertFalse(containsStringEndingWith(restoredFiles, "secret.key"));

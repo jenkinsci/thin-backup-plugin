@@ -3,6 +3,9 @@ package org.jvnet.hudson.plugins.thinbackup;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -50,7 +53,9 @@ public class HudsonDirectoryStructureSetup {
     final BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(config));
     out.write(new ByteArrayBuffer(CONFIG_XML_CONTENTS).array());
     out.close();
-    new File(testJob, HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME).createNewFile();
+    File nextBuildNumberFile = new File(testJob, HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME);
+    nextBuildNumberFile.createNewFile();
+    addBuildNumber(nextBuildNumberFile);
     new File(testJob, "workspace").mkdir();
     new File(testJob, "modules").mkdir();
     final File builds = new File(testJob, HudsonBackup.BUILDS_DIR_NAME);
@@ -71,6 +76,21 @@ public class HudsonDirectoryStructureSetup {
 
     final FileCollector fc = new FileCollector();
     originalFiles = fc.getFilesAsString(root);
+  }
+
+  private void addBuildNumber(File nextBuildNumberFile) {
+    Writer w = null;
+    try {
+      w = new FileWriter(nextBuildNumberFile);
+      w.write("1234");
+    } catch (IOException e) {
+    } finally {
+      try {
+        if (w != null)
+          w.close();
+      } catch (IOException e) {
+      }
+    }
   }
 
   @After
