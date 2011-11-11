@@ -69,7 +69,6 @@ public class ThinBackupMgmtLink extends ManagementLink {
     Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
 
     final ThinBackupPeriodicWork manualBackupWorker = new ThinBackupPeriodicWork() {
-      @SuppressWarnings("unused")
       @Override
       protected void execute(final TaskListener arg0) throws IOException, InterruptedException {
         backupNow(BackupType.FULL);

@@ -27,6 +27,7 @@
     If this option is enabled, the file <i>nextBuildNumber</i> will also be backed up. 
   </p>
   <p>
-    <b>NOTE:</b><br/>Take special care when restoring a backup that contains a <i>nextBuildNumber</i> file, as this may potentially cause a lot of problems.
+    <b>NOTE:</b><br/>
+    In the case that the existing build number is greater than the build number that should be restored the build number will not be restored. This should prevent from situations where the build number is not unique anymore.
   </p>
 </div>

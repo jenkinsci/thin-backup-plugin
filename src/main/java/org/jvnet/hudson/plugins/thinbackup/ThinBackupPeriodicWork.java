@@ -56,7 +56,6 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
     return MIN;
   }
 
-  @SuppressWarnings("unused")
   @Override
   protected void execute(final TaskListener arg0) throws IOException, InterruptedException {
     final long currentTime = System.currentTimeMillis();

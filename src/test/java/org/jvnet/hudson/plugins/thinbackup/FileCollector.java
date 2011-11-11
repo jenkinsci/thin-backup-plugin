@@ -23,7 +23,6 @@ public class FileCollector extends DirectoryWalker {
     return result;
   }
 
-  @SuppressWarnings("unused")
   @Override
   protected void handleFile(final File file, final int depth, @SuppressWarnings("rawtypes") final Collection results)
       throws IOException {

@@ -34,7 +34,6 @@ public class DirectoryCleaner extends DirectoryWalker {
     walk(rootDir, null);
   }
 
-  @SuppressWarnings("unused")
   @Override
   protected void handleDirectoryEnd(final File directory, final int depth,
       @SuppressWarnings("rawtypes") final Collection results) throws IOException {
