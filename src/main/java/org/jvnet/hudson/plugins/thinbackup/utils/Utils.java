@@ -397,7 +397,6 @@ public class Utils {
                 .format(
                     "Environment variable '%s' was specified in path '%s', but it is not defined in the system's environment variables.",
                     envVar, path);
-            LOGGER.warning(message);
             throw new EnvironmentVariableNotDefinedException(message);
           }
           newPath.append(tmpPath.substring(0, startIdx));

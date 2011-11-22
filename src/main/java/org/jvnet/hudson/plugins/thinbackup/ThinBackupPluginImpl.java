@@ -112,7 +112,7 @@ public class ThinBackupPluginImpl extends Plugin {
     try {
       expandedPath = Utils.expandEnvironmentVariables(backupPath);
     } catch (final EnvironmentVariableNotDefinedException evnde) {
-      LOGGER.log(Level.SEVERE, "Error while expanding path. Using unexpanded path.", evnde);
+      LOGGER.log(Level.SEVERE, evnde.getMessage() + " Using unexpanded path.");
       expandedPath = backupPath;
     }
 
