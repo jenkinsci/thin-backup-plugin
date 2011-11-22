@@ -220,7 +220,11 @@ public class HudsonBackup {
   }
 
   private void backupBuildFiles(final File srcDir, final File destDir) throws IOException {
-    IOFileFilter filter = FileFilterUtils.andFileFilter(FileFileFilter.FILE, getFileAgeDiffFilter());
+    final IOFileFilter changelogFilter = FileFilterUtils.andFileFilter(DirectoryFileFilter.DIRECTORY,
+        FileFilterUtils.nameFileFilter("changelog-history"));
+    final IOFileFilter fileFilter = FileFilterUtils.andFileFilter(FileFileFilter.FILE, getFileAgeDiffFilter());
+
+    IOFileFilter filter = FileFilterUtils.orFileFilter(changelogFilter, fileFilter);
     filter = FileFilterUtils.andFileFilter(filter, getExcludedFilesFilter());
     filter = FileFilterUtils.andFileFilter(filter,
         FileFilterUtils.notFileFilter(FileFilterUtils.suffixFileFilter(ZIP_FILE_EXTENSION)));
