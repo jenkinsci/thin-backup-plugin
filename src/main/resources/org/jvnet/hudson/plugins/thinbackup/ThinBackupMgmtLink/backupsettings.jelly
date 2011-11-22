@@ -22,7 +22,7 @@
         <l:main-panel>
             <h1>
                 <img src="${it.iconFileName}" alt=""/>
-                Backup Configuration
+                thinBackup Configuration
             </h1>
 
             <f:form method="post" action="saveSettings">
