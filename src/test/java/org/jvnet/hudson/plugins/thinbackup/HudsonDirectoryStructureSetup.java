@@ -62,6 +62,10 @@ public class HudsonDirectoryStructureSetup {
     builds.mkdir();
     final File build = new File(builds, BACKUP_DIRECTORY_NAME);
     build.mkdir();
+    final File changelogDir = new File(build, HudsonBackup.CHANGELOG_HISTORY_PLUGIN_DIR_NAME);
+    changelogDir.mkdir();
+    new File(changelogDir, "1.xml").createNewFile();
+    new File(changelogDir, "2.xml").createNewFile();
 
     final File archiveDir = new File(build, HudsonBackup.ARCHIVE_DIR_NAME);
     archiveDir.mkdir();

@@ -42,7 +42,7 @@ public class TestBackupZipping extends HudsonDirectoryStructureSetup {
       zipEntries.nextElement();
       ++entryCount;
     }
-    Assert.assertEquals(19, entryCount);
+    Assert.assertEquals(23, entryCount);
     zipFile.close();
 
     final BackupSet backupSetFromZip = new BackupSet(zippedBackupSet);

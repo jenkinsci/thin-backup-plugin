@@ -54,6 +54,7 @@ public class HudsonBackup {
   public static final String XML_FILE_EXTENSION = ".xml";
   public static final String ZIP_FILE_EXTENSION = ".zip";
   public static final String INSTALLED_PLUGINS_XML = "installedPlugins" + XML_FILE_EXTENSION;
+  public static final String CHANGELOG_HISTORY_PLUGIN_DIR_NAME = "changelog-history";
 
   private final ThinBackupPluginImpl plugin;
   private final File hudsonHome;
@@ -221,7 +222,7 @@ public class HudsonBackup {
 
   private void backupBuildFiles(final File srcDir, final File destDir) throws IOException {
     final IOFileFilter changelogFilter = FileFilterUtils.andFileFilter(DirectoryFileFilter.DIRECTORY,
-        FileFilterUtils.nameFileFilter("changelog-history"));
+        FileFilterUtils.nameFileFilter(CHANGELOG_HISTORY_PLUGIN_DIR_NAME));
     final IOFileFilter fileFilter = FileFilterUtils.andFileFilter(FileFileFilter.FILE, getFileAgeDiffFilter());
 
     IOFileFilter filter = FileFilterUtils.orFileFilter(changelogFilter, fileFilter);

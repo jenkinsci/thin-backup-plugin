@@ -76,7 +76,13 @@ public class TestHudsonBackup extends HudsonDirectoryStructureSetup {
 
     final File build = new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), BACKUP_DIRECTORY_NAME);
     list = build.list();
-    Assert.assertEquals(6, list.length);
+    Assert.assertEquals(7, list.length);
+
+    final File changelogHistory = new File(
+        new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), BACKUP_DIRECTORY_NAME),
+        HudsonBackup.CHANGELOG_HISTORY_PLUGIN_DIR_NAME);
+    list = changelogHistory.list();
+    Assert.assertEquals(2, list.length);
   }
 
   @Test
@@ -101,7 +107,14 @@ public class TestHudsonBackup extends HudsonDirectoryStructureSetup {
 
     final File build = new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), BACKUP_DIRECTORY_NAME);
     list = build.list();
-    Assert.assertEquals(5, list.length);
+    Assert.assertEquals(6, list.length);
+
+    final File changelogHistory = new File(
+        new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), BACKUP_DIRECTORY_NAME),
+        HudsonBackup.CHANGELOG_HISTORY_PLUGIN_DIR_NAME);
+    list = changelogHistory.list();
+    Assert.assertEquals(2, list.length);
+
     boolean containsLogfile = false;
     for (final String string : list) {
       if (string.equals("logfile.log")) {
@@ -185,7 +198,13 @@ public class TestHudsonBackup extends HudsonDirectoryStructureSetup {
 
     final File build = new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), BACKUP_DIRECTORY_NAME);
     list = build.list();
-    Assert.assertEquals(6, list.length);
+    Assert.assertEquals(7, list.length);
+
+    final File changelogHistory = new File(
+        new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), BACKUP_DIRECTORY_NAME),
+        HudsonBackup.CHANGELOG_HISTORY_PLUGIN_DIR_NAME);
+    list = changelogHistory.list();
+    Assert.assertEquals(2, list.length);
   }
 
   @Test
@@ -211,7 +230,13 @@ public class TestHudsonBackup extends HudsonDirectoryStructureSetup {
 
     final File build = new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), BACKUP_DIRECTORY_NAME);
     arrayList = Arrays.asList(build.list());
-    Assert.assertEquals(7, arrayList.size());
+    Assert.assertEquals(8, arrayList.size());
+
+    final File changelogHistory = new File(
+        new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), BACKUP_DIRECTORY_NAME),
+        HudsonBackup.CHANGELOG_HISTORY_PLUGIN_DIR_NAME);
+    list = changelogHistory.list();
+    Assert.assertEquals(2, list.length);
   }
 
 }
