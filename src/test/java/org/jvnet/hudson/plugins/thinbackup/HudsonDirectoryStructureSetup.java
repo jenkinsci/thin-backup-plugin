@@ -53,7 +53,7 @@ public class HudsonDirectoryStructureSetup {
     final BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(config));
     out.write(new ByteArrayBuffer(CONFIG_XML_CONTENTS).array());
     out.close();
-    File nextBuildNumberFile = new File(testJob, HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME);
+    final File nextBuildNumberFile = new File(testJob, HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME);
     nextBuildNumberFile.createNewFile();
     addBuildNumber(nextBuildNumberFile);
     new File(testJob, "workspace").mkdir();
@@ -78,17 +78,20 @@ public class HudsonDirectoryStructureSetup {
     originalFiles = fc.getFilesAsString(root);
   }
 
-  private void addBuildNumber(File nextBuildNumberFile) {
+  private void addBuildNumber(final File nextBuildNumberFile) {
     Writer w = null;
     try {
       w = new FileWriter(nextBuildNumberFile);
       w.write("1234");
-    } catch (IOException e) {
+    } catch (final IOException e) {
+      // catch me if you can!
     } finally {
       try {
-        if (w != null)
+        if (w != null) {
           w.close();
-      } catch (IOException e) {
+        }
+      } catch (final IOException e) {
+        // catch me if you can!
       }
     }
   }
