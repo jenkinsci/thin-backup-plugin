@@ -57,7 +57,7 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
   }
 
   @Override
-  protected void execute(final TaskListener arg0) throws IOException, InterruptedException {
+  protected void execute(final TaskListener arg0) {
     final long currentTime = System.currentTimeMillis();
     final String fullCron = plugin.getFullBackupSchedule();
     final String diffCron = plugin.getDiffBackupSchedule();

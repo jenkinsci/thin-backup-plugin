@@ -419,6 +419,7 @@ public class BackupSet implements Comparable<BackupSet> {
    * @return -1 if this BackupSet's full backup date is before the other's, 0 if they are equal, 1 if is after the
    *         other's.
    */
+  @Override
   public int compareTo(final BackupSet other) {
     final String otherFullBackupName = other.getFullBackupName();
     if ((other == this) || ((fullBackupName == null) && (otherFullBackupName == null))) {

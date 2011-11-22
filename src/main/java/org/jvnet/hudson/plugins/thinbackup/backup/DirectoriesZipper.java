@@ -33,6 +33,7 @@ public class DirectoriesZipper extends DirectoryWalker implements Closeable {
     walk(directory, null);
   }
 
+  @Override
   public void close() throws IOException {
     zipStream.close();
   }

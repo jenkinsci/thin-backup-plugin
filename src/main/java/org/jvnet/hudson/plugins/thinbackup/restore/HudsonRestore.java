@@ -133,37 +133,42 @@ public class HudsonRestore {
   }
 
   private void restore(final File toRestore) throws IOException {
-    IOFileFilter nextBuildNumberFileFilter = FileFilterUtils.nameFileFilter("nextBuildNumber");
+    final IOFileFilter nextBuildNumberFileFilter = FileFilterUtils.nameFileFilter("nextBuildNumber");
     IOFileFilter restoreNextBuildNumberFilter;
 
     if (restoreNextBuildNumber) {
       restoreNextBuildNumberFilter = FileFilterUtils.trueFileFilter();
 
-      Collection<File> restore = FileUtils.listFiles(toRestore, nextBuildNumberFileFilter, TrueFileFilter.INSTANCE);
-      Map<String, Integer> nextBuildNumbers = new HashMap<String, Integer>();
-      for (File file : restore) {
+      final Collection<File> restore = FileUtils.listFiles(toRestore, nextBuildNumberFileFilter,
+          TrueFileFilter.INSTANCE);
+      final Map<String, Integer> nextBuildNumbers = new HashMap<String, Integer>();
+      for (final File file : restore) {
         BufferedReader reader = null;
         try {
           reader = new BufferedReader(new FileReader(file));
           nextBuildNumbers.put(file.getParentFile().getName(), Integer.parseInt(reader.readLine()));
         } finally {
-          if (reader != null)
+          if (reader != null) {
             reader.close();
+          }
         }
       }
 
-      Collection<File> current = FileUtils.listFiles(hudsonHome, nextBuildNumberFileFilter, TrueFileFilter.INSTANCE);
-      for (File file : current) {
+      final Collection<File> current = FileUtils.listFiles(hudsonHome, nextBuildNumberFileFilter,
+          TrueFileFilter.INSTANCE);
+      for (final File file : current) {
         BufferedReader reader = null;
         try {
           reader = new BufferedReader(new FileReader(file));
-          int currentBuildNumber = Integer.parseInt(reader.readLine());
-          Integer toRestoreNextBuildNumber = nextBuildNumbers.get(file.getParentFile().getName());
-          if (currentBuildNumber < toRestoreNextBuildNumber)
+          final int currentBuildNumber = Integer.parseInt(reader.readLine());
+          final Integer toRestoreNextBuildNumber = nextBuildNumbers.get(file.getParentFile().getName());
+          if (currentBuildNumber < toRestoreNextBuildNumber) {
             restoreNextBuildNumber(file, toRestoreNextBuildNumber);
+          }
         } finally {
-          if (reader != null)
+          if (reader != null) {
             reader.close();
+          }
         }
       }
     } else {
@@ -173,7 +178,7 @@ public class HudsonRestore {
     FileUtils.copyDirectory(toRestore, this.hudsonHome, restoreNextBuildNumberFilter, true);
   }
 
-  private void restoreNextBuildNumber(File file, Integer toRestoreNextBuildNumber) throws IOException {
+  private void restoreNextBuildNumber(final File file, final Integer toRestoreNextBuildNumber) throws IOException {
     file.delete();
     file.createNewFile();
     Writer writer = null;
@@ -181,8 +186,10 @@ public class HudsonRestore {
       writer = new FileWriter(file);
       writer.write(toRestoreNextBuildNumber);
     } finally {
-      if (writer != null)
+      if (writer != null) {
         writer.close();
+      }
     }
   }
+
 }

@@ -22,6 +22,7 @@ import hudson.scheduler.CronTab;
 import hudson.util.FormValidation;
 
 import java.io.File;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -106,7 +107,16 @@ public class ThinBackupPluginImpl extends Plugin {
    * @return the backup path with possibly contained environment variables expanded.
    */
   public String getExpandedBackupPath() {
-    return Utils.expandEnvironmentVariables(backupPath);
+    String expandedPath = "";
+
+    try {
+      expandedPath = Utils.expandEnvironmentVariables(backupPath);
+    } catch (final EnvironmentVariableNotDefinedException evnde) {
+      LOGGER.log(Level.SEVERE, "Error while expanding path. Using unexpanded path.", evnde);
+      expandedPath = backupPath;
+    }
+
+    return expandedPath;
   }
 
   public void setNrMaxStoredFull(final int nrMaxStoredFull) {

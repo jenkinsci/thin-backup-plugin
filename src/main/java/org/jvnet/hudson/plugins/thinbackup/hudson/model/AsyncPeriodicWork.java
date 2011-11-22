@@ -42,6 +42,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
         return;
       }
       thread = new Thread(new Runnable() {
+        @Override
         public void run() {
           logger.log(Level.FINEST, "Started " + name);
           final long startTime = System.currentTimeMillis();
@@ -86,12 +87,9 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
   /**
    * Executes the task. Subclasses implement this method and can carry out a long-running task.
    * 
-   * @param listener
-   *          Output sent will be reported to the users. (this work is TBD.)
-   * @throws InterruptedException
-   *           The caller will record the exception and moves on.
-   * @throws IOException
-   *           The caller will record the exception and moves on.
+   * @param listener Output sent will be reported to the users. (this work is TBD.)
+   * @throws InterruptedException The caller will record the exception and moves on.
+   * @throws IOException The caller will record the exception and moves on.
    */
   protected abstract void execute(TaskListener listener) throws IOException, InterruptedException;
 

@@ -44,6 +44,7 @@ import org.kohsuke.stapler.StaplerResponse;
 public class ThinBackupMgmtLink extends ManagementLink {
   private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
 
+  @Override
   public String getDisplayName() {
     return "ThinBackup";
   }
@@ -70,7 +71,7 @@ public class ThinBackupMgmtLink extends ManagementLink {
 
     final ThinBackupPeriodicWork manualBackupWorker = new ThinBackupPeriodicWork() {
       @Override
-      protected void execute(final TaskListener arg0) throws IOException, InterruptedException {
+      protected void execute(final TaskListener arg0) {
         backupNow(BackupType.FULL);
       }
     };
@@ -160,4 +161,5 @@ public class ThinBackupMgmtLink extends ManagementLink {
     final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.getInstance();
     return Utils.getBackupsAsDates(new File(plugin.getExpandedBackupPath()));
   }
+
 }
