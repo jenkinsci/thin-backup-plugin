@@ -42,6 +42,7 @@ public class ThinBackupPluginImpl extends Plugin {
 
   private String fullBackupSchedule = "";
   private String diffBackupSchedule = "";
+  private int forceQuietModeTimeout = Utils.FORCE_QUIETMODE_TIMEOUT_MINUTES;
   private String backupPath = "";
   private int nrMaxStoredFull = -1;
   private boolean cleanupDiff = false;
@@ -88,6 +89,14 @@ public class ThinBackupPluginImpl extends Plugin {
     return diffBackupSchedule;
   }
 
+  public int getForceQuietModeTimeout() {
+    return forceQuietModeTimeout;
+  }
+
+  public void setForceQuietModeTimeout(int forceQuietModeTimeout) {
+    this.forceQuietModeTimeout = forceQuietModeTimeout;
+  }
+
   public void setBackupPath(final String backupPath) {
     this.backupPath = backupPath;
   }
@@ -124,8 +133,9 @@ public class ThinBackupPluginImpl extends Plugin {
   }
 
   /**
-   * @param nrMaxStoredFull if this string can be parsed as an Integer, nrMaxStoredFull is set to this value, otherwise
-   *          it is set to -1.
+   * @param nrMaxStoredFull
+   *          if this string can be parsed as an Integer, nrMaxStoredFull is set to this value, otherwise it is set to
+   *          -1.
    */
   public void setNrMaxStoredFullAsString(final String nrMaxStoredFull) {
     if (StringUtils.isEmpty(nrMaxStoredFull)) {
@@ -189,6 +199,16 @@ public class ThinBackupPluginImpl extends Plugin {
 
   public String getExcludedFilesRegex() {
     return excludedFilesRegex;
+  }
+
+  public FormValidation doCheckForceQuietModeTimeout(final StaplerRequest res, final StaplerResponse rsp,
+      @QueryParameter("value") final int timeout) {
+    if (timeout < 0)
+      return FormValidation.error("Number must be a positive value.");
+    else if (timeout > 12 * 60)
+      return FormValidation.warning("You choose a very long timeout. The value need to be in minutes.");
+    else
+      return FormValidation.ok();
   }
 
   public FormValidation doCheckBackupPath(final StaplerRequest res, final StaplerResponse rsp,

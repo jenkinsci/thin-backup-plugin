@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -75,9 +76,8 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
       backupPath = plugin.getExpandedBackupPath();
 
       if (!StringUtils.isEmpty(backupPath)) {
-        hudson.doQuietDown();
         LOGGER.fine("Wait until executors are idle to perform backup.");
-        Utils.waitUntilIdle();
+        Utils.waitUntilIdleAndSwitchToQuietMode(plugin.getForceQuietModeTimeout(), TimeUnit.MINUTES);
         new HudsonBackup(plugin, type).backup();
       } else {
         LOGGER.warning("ThinBackup is not configured yet: No backup path set.");

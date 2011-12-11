@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -45,23 +46,24 @@ import org.jvnet.hudson.plugins.thinbackup.backup.HudsonBackup;
 public class Utils {
   private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
 
-  private static final int COMPUTER_TIMEOUT_WAIT_IN_MS = 500;
+  private static final int QUIETMODE_MONITORING_SLEEP = 500;
   private static final String DIRECTORY_NAME_DATE_EXTRACTION_REGEX = String.format("(%s|%s)-", BackupType.FULL,
       BackupType.DIFF);
-
-  public static SimpleDateFormat DISPLAY_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-  public static SimpleDateFormat DIRECTORY_NAME_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HH-mm");
-  public static final String THINBACKUP_TMP_DIR = System.getProperty("java.io.tmpdir") + File.separator
-      + "thinBackupTmpDir";
-
   private static final String START_ENV_VAR_TOKEN = "${";
   private static final String END_ENV_VAR_TOKEN = "}";
+
+  public static final SimpleDateFormat DISPLAY_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+  public static final SimpleDateFormat DIRECTORY_NAME_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HH-mm");
+  public static final String THINBACKUP_TMP_DIR = System.getProperty("java.io.tmpdir") + File.separator
+      + "thinBackupTmpDir";
+  public static final int FORCE_QUIETMODE_TIMEOUT_MINUTES = 120;
 
   /**
    * Waits until all Hudson slaves are idle.
    */
   public static void waitUntilIdle() {
-    final Computer computers[] = Hudson.getInstance().getComputers();
+    Hudson hudson = Hudson.getInstance();
+    final Computer computers[] = hudson.getComputers();
 
     boolean running;
     do {
@@ -74,9 +76,48 @@ public class Utils {
       }
 
       try {
-        Thread.sleep(COMPUTER_TIMEOUT_WAIT_IN_MS);
+        Thread.sleep(QUIETMODE_MONITORING_SLEEP);
       } catch (final InterruptedException e) {
         LOGGER.log(Level.WARNING, e.getMessage(), e);
+      }
+    } while (running);
+  }
+
+  /**
+   * Waits until all executors are idle and switch jenkins to quiet mode. If it takes to long that all executors are
+   * idle because in the mean time other jobs are executed to timeout ensure that the quiet mode is forced.
+   * 
+   * @param timeout
+   *          specifies when a quiet mode is forced. 0 = no timeout.
+   * @param unit
+   *          specifies the time unit for the value of timeout.
+   * 
+   * @throws IOException
+   */
+  public static void waitUntilIdleAndSwitchToQuietMode(int timeout, TimeUnit unit) throws IOException {
+    Hudson hudson = Hudson.getInstance();
+    final Computer computers[] = hudson.getComputers();
+
+    boolean running;
+    long starttime = System.currentTimeMillis();
+    do {
+      running = false;
+      for (final Computer computer : computers) {
+        if (computer.countBusy() != 0) {
+          running = true;
+          break;
+        }
+      }
+
+      try {
+        TimeUnit.MILLISECONDS.sleep(QUIETMODE_MONITORING_SLEEP);
+      } catch (final InterruptedException e) {
+        LOGGER.log(Level.WARNING, e.getMessage(), e);
+      }
+
+      if (!hudson.isQuietingDown() && starttime + unit.toMillis(timeout) < System.currentTimeMillis()) {
+        LOGGER.info("Timeout reached! Force quiet mode for jenkins now and wait unilt all executors are idle.");
+        hudson.doQuietDown();
       }
     } while (running);
   }
@@ -114,7 +155,8 @@ public class Utils {
   }
 
   /**
-   * @param displayFormattedDate a String in the display format date
+   * @param displayFormattedDate
+   *          a String in the display format date
    * @return the string formatted in the directory names' date format
    * @throws ParseException
    */
@@ -332,8 +374,8 @@ public class Utils {
    * located in backupRoot.
    * 
    * @param backupRoot
-   * @param currentBackup specified which backup should be omitted from being moved. If null, all backups are moved to
-   *          ZIP files.
+   * @param currentBackup
+   *          specified which backup should be omitted from being moved. If null, all backups are moved to ZIP files.
    * @throws IOException
    */
   public static void moveOldBackupsToZipFile(final File backupRoot, final File currentBackup) throws IOException {

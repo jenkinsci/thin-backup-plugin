@@ -45,6 +45,12 @@
                             checkUrl="'${rootUrl}/plugin/thinBackup/checkBackupSchedule?value='+escape(this.value)"/>
                     </f:entry>
                     
+                    <f:entry title="Force Jenkins to quite mode after specified minutes" field="forceQuietModeTimeout"
+                        help="/plugin/thinBackup/help/help-forceQuietModeTimeout.html">
+                        <f:textbox value="${it.configuration.forceQuietModeTimeout}" name="forceQuietModeTimeout"
+                            checkUrl="'${rootUrl}/plugin/thinBackup/checkForceQuietModeTimeout?value='+escape(this.value)"/>
+                    </f:entry>
+                    
                     <f:entry title="Max number of backup sets" field="nrMaxStoredFull"
                         help="/plugin/thinBackup/help/help-nrMaxStoredFull.html">
                         <f:textbox value="${it.configuration.nrMaxStoredFull}" name="nrMaxStoredFull" />

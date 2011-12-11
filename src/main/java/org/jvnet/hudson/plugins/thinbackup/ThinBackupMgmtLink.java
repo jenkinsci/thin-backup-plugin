@@ -24,6 +24,7 @@ import hudson.triggers.Trigger;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
@@ -82,7 +83,8 @@ public class ThinBackupMgmtLink extends ManagementLink {
 
   public void doRestore(final StaplerRequest res, final StaplerResponse rsp,
       @QueryParameter("restoreBackupFrom") final String restoreBackupFrom,
-      @QueryParameter("restoreNextBuildNumber") final String restoreNextBuildNumber) throws IOException {
+      @QueryParameter("restoreNextBuildNumber") final String restoreNextBuildNumber,
+      @QueryParameter("restorePlugins") final String restorePlugins) throws IOException {
     LOGGER.info("Starting restore operation.");
 
     Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
@@ -93,35 +95,22 @@ public class ThinBackupMgmtLink extends ManagementLink {
     Utils.waitUntilIdle();
 
     try {
-      Date restoreFromDate = null;
-      try {
-        restoreFromDate = Utils.DISPLAY_DATE_FORMAT.parse(restoreBackupFrom);
-      } catch (final Exception pe) {
-        LOGGER.severe("Cannot parse.");
-        throw new IllegalStateException();
-      }
-
-      boolean restoreNBN = false;
-      try {
-        restoreNBN = Boolean.parseBoolean(restoreNextBuildNumber);
-      } catch (final Exception pe) {
-        LOGGER.severe("Cannot parse.");
-        throw new IllegalStateException();
-      }
-
       final File hudsonHome = hudson.getRootDir();
+      final Date restoreFromDate = Utils.DISPLAY_DATE_FORMAT.parse(restoreBackupFrom);
+
       final HudsonRestore hudsonRestore = new HudsonRestore(hudsonHome, ThinBackupPluginImpl.getInstance()
-          .getExpandedBackupPath(), restoreFromDate, restoreNBN);
+          .getExpandedBackupPath(), restoreFromDate, "on".equals(restoreNextBuildNumber), "on".equals(restorePlugins));
       hudsonRestore.restore();
 
+      LOGGER.info("Restore finished.");
+    } catch (ParseException e) {
+      LOGGER.severe("Cannot parse restore option. Aborting.");
     } catch (final Exception ise) {
-      LOGGER.severe("Could not restore.");
+      LOGGER.severe("Could not restore. Aborting.");
     } finally {
       hudson.doCancelQuietDown();
       rsp.sendRedirect(res.getContextPath() + "/thinBackup");
     }
-
-    LOGGER.info("Restore finished.");
   }
 
   public void doSaveSettings(final StaplerRequest res, final StaplerResponse rsp,

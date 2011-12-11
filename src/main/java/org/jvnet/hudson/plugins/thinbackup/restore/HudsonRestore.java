@@ -16,17 +16,28 @@
  */
 package org.jvnet.hudson.plugins.thinbackup.restore;
 
+import hudson.model.Hudson;
+import hudson.model.UpdateCenter;
+import hudson.model.UpdateCenter.UpdateCenterJob;
+import hudson.model.UpdateSite;
+import hudson.model.UpdateSite.Plugin;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,6 +51,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 import org.jvnet.hudson.plugins.thinbackup.backup.BackupSet;
 import org.jvnet.hudson.plugins.thinbackup.backup.HudsonBackup;
+import org.jvnet.hudson.plugins.thinbackup.backup.PluginList;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 
 public class HudsonRestore {
@@ -49,13 +61,18 @@ public class HudsonRestore {
   private final File hudsonHome;
   private final Date restoreFromDate;
   private final boolean restoreNextBuildNumber;
+  private final boolean restorePlugins;
+  private final Map<String, List<Plugin>> availablePluginLocations;
 
   public HudsonRestore(final File hudsonConfigurationPath, final String backupPath, final Date restoreFromDate,
-      final boolean restoreNextBuildNumber) {
+      final boolean restoreNextBuildNumber, final boolean restorePlugins) {
     this.hudsonHome = hudsonConfigurationPath;
     this.backupPath = backupPath;
     this.restoreFromDate = restoreFromDate;
     this.restoreNextBuildNumber = restoreNextBuildNumber;
+    this.restorePlugins = restorePlugins;
+
+    this.availablePluginLocations = new HashMap<String, List<Plugin>>();
   }
 
   public void restore() {
@@ -139,6 +156,7 @@ public class HudsonRestore {
     if (restoreNextBuildNumber) {
       restoreNextBuildNumberFilter = FileFilterUtils.trueFileFilter();
 
+      @SuppressWarnings("unchecked")
       final Collection<File> restore = FileUtils.listFiles(toRestore, nextBuildNumberFileFilter,
           TrueFileFilter.INSTANCE);
       final Map<String, Integer> nextBuildNumbers = new HashMap<String, Integer>();
@@ -154,6 +172,7 @@ public class HudsonRestore {
         }
       }
 
+      @SuppressWarnings("unchecked")
       final Collection<File> current = FileUtils.listFiles(hudsonHome, nextBuildNumberFileFilter,
           TrueFileFilter.INSTANCE);
       for (final File file : current) {
@@ -176,9 +195,48 @@ public class HudsonRestore {
     }
 
     FileUtils.copyDirectory(toRestore, this.hudsonHome, restoreNextBuildNumberFilter, true);
+
+    if (restorePlugins)
+      restorePlugins(toRestore);
   }
 
-  private void restoreNextBuildNumber(final File file, final Integer toRestoreNextBuildNumber) throws IOException {
+  private void restorePlugins(File toRestore) throws IOException {
+    File[] list = toRestore.listFiles((FilenameFilter) FileFilterUtils.nameFileFilter("installedPlugins.xml"));
+
+    if (list.length != 1) {
+      LOGGER
+          .severe("Cannot restore plugins because no or mulible files with the name 'installedPlugins.xml' are in the backup.");
+      return;
+    }
+
+    File installedPlugins = list[0];
+
+    PluginList pluginList = new PluginList(installedPlugins);
+    pluginList.load();
+    Map<String, String> toRestorePlugins = pluginList.getPlugins();
+    List<Future<UpdateCenterJob>> pluginRestoreJobs = new ArrayList<Future<UpdateCenterJob>>(toRestorePlugins.size());
+    for (Entry<String, String> entry : toRestorePlugins.entrySet()) {
+      Future<UpdateCenterJob> monitor = installPlugin(entry.getKey(), entry.getValue());
+      if (monitor != null)
+        pluginRestoreJobs.add(monitor);
+    }
+
+    boolean finished = false;
+    while (!finished) {
+      try {
+        Thread.sleep(500);
+      } catch (InterruptedException e) {
+        // nothing to do
+      }
+      for (Future<UpdateCenterJob> future : pluginRestoreJobs) {
+        finished = future.isDone();
+        if (!finished)
+          break;
+      }
+    }
+  }
+
+  private void restoreNextBuildNumber(File file, Integer toRestoreNextBuildNumber) throws IOException {
     file.delete();
     file.createNewFile();
     Writer writer = null;
@@ -192,4 +250,29 @@ public class HudsonRestore {
     }
   }
 
+  private Future<UpdateCenterJob> installPlugin(String pluginID, String version) {
+    if (!pluginID.contains("SNAPSHOT")) {
+      UpdateCenter updateCenter = Hudson.getInstance().getUpdateCenter();
+
+      for (UpdateSite site : updateCenter.getSites()) {
+        List<Plugin> availablePlugins;
+        if (this.availablePluginLocations.containsKey(site.getId()))
+          availablePlugins = this.availablePluginLocations.get(site.getId());
+        else {
+          availablePlugins = site.getAvailables();
+          this.availablePluginLocations.put(site.getId(), availablePlugins);
+        }
+
+        for (Plugin plugin : availablePlugins) {
+          if (plugin.name.equals(pluginID)) { // && plugin.version.equals(version)) {
+            LOGGER.info("Restore plugin '" + pluginID + "'.");
+            return plugin.deploy();
+          }
+        }
+      }
+    }
+    LOGGER
+        .warning("Cannot find plugin '" + pluginID + "' with the version '" + version + "'. Please install manually!");
+    return null;
+  }
 }

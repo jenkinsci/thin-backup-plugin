@@ -74,7 +74,7 @@ public class TestHudsonRestore extends HudsonDirectoryStructureSetup {
     Assert.assertFalse(set.isInZipFile());
 
     final HudsonRestore restore = new HudsonRestore(root, backupDir.getAbsolutePath(),
-        Utils.getDateFromBackupDirectory(tmpBackupDir), false);
+        Utils.getDateFromBackupDirectory(tmpBackupDir), false, false);
     restore.restore();
 
     final FileCollector fc = new FileCollector();
@@ -110,7 +110,7 @@ public class TestHudsonRestore extends HudsonDirectoryStructureSetup {
     Assert.assertTrue(set.isValid());
     Assert.assertTrue(set.isInZipFile());
 
-    final HudsonRestore restore = new HudsonRestore(root, backupDir.getAbsolutePath(), backupDate, false);
+    final HudsonRestore restore = new HudsonRestore(root, backupDir.getAbsolutePath(), backupDate, false, false);
     restore.restore();
 
     final FileCollector fc = new FileCollector();
@@ -141,7 +141,7 @@ public class TestHudsonRestore extends HudsonDirectoryStructureSetup {
     Assert.assertFalse(set.isInZipFile());
 
     final HudsonRestore restore = new HudsonRestore(root, backupDir.getAbsolutePath(),
-        Utils.getDateFromBackupDirectory(tmpBackupDir), true);
+        Utils.getDateFromBackupDirectory(tmpBackupDir), true, false);
     restore.restore();
 
     final FileCollector fc = new FileCollector();
@@ -172,7 +172,7 @@ public class TestHudsonRestore extends HudsonDirectoryStructureSetup {
     Assert.assertFalse(set.isInZipFile());
 
     final HudsonRestore restore = new HudsonRestore(root, backupDir.getAbsolutePath(),
-        Utils.getDateFromBackupDirectory(tmpBackupDir), false);
+        Utils.getDateFromBackupDirectory(tmpBackupDir), false, false);
     restore.restore();
 
     final FileCollector fc = new FileCollector();
@@ -210,7 +210,7 @@ public class TestHudsonRestore extends HudsonDirectoryStructureSetup {
     Assert.assertTrue(set.isValid());
     Assert.assertTrue(set.isInZipFile());
 
-    final HudsonRestore restore = new HudsonRestore(root, backupDir.getAbsolutePath(), backupDate, true);
+    final HudsonRestore restore = new HudsonRestore(root, backupDir.getAbsolutePath(), backupDate, true, false);
     restore.restore();
 
     final FileCollector fc = new FileCollector();
