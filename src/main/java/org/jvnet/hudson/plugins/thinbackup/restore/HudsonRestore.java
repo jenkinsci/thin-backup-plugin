@@ -16,6 +16,7 @@
  */
 package org.jvnet.hudson.plugins.thinbackup.restore;
 
+import hudson.PluginManager;
 import hudson.model.Hudson;
 import hudson.model.UpdateCenter;
 import hudson.model.UpdateCenter.UpdateCenterJob;
@@ -30,6 +31,7 @@ import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.Writer;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -70,7 +72,8 @@ public class HudsonRestore {
     this.backupPath = backupPath;
     this.restoreFromDate = restoreFromDate;
     this.restoreNextBuildNumber = restoreNextBuildNumber;
-    this.restorePlugins = restorePlugins;
+    // this.restorePlugins = restorePlugins;
+    this.restorePlugins = false;
 
     this.availablePluginLocations = new HashMap<String, List<Plugin>>();
   }
@@ -209,16 +212,20 @@ public class HudsonRestore {
       return;
     }
 
-    File installedPlugins = list[0];
+    File backupedPlugins = list[0];
 
-    PluginList pluginList = new PluginList(installedPlugins);
+    PluginList pluginList = new PluginList(backupedPlugins);
     pluginList.load();
     Map<String, String> toRestorePlugins = pluginList.getPlugins();
     List<Future<UpdateCenterJob>> pluginRestoreJobs = new ArrayList<Future<UpdateCenterJob>>(toRestorePlugins.size());
+    PluginManager pluginManager = Hudson.getInstance().getPluginManager();
     for (Entry<String, String> entry : toRestorePlugins.entrySet()) {
-      Future<UpdateCenterJob> monitor = installPlugin(entry.getKey(), entry.getValue());
-      if (monitor != null)
-        pluginRestoreJobs.add(monitor);
+      if (pluginManager.getPlugin(entry.getKey()) == null) { // if any version of this plugin is installed do nothing
+        Future<UpdateCenterJob> monitor = installPlugin(entry.getKey(), entry.getValue());
+        if (monitor != null)
+          pluginRestoreJobs.add(monitor);
+      } else
+        LOGGER.info("Plugin '" + entry.getKey() + "' already installed. Please check manually.");
     }
 
     boolean finished = false;
@@ -251,7 +258,7 @@ public class HudsonRestore {
   }
 
   private Future<UpdateCenterJob> installPlugin(String pluginID, String version) {
-    if (!pluginID.contains("SNAPSHOT")) {
+    if (!version.contains("SNAPSHOT") && !"Hudson core".equals(pluginID) && !"Jenkins core".equals(pluginID)) {
       UpdateCenter updateCenter = Hudson.getInstance().getUpdateCenter();
 
       for (UpdateSite site : updateCenter.getSites()) {
@@ -264,8 +271,11 @@ public class HudsonRestore {
         }
 
         for (Plugin plugin : availablePlugins) {
-          if (plugin.name.equals(pluginID)) { // && plugin.version.equals(version)) {
+          if (plugin.name.equals(pluginID)) {
             LOGGER.info("Restore plugin '" + pluginID + "'.");
+            if (!plugin.version.equals(version)) {
+              setVersion(plugin, version);
+            }
             return plugin.deploy();
           }
         }
@@ -274,5 +284,36 @@ public class HudsonRestore {
     LOGGER
         .warning("Cannot find plugin '" + pluginID + "' with the version '" + version + "'. Please install manually!");
     return null;
+  }
+
+  /**
+   * manipulate existing plugin object to downgrade to a specific version.
+   * 
+   * @param plugin
+   * @param version
+   */
+  private void setVersion(Plugin plugin, String version) {
+    Class clazz = Plugin.class;
+    try {
+      Field versionField = clazz.getField("version");
+      versionField.setAccessible(true);
+      versionField.set(plugin.version, version);
+
+      String[] url = plugin.url.split("/");
+      url[url.length - 2] = version;
+      StringBuilder newUrl = new StringBuilder();
+      for (String s : url) {
+        newUrl.append(s);
+        newUrl.append("/");
+      }
+      newUrl.replace(newUrl.length() - 1, newUrl.length(), "");
+
+      Field urlField = clazz.getField("url");
+      urlField.setAccessible(true);
+      urlField.set(plugin.url, newUrl.toString());
+
+    } catch (Throwable e) {
+      LOGGER.log(Level.SEVERE, "Cannot downgrade plugin [" + plugin.name + "]. Please install manually.", e);
+    }
   }
 }
