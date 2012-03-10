@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>1.396</version>
+    <version>1.409</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <groupId>org.jvnet.hudson.plugins</groupId>
@@ -202,6 +202,19 @@
                     <versionRange>[2.10,)</versionRange>
                     <goals>
                       <goal>test</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore></ignore>
+                  </action>
+                </pluginExecution>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>com.cloudbees</groupId>
+                    <artifactId>maven-license-plugin</artifactId>
+                    <versionRange>[1.0,)</versionRange>
+                    <goals>
+                      <goal>process</goal>
                     </goals>
                   </pluginExecutionFilter>
                   <action>
