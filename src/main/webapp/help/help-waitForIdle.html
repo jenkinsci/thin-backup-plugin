@@ -1,0 +1,33 @@
+<!--
+  The MIT License
+ 
+  Copyright (c) 2011, Borland (a Micro Focus Company), Matthias Steinkogler, Thomas Fuerer
+ 
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+ 
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+ 
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+  THE SOFTWARE.
+-->
+
+<div>
+  <p>
+    Wait until Jenkins/Hudson is idle to perform a backup (recommended/default setting). However, you can do a backup without waiting for the idle condition. This may cause problems which results in corrupt backups, because files that will be written in the same moment as they will be backuped could be locked in the file system.
+    Nevertheless, in the case of long running jobs (e.g. test jobs) you probably do not have a free time slot for your backup task. During this jobs you are sure nothing is changed or locked in the file system (e.g. because the build job is done on a slave). In this case you could disable this option to perform a backup in parallel to a running job.  
+  </p>
+  <p>
+    <b>NOTE:</b><br/>We cannot 100% guarantee that the backup is correct if you disable this option.
+  </p>
+</div>

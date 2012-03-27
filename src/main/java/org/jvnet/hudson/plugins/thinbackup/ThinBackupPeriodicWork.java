@@ -76,8 +76,12 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
       backupPath = plugin.getExpandedBackupPath();
 
       if (!StringUtils.isEmpty(backupPath)) {
-        LOGGER.fine("Wait until executors are idle to perform backup.");
-        Utils.waitUntilIdleAndSwitchToQuietMode(plugin.getForceQuietModeTimeout(), TimeUnit.MINUTES);
+        if (plugin.isWaitForIdle()) {
+          LOGGER.fine("Wait until executors are idle to perform backup.");
+          Utils.waitUntilIdleAndSwitchToQuietMode(plugin.getForceQuietModeTimeout(), TimeUnit.MINUTES);
+        } else
+          LOGGER.warning("Do not wait until jenkins/hudson is idle to perform backup. This could cause corrupt backups.");
+        
         new HudsonBackup(plugin, type).backup();
       } else {
         LOGGER.warning("ThinBackup is not configured yet: No backup path set.");

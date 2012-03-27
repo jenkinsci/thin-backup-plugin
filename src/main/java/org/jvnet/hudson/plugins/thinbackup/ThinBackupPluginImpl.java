@@ -42,15 +42,16 @@ public class ThinBackupPluginImpl extends Plugin {
 
   private String fullBackupSchedule = "";
   private String diffBackupSchedule = "";
-  private int forceQuietModeTimeout = Utils.FORCE_QUIETMODE_TIMEOUT_MINUTES;
   private String backupPath = "";
   private int nrMaxStoredFull = -1;
+  private String excludedFilesRegex = null;
+  private boolean waitForIdle = true;
+  private int forceQuietModeTimeout = Utils.FORCE_QUIETMODE_TIMEOUT_MINUTES;
   private boolean cleanupDiff = false;
   private boolean moveOldBackupsToZipFile = false;
   private boolean backupBuildResults = true;
   private boolean backupBuildArchive = false;
   private boolean backupNextBuildNumber = false;
-  private String excludedFilesRegex = null;
 
   private static ThinBackupPluginImpl instance = null;
 
@@ -201,6 +202,14 @@ public class ThinBackupPluginImpl extends Plugin {
     return excludedFilesRegex;
   }
 
+  public void setWaitForIdle(boolean waitForIdle) {
+    this.waitForIdle = waitForIdle;
+  }
+
+  public boolean isWaitForIdle() {
+    return this.waitForIdle;
+  }
+
   public FormValidation doCheckForceQuietModeTimeout(final StaplerRequest res, final StaplerResponse rsp,
       @QueryParameter("value") final int timeout) {
     if (timeout < 0)
@@ -311,6 +320,13 @@ public class ThinBackupPluginImpl extends Plugin {
     }
 
     return FormValidation.ok();
+  }
+  
+  public FormValidation doCheckWaitForIdle(final StaplerRequest res, final StaplerResponse rsp, @QueryParameter("value") final String waitForIdle) {
+    if (Boolean.parseBoolean(waitForIdle))
+      return FormValidation.ok();
+    else
+      return FormValidation.warning("This may or may not generate corrupt backups! Be aware that no data get changed during the backup process!");
   }
 
 }
