@@ -51,6 +51,7 @@ public class ThinBackupPluginImpl extends Plugin {
   private boolean moveOldBackupsToZipFile = false;
   private boolean backupBuildResults = true;
   private boolean backupBuildArchive = false;
+  private boolean backupUserContents = false;
   private boolean backupNextBuildNumber = false;
 
   private static ThinBackupPluginImpl instance = null;
@@ -198,6 +199,14 @@ public class ThinBackupPluginImpl extends Plugin {
     this.excludedFilesRegex = excludedFilesRegex;
   }
 
+  public boolean isBackupUserContents() {
+    return this.backupUserContents;
+  }
+
+  public void setBackupUserContents(boolean backupUserContents) {
+    this.backupUserContents = backupUserContents;
+  }
+
   public String getExcludedFilesRegex() {
     return excludedFilesRegex;
   }
@@ -321,12 +330,14 @@ public class ThinBackupPluginImpl extends Plugin {
 
     return FormValidation.ok();
   }
-  
-  public FormValidation doCheckWaitForIdle(final StaplerRequest res, final StaplerResponse rsp, @QueryParameter("value") final String waitForIdle) {
+
+  public FormValidation doCheckWaitForIdle(final StaplerRequest res, final StaplerResponse rsp,
+      @QueryParameter("value") final String waitForIdle) {
     if (Boolean.parseBoolean(waitForIdle))
       return FormValidation.ok();
     else
-      return FormValidation.warning("This may or may not generate corrupt backups! Be aware that no data get changed during the backup process!");
+      return FormValidation
+          .warning("This may or may not generate corrupt backups! Be aware that no data get changed during the backup process!");
   }
 
 }

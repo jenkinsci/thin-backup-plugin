@@ -75,7 +75,7 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
     try {
       backupPath = plugin.getExpandedBackupPath();
 
-      if (!StringUtils.isEmpty(backupPath)) {
+      if (StringUtils.isNotEmpty(backupPath)) {
         if (plugin.isWaitForIdle()) {
           LOGGER.fine("Wait until executors are idle to perform backup.");
           Utils.waitUntilIdleAndSwitchToQuietMode(plugin.getForceQuietModeTimeout(), TimeUnit.MINUTES);

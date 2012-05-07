@@ -49,6 +49,7 @@ public class HudsonBackup {
   public static final String BUILDS_DIR_NAME = "builds";
   public static final String JOBS_DIR_NAME = "jobs";
   public static final String USERS_DIR_NAME = "users";
+  public static final String USERSCONTENTS_DIR_NAME = "userContent";
   public static final String NEXT_BUILD_NUMBER_FILE_NAME = "nextBuildNumber";
   public static final String ARCHIVE_DIR_NAME = "archive";
   public static final String XML_FILE_EXTENSION = ".xml";
@@ -128,8 +129,11 @@ public class HudsonBackup {
 
     backupGlobalXmls();
     backupJobs();
-    backupUsers();
+    backupRootFolder(USERS_DIR_NAME);
     storePluginListIfChanged();
+
+    if (plugin.isBackupUserContents())
+      backupRootFolder(USERSCONTENTS_DIR_NAME);
 
     new DirectoryCleaner().removeEmptyDirectories(backupDirectory);
 
@@ -241,17 +245,16 @@ public class HudsonBackup {
     }
   }
 
-  private void backupUsers() throws IOException {
-    final File usersDirectory = new File(hudsonHome.getAbsolutePath(), USERS_DIR_NAME);
-    if (usersDirectory.exists() && usersDirectory.isDirectory()) {
-      LOGGER.fine("Backing up users specific configuration files...");
-      final File usersBackupDirectory = new File(backupDirectory.getAbsolutePath(), USERS_DIR_NAME);
-      IOFileFilter filter = FileFilterUtils.suffixFileFilter(XML_FILE_EXTENSION);
-      filter = FileFilterUtils.andFileFilter(filter, getFileAgeDiffFilter());
+  private void backupRootFolder(String folderName) throws IOException {
+    final File srcDirectory = new File(hudsonHome.getAbsolutePath(), folderName);
+    if (srcDirectory.exists() && srcDirectory.isDirectory()) {
+      LOGGER.fine(String.format("Backing up %s...", folderName));
+      final File destDirectory = new File(backupDirectory.getAbsolutePath(), folderName);
+      IOFileFilter filter = getFileAgeDiffFilter();
       filter = FileFilterUtils.andFileFilter(filter, getExcludedFilesFilter());
       filter = FileFilterUtils.orFileFilter(filter, DirectoryFileFilter.DIRECTORY);
-      FileUtils.copyDirectory(usersDirectory, usersBackupDirectory, filter);
-      LOGGER.fine("DONE backing up users specific configuration files.");
+      FileUtils.copyDirectory(srcDirectory, destDirectory, filter);
+      LOGGER.fine(String.format("DONE backing up %s.", folderName));
     }
   }
 

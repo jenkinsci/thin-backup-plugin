@@ -123,6 +123,7 @@ public class ThinBackupMgmtLink extends ManagementLink {
       @QueryParameter("cleanupDiff") final boolean cleanupDiff,
       @QueryParameter("backupBuildResults") final boolean backupBuildResults,
       @QueryParameter("backupBuildArchive") final boolean backupBuildArchive,
+      @QueryParameter("backupUserContents") final boolean backupUserContents,
       @QueryParameter("backupNextBuildNumber") final boolean backupNextBuildNumber) throws IOException {
     Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
 
@@ -136,6 +137,7 @@ public class ThinBackupMgmtLink extends ManagementLink {
     plugin.setMoveOldBackupsToZipFile(moveOldBackupsToZipFile);
     plugin.setBackupBuildResults(backupBuildResults);
     plugin.setBackupBuildArchive(backupBuildArchive);
+    plugin.setBackupUserContents(backupUserContents);
     plugin.setBackupNextBuildNumber(backupNextBuildNumber);
     plugin.save();
     LOGGER.finest("Saving backup settings done.");
