@@ -30,19 +30,19 @@
                     <f:entry title="Backup directory" field="backupPath"
                         help="/plugin/thinBackup/help/help-backupPath.html">
                         <f:textbox value="${it.configuration.backupPath}" name="backupPath"
-                            checkUrl="'${rootUrl}/plugin/thinBackup/checkBackupPath?value='+escape(this.value)"/>
+                            checkUrl="'${rootURL}/plugin/thinBackup/checkBackupPath?value='+escape(this.value)"/>
                     </f:entry>
                     
                     <f:entry title="Backup schedule for full backups" field="fullBackupSchedule"
                         help="/plugin/thinBackup/help/help-fullBackupSchedule.html">
                         <f:textbox value="${it.configuration.fullBackupSchedule}" name="fullBackupSchedule"
-                            checkUrl="'${rootUrl}/plugin/thinBackup/checkBackupSchedule?value='+escape(this.value)"/>
+                            checkUrl="'${rootURL}/plugin/thinBackup/checkBackupSchedule?value='+escape(this.value)"/>
                     </f:entry>
                     
                     <f:entry title="Backup schedule for differential backups" field="diffBackupSchedule"
                         help="/plugin/thinBackup/help/help-diffBackupSchedule.html">
                         <f:textbox value="${it.configuration.diffBackupSchedule}" name="diffBackupSchedule"
-                            checkUrl="'${rootUrl}/plugin/thinBackup/checkBackupSchedule?value='+escape(this.value)"/>
+                            checkUrl="'${rootURL}/plugin/thinBackup/checkBackupSchedule?value='+escape(this.value)"/>
                     </f:entry>
                     
                     <f:entry title="Max number of backup sets" field="nrMaxStoredFull"
@@ -53,17 +53,17 @@
                     <f:entry title="Files excluded from backup (regular expression)" field="excludedFilesRegex"
                         help="/plugin/thinBackup/help/help-excludedFilesRegex.html">
                         <f:textbox value="${it.configuration.excludedFilesRegex}" name="excludedFilesRegex"
-                            checkUrl="'${rootUrl}/plugin/thinBackup/checkExcludedFilesRegex?value='+escape(this.value)"/>
+                            checkUrl="'${rootURL}/plugin/thinBackup/checkExcludedFilesRegex?value='+escape(this.value)"/>
                     </f:entry>
                     
                     <f:optionalBlock title="Wait until Jenkins/Hudson is idle to perform a backup"
                         help="/plugin/thinBackup/help/help-waitForIdle.html"
                         checked="${it.configuration.waitForIdle}"
-                        name="waitForIdle" >
+                        name="waitForIdle" checkUrl="'${rootURL}/plugin/thinBackup/checkWaitForIdle?value='+escape(this.value)">
                         <f:entry title="Force Jenkins to quiet mode after specified minutes" field="forceQuietModeTimeout"
 	                        help="/plugin/thinBackup/help/help-forceQuietModeTimeout.html">
 	                        <f:textbox value="${it.configuration.forceQuietModeTimeout}" name="forceQuietModeTimeout"
-	                            checkUrl="'${rootUrl}/plugin/thinBackup/checkForceQuietModeTimeout?value='+escape(this.value)"/>
+	                            checkUrl="'${rootURL}/plugin/thinBackup/checkForceQuietModeTimeout?value='+escape(this.value)"/>
                         </f:entry>
                     </f:optionalBlock>
 
@@ -76,6 +76,11 @@
                             checked="${it.configuration.backupBuildArchive}"
                             name="backupBuildArchive" />
                     </f:optionalBlock>
+                    
+                    <f:optionalBlock title="Backup 'userContents' folder"
+                        help="/plugin/thinBackup/help/help-backupUserContents.html"
+                        checked="${it.configuration.backupUserContents}"
+                        name="backupUserContents" />
 
                     <f:optionalBlock title="Backup next build number file"
                         help="/plugin/thinBackup/help/help-backupNextBuildNumber.html"
