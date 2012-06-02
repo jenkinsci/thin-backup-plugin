@@ -240,7 +240,8 @@ public class HudsonBackup {
     if (plugin.isBackupBuildArchive()) {
       final File archiveSrcDir = new File(buildSrcDir, ARCHIVE_DIR_NAME);
       if (archiveSrcDir.exists() && archiveSrcDir.isDirectory()) {
-        FileUtils.copyDirectory(archiveSrcDir, new File(buildDestDir, "archive"));
+        final IOFileFilter filter = FileFilterUtils.andFileFilter(FileFileFilter.FILE, getFileAgeDiffFilter());
+        FileUtils.copyDirectory(archiveSrcDir, new File(buildDestDir, "archive"), filter);
       }
     }
   }
