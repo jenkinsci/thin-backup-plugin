@@ -124,7 +124,9 @@ public class ThinBackupMgmtLink extends ManagementLink {
       @QueryParameter("backupBuildResults") final boolean backupBuildResults,
       @QueryParameter("backupBuildArchive") final boolean backupBuildArchive,
       @QueryParameter("backupUserContents") final boolean backupUserContents,
-      @QueryParameter("backupNextBuildNumber") final boolean backupNextBuildNumber) throws IOException {
+      @QueryParameter("backupNextBuildNumber") final boolean backupNextBuildNumber,
+      @QueryParameter("waitForIdle") final boolean waitForIdle,
+      @QueryParameter("forceQuietModeTimeout") final String forceQuietModeTimeout) throws IOException {
     Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
 
     final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.getInstance();
@@ -139,6 +141,8 @@ public class ThinBackupMgmtLink extends ManagementLink {
     plugin.setBackupBuildArchive(backupBuildArchive);
     plugin.setBackupUserContents(backupUserContents);
     plugin.setBackupNextBuildNumber(backupNextBuildNumber);
+    plugin.setWaitForIdle(waitForIdle);
+    plugin.setForceQuietModeTimeout(Integer.parseInt(forceQuietModeTimeout));
     plugin.save();
     LOGGER.finest("Saving backup settings done.");
     rsp.sendRedirect(res.getContextPath() + "/thinBackup");

@@ -220,10 +220,13 @@ public class ThinBackupPluginImpl extends Plugin {
   }
 
   public FormValidation doCheckForceQuietModeTimeout(final StaplerRequest res, final StaplerResponse rsp,
-      @QueryParameter("value") final int timeout) {
-    if (timeout < 0)
-      return FormValidation.error("Number must be a positive value.");
-    else if (timeout > 12 * 60)
+      @QueryParameter("value") final String timeout) {
+    FormValidation validation = FormValidation.validateNonNegativeInteger(timeout);
+    if (!FormValidation.ok().equals(validation))
+      return validation;
+    
+    int intTimeout = Integer.parseInt(timeout);
+    if (intTimeout > 12 * 60)
       return FormValidation.warning("You choose a very long timeout. The value need to be in minutes.");
     else
       return FormValidation.ok();
