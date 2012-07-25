@@ -116,7 +116,7 @@ public class Utils {
       }
 
       if (!hudson.isQuietingDown() && starttime + unit.toMillis(timeout) < System.currentTimeMillis()) {
-        LOGGER.info("Timeout reached! Force quiet mode for jenkins now and wait unilt all executors are idle.");
+        LOGGER.info("Force quiet mode for jenkins now and wait unilt all executors are idle.");
         hudson.doQuietDown();
       }
     } while (running);
