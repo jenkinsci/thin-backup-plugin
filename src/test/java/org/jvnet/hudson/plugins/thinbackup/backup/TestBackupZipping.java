@@ -3,17 +3,43 @@ package org.jvnet.hudson.plugins.thinbackup.backup;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import junit.framework.Assert;
 
+import org.apache.commons.io.FileUtils;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
-import org.jvnet.hudson.plugins.thinbackup.HudsonDirectoryStructureSetup;
+import org.jvnet.hudson.plugins.thinbackup.TestHelper;
+import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 
-public class TestBackupZipping extends HudsonDirectoryStructureSetup {
+public class TestBackupZipping {
 
+  private File backupDir;
+  private File jenkinsHome;
+
+  @Before
+  public void setup() throws IOException {
+    File base = new File(System.getProperty("java.io.tmpdir"));
+    backupDir = TestHelper.createBackupFolder(base);
+
+    jenkinsHome = TestHelper.createBasicFolderStructure(base);
+    File jobDir = TestHelper.createJob(jenkinsHome, TestHelper.TEST_JOB_NAME);
+    TestHelper.addNewBuildToJob(jobDir);
+    
+  }
+  
+  @After
+  public void tearDown() throws Exception {
+    FileUtils.deleteDirectory(jenkinsHome);
+    FileUtils.deleteDirectory(backupDir);
+    FileUtils.deleteDirectory(new File(Utils.THINBACKUP_TMP_DIR));
+  }
+  
   @Test
   public void testThinBackupZipper() throws Exception {
     // create a backed up structure with DIFF back ups
@@ -73,7 +99,7 @@ public class TestBackupZipping extends HudsonDirectoryStructureSetup {
     bis.read(data);
     bis.close();
     final String configXmlContents = new String(data);
-    Assert.assertEquals(CONFIG_XML_CONTENTS, configXmlContents);
+    Assert.assertEquals(TestHelper.CONFIG_XML_CONTENTS, configXmlContents);
 
     backupSetFromZip.deleteUnzipDir();
     Assert.assertFalse(backupSetFromZip.getUnzipDir().exists());

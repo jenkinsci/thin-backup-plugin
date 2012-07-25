@@ -4,27 +4,55 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
 import junit.framework.Assert;
 
 import org.codehaus.plexus.util.FileUtils;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.jvnet.hudson.plugins.thinbackup.FileCollector;
-import org.jvnet.hudson.plugins.thinbackup.HudsonDirectoryStructureSetup;
+import org.jvnet.hudson.plugins.thinbackup.TestHelper;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl;
 import org.jvnet.hudson.plugins.thinbackup.backup.BackupSet;
 import org.jvnet.hudson.plugins.thinbackup.backup.HudsonBackup;
 import org.jvnet.hudson.plugins.thinbackup.backup.TestHudsonBackup;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 
-public class TestHudsonRestore extends HudsonDirectoryStructureSetup {
+public class TestHudsonRestore {
+
+  private File backupDir;
+  private File jenkinsHome;
+  private List<String> originalFiles;
+
+  @Before
+  public void setup() throws IOException {
+    File base = new File(System.getProperty("java.io.tmpdir"));
+    backupDir = TestHelper.createBackupFolder(base);
+
+    jenkinsHome = TestHelper.createBasicFolderStructure(base);
+    File jobDir = TestHelper.createJob(jenkinsHome, TestHelper.TEST_JOB_NAME);
+    TestHelper.addNewBuildToJob(jobDir);
+    
+    final FileCollector fc = new FileCollector();
+    originalFiles = fc.getFilesAsString(jenkinsHome);
+    
+  }
+  
+  @After
+  public void tearDown() throws Exception {
+    FileUtils.deleteDirectory(jenkinsHome);
+    FileUtils.deleteDirectory(backupDir);
+    FileUtils.deleteDirectory(new File(Utils.THINBACKUP_TMP_DIR));
+  }
 
   private ThinBackupPluginImpl createMockPlugin() {
     final ThinBackupPluginImpl mockPlugin = mock(ThinBackupPluginImpl.class);
-
-    when(mockPlugin.getHudsonHome()).thenReturn(root);
+  
+    when(mockPlugin.getHudsonHome()).thenReturn(jenkinsHome);
     when(mockPlugin.getFullBackupSchedule()).thenReturn("");
     when(mockPlugin.getDiffBackupSchedule()).thenReturn("");
     when(mockPlugin.getExpandedBackupPath()).thenReturn(backupDir.getAbsolutePath());
@@ -35,7 +63,7 @@ public class TestHudsonRestore extends HudsonDirectoryStructureSetup {
     when(mockPlugin.isBackupBuildArchive()).thenReturn(false);
     // when(mockPlugin.isBackupNextBuildNumber()).thenReturn(false);
     when(mockPlugin.getExcludedFilesRegex()).thenReturn("");
-
+  
     return mockPlugin;
   }
 
@@ -63,8 +91,8 @@ public class TestHudsonRestore extends HudsonDirectoryStructureSetup {
     tester.performHudsonDiffBackup(createMockPluginNoNextBuildNumber());
 
     // now destroy the hudson directory and recreate the root dir
-    FileUtils.deleteDirectory(root);
-    root.mkdirs();
+    FileUtils.deleteDirectory(jenkinsHome);
+    jenkinsHome.mkdirs();
 
     final File[] files = backupDir.listFiles();
     Assert.assertEquals(2, files.length);
@@ -73,15 +101,15 @@ public class TestHudsonRestore extends HudsonDirectoryStructureSetup {
     Assert.assertTrue(set.isValid());
     Assert.assertFalse(set.isInZipFile());
 
-    final HudsonRestore restore = new HudsonRestore(root, backupDir.getAbsolutePath(),
+    final HudsonRestore restore = new HudsonRestore(jenkinsHome, backupDir.getAbsolutePath(),
         Utils.getDateFromBackupDirectory(tmpBackupDir), false, false);
     restore.restore();
 
     final FileCollector fc = new FileCollector();
-    final List<String> restoredFiles = fc.getFilesAsString(root);
+    final List<String> restoredFiles = fc.getFilesAsString(jenkinsHome);
     final int nrRestored = restoredFiles.size();
-    Assert.assertEquals(originalFiles.size(), nrRestored + 2); // + 2 because original has more files that were not
-                                                               // backed up on purpose (next build number, secret.key)
+    Assert.assertEquals(originalFiles.size(), nrRestored + 3); // + 3 because original has more files that were not
+                                                               // backed up on purpose (next build number, secret.key, workspace/neverBackupme.txt)
   }
 
   @Test
@@ -100,8 +128,8 @@ public class TestHudsonRestore extends HudsonDirectoryStructureSetup {
     Utils.moveOldBackupsToZipFile(backupDir, null);
 
     // now destroy the hudson directory and recreate the root dir
-    FileUtils.deleteDirectory(root);
-    root.mkdirs();
+    FileUtils.deleteDirectory(jenkinsHome);
+    jenkinsHome.mkdirs();
 
     final File[] files = backupDir.listFiles();
     Assert.assertEquals(1, files.length);
@@ -110,16 +138,16 @@ public class TestHudsonRestore extends HudsonDirectoryStructureSetup {
     Assert.assertTrue(set.isValid());
     Assert.assertTrue(set.isInZipFile());
 
-    final HudsonRestore restore = new HudsonRestore(root, backupDir.getAbsolutePath(), backupDate, false, false);
+    final HudsonRestore restore = new HudsonRestore(jenkinsHome, backupDir.getAbsolutePath(), backupDate, false, false);
     restore.restore();
 
     final FileCollector fc = new FileCollector();
-    final List<String> restoredFiles = fc.getFilesAsString(root);
+    final List<String> restoredFiles = fc.getFilesAsString(jenkinsHome);
     final int nrRestored = restoredFiles.size();
-    Assert.assertEquals(originalFiles.size(), nrRestored + 2); // + 2 because original has more files that were not
-                                                               // backed up on purpose (next build number, secret.key)
-    Assert.assertFalse(containsStringEndingWith(restoredFiles, HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME));
-    Assert.assertFalse(containsStringEndingWith(restoredFiles, "secret.key"));
+    Assert.assertEquals(originalFiles.size(), nrRestored + 3); // + 3 because original has more files that were not
+                                                               // backed up on purpose (next build number, secret.key, workspace/neverBackupme.txt)
+    Assert.assertFalse(TestHelper.containsStringEndingWith(restoredFiles, HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME));
+    Assert.assertFalse(TestHelper.containsStringEndingWith(restoredFiles, "secret.key"));
   }
 
   @Test
@@ -130,8 +158,8 @@ public class TestHudsonRestore extends HudsonDirectoryStructureSetup {
     tester.performHudsonDiffBackup(createMockPluginBackupNextBuildNumber());
 
     // now destroy the hudson directory and recreate the root dir
-    FileUtils.deleteDirectory(root);
-    root.mkdirs();
+    FileUtils.deleteDirectory(jenkinsHome);
+    jenkinsHome.mkdirs();
 
     final File[] files = backupDir.listFiles();
     Assert.assertEquals(2, files.length);
@@ -140,17 +168,17 @@ public class TestHudsonRestore extends HudsonDirectoryStructureSetup {
     Assert.assertTrue(set.isValid());
     Assert.assertFalse(set.isInZipFile());
 
-    final HudsonRestore restore = new HudsonRestore(root, backupDir.getAbsolutePath(),
+    final HudsonRestore restore = new HudsonRestore(jenkinsHome, backupDir.getAbsolutePath(),
         Utils.getDateFromBackupDirectory(tmpBackupDir), true, false);
     restore.restore();
 
     final FileCollector fc = new FileCollector();
-    final List<String> restoredFiles = fc.getFilesAsString(root);
+    final List<String> restoredFiles = fc.getFilesAsString(jenkinsHome);
     final int nrRestored = restoredFiles.size();
-    Assert.assertEquals(originalFiles.size(), nrRestored + 1); // + 2 because original has more files that were not
-                                                               // backed up on purpose (next build number, secret.key)
-    Assert.assertTrue(containsStringEndingWith(restoredFiles, HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME));
-    Assert.assertFalse(containsStringEndingWith(restoredFiles, "secret.key"));
+    Assert.assertEquals(originalFiles.size(), nrRestored + 2); // + 2 because original has more files that were not
+                                                               // backed up on purpose (secret.key, workspace/neverBackupme.txt)
+    Assert.assertTrue(TestHelper.containsStringEndingWith(restoredFiles, HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME));
+    Assert.assertFalse(TestHelper.containsStringEndingWith(restoredFiles, "secret.key"));
   }
 
   @Test
@@ -161,8 +189,8 @@ public class TestHudsonRestore extends HudsonDirectoryStructureSetup {
     tester.performHudsonDiffBackup(createMockPluginBackupNextBuildNumber());
 
     // now destroy the hudson directory and recreate the root dir
-    FileUtils.deleteDirectory(root);
-    root.mkdirs();
+    FileUtils.deleteDirectory(jenkinsHome);
+    jenkinsHome.mkdirs();
 
     final File[] files = backupDir.listFiles();
     Assert.assertEquals(2, files.length);
@@ -171,17 +199,17 @@ public class TestHudsonRestore extends HudsonDirectoryStructureSetup {
     Assert.assertTrue(set.isValid());
     Assert.assertFalse(set.isInZipFile());
 
-    final HudsonRestore restore = new HudsonRestore(root, backupDir.getAbsolutePath(),
+    final HudsonRestore restore = new HudsonRestore(jenkinsHome, backupDir.getAbsolutePath(),
         Utils.getDateFromBackupDirectory(tmpBackupDir), false, false);
     restore.restore();
 
     final FileCollector fc = new FileCollector();
-    final List<String> restoredFiles = fc.getFilesAsString(root);
+    final List<String> restoredFiles = fc.getFilesAsString(jenkinsHome);
     final int nrRestored = restoredFiles.size();
-    Assert.assertEquals(originalFiles.size(), nrRestored + 2); // + 2 because original has more files that were not
-                                                               // backed up on purpose (next build number, secret.key)
-    Assert.assertFalse(containsStringEndingWith(restoredFiles, HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME));
-    Assert.assertFalse(containsStringEndingWith(restoredFiles, "secret.key"));
+    Assert.assertEquals(originalFiles.size(), nrRestored + 3); // + 3 because original has more files that were not
+                                                               // backed up on purpose (next build number, secret.key, workspace/neverBackupme.txt)
+    Assert.assertFalse(TestHelper.containsStringEndingWith(restoredFiles, HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME));
+    Assert.assertFalse(TestHelper.containsStringEndingWith(restoredFiles, "secret.key"));
   }
 
   @Test
@@ -200,8 +228,8 @@ public class TestHudsonRestore extends HudsonDirectoryStructureSetup {
     Utils.moveOldBackupsToZipFile(backupDir, null);
 
     // now destroy the hudson directory and recreate the root dir
-    FileUtils.deleteDirectory(root);
-    root.mkdirs();
+    FileUtils.deleteDirectory(jenkinsHome);
+    jenkinsHome.mkdirs();
 
     final File[] files = backupDir.listFiles();
     Assert.assertEquals(1, files.length);
@@ -210,16 +238,16 @@ public class TestHudsonRestore extends HudsonDirectoryStructureSetup {
     Assert.assertTrue(set.isValid());
     Assert.assertTrue(set.isInZipFile());
 
-    final HudsonRestore restore = new HudsonRestore(root, backupDir.getAbsolutePath(), backupDate, true, false);
+    final HudsonRestore restore = new HudsonRestore(jenkinsHome, backupDir.getAbsolutePath(), backupDate, true, false);
     restore.restore();
 
     final FileCollector fc = new FileCollector();
-    final List<String> restoredFiles = fc.getFilesAsString(root);
+    final List<String> restoredFiles = fc.getFilesAsString(jenkinsHome);
     final int nrRestored = restoredFiles.size();
-    Assert.assertEquals(originalFiles.size(), nrRestored + 1);// + 1 because original has more files that were not
-                                                              // backed up on purpose (secret.key)
-    Assert.assertTrue(containsStringEndingWith(restoredFiles, HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME));
-    Assert.assertFalse(containsStringEndingWith(restoredFiles, "secret.key"));
+    Assert.assertEquals(originalFiles.size(), nrRestored + 2); // + 3 because original has more files that were not
+                                                               // backed up on purpose (secret.key, workspace/neverBackupme.txt)
+    Assert.assertTrue(TestHelper.containsStringEndingWith(restoredFiles, HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME));
+    Assert.assertFalse(TestHelper.containsStringEndingWith(restoredFiles, "secret.key"));
   }
 
 }

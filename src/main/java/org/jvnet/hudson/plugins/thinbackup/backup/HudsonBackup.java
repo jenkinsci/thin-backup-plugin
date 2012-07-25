@@ -21,8 +21,10 @@ import hudson.model.Hudson;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -39,6 +41,7 @@ import org.apache.commons.io.filefilter.FileFileFilter;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.io.filefilter.RegexFileFilter;
+import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
@@ -47,11 +50,12 @@ public class HudsonBackup {
   private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
 
   public static final String BUILDS_DIR_NAME = "builds";
+  public static final String CONFIGURATIONS_DIR_NAME = "configurations";
   public static final String JOBS_DIR_NAME = "jobs";
   public static final String USERS_DIR_NAME = "users";
+  public static final String ARCHIVE_DIR_NAME = "archive";
   public static final String USERSCONTENTS_DIR_NAME = "userContent";
   public static final String NEXT_BUILD_NUMBER_FILE_NAME = "nextBuildNumber";
-  public static final String ARCHIVE_DIR_NAME = "archive";
   public static final String XML_FILE_EXTENSION = ".xml";
   public static final String ZIP_FILE_EXTENSION = ".zip";
   public static final String INSTALLED_PLUGINS_XML = "installedPlugins" + XML_FILE_EXTENSION;
@@ -178,6 +182,15 @@ public class HudsonBackup {
           final File jobBackupDirectory = new File(jobsBackupDirectory, jobName);
           backupJobConfigFor(jobDirectory, jobBackupDirectory);
           backupBuildsFor(jobDirectory, jobBackupDirectory);
+          if (isMatrixJob(jobDirectory)) {
+            List<File> configurations = findAllConfigurations(new File(jobDirectory, HudsonBackup.CONFIGURATIONS_DIR_NAME));
+            for (File configurationDirectory : configurations) {
+              File configurationBackupDirectory = createConfigurationBackupDirectory(jobBackupDirectory, jobDirectory, configurationDirectory);
+              backupJobConfigFor(configurationDirectory, configurationBackupDirectory);
+              backupBuildsFor(configurationDirectory, configurationBackupDirectory);              
+            }
+          }
+            
         } else {
           final String msg = String.format("Read access denied on directory '%s', cannot back up the job '%s'.",
               jobDirectory.getAbsolutePath(), jobName);
@@ -186,6 +199,28 @@ public class HudsonBackup {
       }
     }
     LOGGER.fine("DONE backing up job specific configuration files.");
+  }
+
+  private File createConfigurationBackupDirectory(File jobBackupdirectory, File jobDirectory, File configurationDirectory) {
+    String pathToConfiguration = configurationDirectory.getAbsolutePath();
+    String pathToJob = jobDirectory.getAbsolutePath();
+
+    return new File(jobBackupdirectory, pathToConfiguration.substring(pathToJob.length()));
+  }
+
+  private List<File> findAllConfigurations(File dir) {
+    Collection<File> listFiles = FileUtils.listFiles(dir, FileFilterUtils.nameFileFilter("config.xml"), TrueFileFilter.INSTANCE);
+        
+    List<File> confs = new ArrayList<File>();
+    for (File file : listFiles) {
+      confs.add(file.getParentFile());
+    }
+    
+    return confs;
+  }
+
+  private boolean isMatrixJob(File jobDirectory) {
+    return new File(jobDirectory, CONFIGURATIONS_DIR_NAME).isDirectory();
   }
 
   private void backupJobConfigFor(final File jobDirectory, final File jobBackupDirectory) throws IOException {
@@ -239,7 +274,7 @@ public class HudsonBackup {
   private void backupBuildArchive(final File buildSrcDir, final File buildDestDir) throws IOException {
     if (plugin.isBackupBuildArchive()) {
       final File archiveSrcDir = new File(buildSrcDir, ARCHIVE_DIR_NAME);
-      if (archiveSrcDir.exists() && archiveSrcDir.isDirectory()) {
+      if (archiveSrcDir.isDirectory()) {
         final IOFileFilter filter = FileFilterUtils.andFileFilter(FileFileFilter.FILE, getFileAgeDiffFilter());
         FileUtils.copyDirectory(archiveSrcDir, new File(buildDestDir, "archive"), filter);
       }
@@ -390,7 +425,6 @@ public class HudsonBackup {
 
     return result;
   }
-
 }
 
 /**
@@ -417,5 +451,4 @@ class ZipperThread extends Thread {
     }
     LOGGER.fine("DONE zipping.");
   }
-
 }
