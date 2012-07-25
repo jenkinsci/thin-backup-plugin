@@ -9,7 +9,7 @@
   <groupId>org.jvnet.hudson.plugins</groupId>
   <artifactId>thinBackup</artifactId>
   <name>ThinBackup</name>
-  <version>1.7-SNAPSHOT</version>
+  <version>1.6.2</version>
   <packaging>hpi</packaging>
   <licenses>
     <license>
@@ -56,9 +56,9 @@
     </developer>
   </developers>
   <scm>
-    <connection>scm:svn:https://svn.jenkins-ci.org/trunk/hudson/plugins/thinBackup</connection>
-    <developerConnection>scm:svn:https://svn.jenkins-ci.org/trunk/hudson/plugins/thinBackup</developerConnection>
-    <url>http://fisheye.jenkins-ci.org/browse/Hudson/trunk/hudson/plugins/thinBackup</url>
+    <connection>scm:svn:https://svn.jenkins-ci.org/tags/thinBackup-1.6.2</connection>
+    <developerConnection>scm:svn:https://svn.jenkins-ci.org/tags/thinBackup-1.6.2</developerConnection>
+    <url>http://fisheye.jenkins-ci.org/browse/Hudson/tags/thinBackup-1.6.2</url>
   </scm>
   <organization>
     <name>Borland (a Microfocus Company)</name>
