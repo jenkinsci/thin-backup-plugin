@@ -77,8 +77,8 @@
                             name="backupBuildArchive" />
                     </f:optionalBlock>
                     
-                    <f:optionalBlock title="Backup 'userContents' folder"
-                        help="/plugin/thinBackup/help/help-backupUserContents.html"
+                    <f:optionalBlock title="Backup 'userContent' folder"
+                        help="/plugin/thinBackup/help/help-backupUserContent.html"
                         checked="${it.configuration.backupUserContents}"
                         name="backupUserContents" />
 
