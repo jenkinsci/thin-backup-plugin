@@ -459,4 +459,14 @@ public class Utils {
 
     return newPath.toString();
   }
+
+  public static void waitUntilFileCanBeRead(File f) {
+    while (!f.canRead()) {
+      try {
+        Thread.sleep(500);
+      } catch (InterruptedException e) {
+        // nothing to do
+      }
+    }
+  }
 }

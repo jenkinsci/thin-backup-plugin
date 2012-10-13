@@ -39,7 +39,7 @@ public class DirectoriesZipper extends DirectoryWalker implements Closeable {
   }
 
   @Override
-  protected void handleFile(final File file, final int depth, final Collection results) {
+  protected void handleFile(final File file, final int depth, @SuppressWarnings("rawtypes") final Collection results) {
     try {
       final FileInputStream fi = new FileInputStream(file);
       final BufferedInputStream origin = new BufferedInputStream(fi);

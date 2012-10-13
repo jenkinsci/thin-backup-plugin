@@ -120,6 +120,7 @@ public class BackupSet implements Comparable<BackupSet> {
 
     ZipFile zipFile = null;
     try {
+      Utils.waitUntilFileCanBeRead(backupSetzipFile);
       zipFile = new ZipFile(backupSetzipFile);
       final Enumeration<? extends ZipEntry> zipEntries = zipFile.entries();
       while (zipEntries.hasMoreElements() && success) {

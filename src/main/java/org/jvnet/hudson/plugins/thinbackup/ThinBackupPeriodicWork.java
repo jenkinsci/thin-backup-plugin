@@ -91,7 +91,7 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
     } catch (final IOException e) {
       final String msg = MessageFormat
           .format(
-              "Cannot perform a backup. Please be sure jenkins/hudson has write privileges in the configured backup path '{0}'.",
+              "Cannot perform a backup. Please be sure jenkins/hudson has write privileges in the configured backup path ''{0}''.",
               backupPath);
       LOGGER.log(Level.SEVERE, msg, e);
     } finally {
@@ -140,7 +140,7 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
       final Calendar nextExecution = cronTab.ceil(currentTime);
       final long delay = nextExecution.getTimeInMillis() - currentTime;
 
-      LOGGER.fine(MessageFormat.format("Current time: {0}. Next execution ({3}) in {2} seconds which is {1} ",
+      LOGGER.fine(MessageFormat.format("Current time: {0,date,medium} {0,time,long}. Next execution ({3}) in {2} seconds which is {1,date,medium} {1,time,long}",
           new Date(currentTime), nextExecution.getTime(), TimeUnit2.MILLISECONDS.toSeconds(delay), backupType));
 
       if (delay < 0) {
@@ -152,7 +152,7 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
       return delay;
     } catch (final ANTLRException e) {
       LOGGER.warning(MessageFormat.format(
-          "Cannot parse the specified 'Backup schedule for {0} backups'. Check cron notation.", backupType.toString()));
+          "Cannot parse the specified ''Backup schedule for {0} backups''. Check cron notation.", backupType.toString()));
       return -1;
     }
   }

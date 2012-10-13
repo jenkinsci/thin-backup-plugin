@@ -16,12 +16,12 @@
  */
 package org.jvnet.hudson.plugins.thinbackup.backup;
 
+import hudson.Extension;
 import hudson.PluginWrapper;
 import hudson.model.Hudson;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -85,8 +85,7 @@ public class HudsonBackup {
       try {
         excludedFilesRegexPattern = Pattern.compile(excludedFilesRegex);
       } catch (final PatternSyntaxException pse) {
-        LOGGER.log(Level.SEVERE, String.format(
-            "Regex pattern '%s' for excluding files is invalid, and will be disregarded.", excludedFilesRegex), pse);
+        LOGGER.log(Level.SEVERE, String.format("Regex pattern '%s' for excluding files is invalid, and will be disregarded.", excludedFilesRegex), pse);
         excludedFilesRegexPattern = null;
       }
     }
@@ -187,13 +186,12 @@ public class HudsonBackup {
             for (File configurationDirectory : configurations) {
               File configurationBackupDirectory = createConfigurationBackupDirectory(jobBackupDirectory, jobDirectory, configurationDirectory);
               backupJobConfigFor(configurationDirectory, configurationBackupDirectory);
-              backupBuildsFor(configurationDirectory, configurationBackupDirectory);              
+              backupBuildsFor(configurationDirectory, configurationBackupDirectory);
             }
           }
-            
+
         } else {
-          final String msg = String.format("Read access denied on directory '%s', cannot back up the job '%s'.",
-              jobDirectory.getAbsolutePath(), jobName);
+          final String msg = String.format("Read access denied on directory '%s', cannot back up the job '%s'.", jobDirectory.getAbsolutePath(), jobName);
           LOGGER.severe(msg);
         }
       }
@@ -209,13 +207,14 @@ public class HudsonBackup {
   }
 
   private List<File> findAllConfigurations(File dir) {
+    @SuppressWarnings("unchecked")
     Collection<File> listFiles = FileUtils.listFiles(dir, FileFilterUtils.nameFileFilter("config.xml"), TrueFileFilter.INSTANCE);
-        
+
     List<File> confs = new ArrayList<File>();
     for (File file : listFiles) {
       confs.add(file.getParentFile());
     }
-    
+
     return confs;
   }
 
@@ -266,8 +265,7 @@ public class HudsonBackup {
 
     IOFileFilter filter = FileFilterUtils.orFileFilter(changelogFilter, fileFilter);
     filter = FileFilterUtils.andFileFilter(filter, getExcludedFilesFilter());
-    filter = FileFilterUtils.andFileFilter(filter,
-        FileFilterUtils.notFileFilter(FileFilterUtils.suffixFileFilter(ZIP_FILE_EXTENSION)));
+    filter = FileFilterUtils.andFileFilter(filter, FileFilterUtils.notFileFilter(FileFilterUtils.suffixFileFilter(ZIP_FILE_EXTENSION)));
     FileUtils.copyDirectory(srcDir, destDir, filter);
   }
 
@@ -297,8 +295,7 @@ public class HudsonBackup {
   private boolean isSymLinkFile(final File file) throws IOException {
     final String canonicalPath = file.getCanonicalPath();
     final String absolutePath = file.getAbsolutePath();
-    return !canonicalPath.substring(canonicalPath.lastIndexOf(File.separatorChar)).equals(
-        absolutePath.substring(absolutePath.lastIndexOf(File.separatorChar)));
+    return !canonicalPath.substring(canonicalPath.lastIndexOf(File.separatorChar)).equals(absolutePath.substring(absolutePath.lastIndexOf(File.separatorChar)));
   }
 
   private void storePluginListIfChanged() throws IOException {
@@ -366,8 +363,7 @@ public class HudsonBackup {
     if (plugin.isCleanupDiff()) {
       LOGGER.fine("Cleaning up diffs...");
 
-      final Collection<File> diffDirs = Utils
-          .getBackupTypeDirectories(backupDirectory.getParentFile(), BackupType.DIFF);
+      final Collection<File> diffDirs = Utils.getBackupTypeDirectories(backupDirectory.getParentFile(), BackupType.DIFF);
 
       for (final File diffDirToDelete : diffDirs) {
         FileUtils.deleteDirectory(diffDirToDelete);
@@ -417,38 +413,36 @@ public class HudsonBackup {
           result = tmp;
         }
       } else {
-        LOGGER
-            .info(String.format("Cannot parse directory name '%s', thus ignoring it when getting latest backup date.",
-                fullBackup.getName()));
+        LOGGER.info(String.format("Cannot parse directory name '%s', thus ignoring it when getting latest backup date.", fullBackup.getName()));
       }
     }
 
     return result;
   }
-}
 
-/**
- * Zipping the old backups is done in a thread so the rest of Hudson/Jenkins is not blocked.
- */
-class ZipperThread extends Thread {
-  private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
+  /**
+   * Zipping the old backups is done in a thread so the rest of Hudson/Jenkins is not blocked.
+   */
+  public static class ZipperThread extends Thread {
+    private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
 
-  private final File backupRoot;
-  private final File currentBackup;
+    private final File backupRoot;
+    private final File currentBackup;
 
-  public ZipperThread(final File backupRoot, final File currentBackup) {
-    this.backupRoot = backupRoot;
-    this.currentBackup = currentBackup;
-  }
-
-  @Override
-  public void run() {
-    LOGGER.fine("Starting zipper thread...");
-    try {
-      Utils.moveOldBackupsToZipFile(backupRoot, currentBackup);
-    } catch (final IOException ioe) {
-      LOGGER.log(Level.SEVERE, "Cannot zip old backups.", ioe);
+    public ZipperThread(final File backupRoot, final File currentBackup) {
+      this.backupRoot = backupRoot;
+      this.currentBackup = currentBackup;
     }
-    LOGGER.fine("DONE zipping.");
+
+    @Override
+    public void run() {
+      LOGGER.fine("Starting zipper thread...");
+      try {
+        Utils.moveOldBackupsToZipFile(backupRoot, currentBackup);
+      } catch (final IOException ioe) {
+        LOGGER.log(Level.SEVERE, "Cannot zip old backups.", ioe);
+      }
+      LOGGER.fine("DONE zipping.");
+    }
   }
 }
