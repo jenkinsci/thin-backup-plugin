@@ -19,6 +19,7 @@ package org.jvnet.hudson.plugins.thinbackup.restore;
 import hudson.PluginManager;
 import hudson.model.Hudson;
 import hudson.model.UpdateCenter;
+import hudson.model.UpdateCenter.InstallationJob;
 import hudson.model.UpdateCenter.UpdateCenterJob;
 import hudson.model.UpdateSite;
 import hudson.model.UpdateSite.Plugin;
@@ -31,7 +32,6 @@ import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.Writer;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -72,8 +72,8 @@ public class HudsonRestore {
     this.backupPath = backupPath;
     this.restoreFromDate = restoreFromDate;
     this.restoreNextBuildNumber = restoreNextBuildNumber;
-    // this.restorePlugins = restorePlugins;
-    this.restorePlugins = false;
+    this.restorePlugins = restorePlugins;
+    //this.restorePlugins = false;
 
     this.availablePluginLocations = new HashMap<String, List<Plugin>>();
   }
@@ -208,7 +208,7 @@ public class HudsonRestore {
 
     if (list.length != 1) {
       LOGGER
-          .severe("Cannot restore plugins because no or mulible files with the name 'installedPlugins.xml' are in the backup.");
+          .severe("Cannot restore plugins because no or mulitble files with the name 'installedPlugins.xml' are in the backup.");
       return;
     }
 
@@ -274,9 +274,13 @@ public class HudsonRestore {
           if (plugin.name.equals(pluginID)) {
             LOGGER.info("Restore plugin '" + pluginID + "'.");
             if (!plugin.version.equals(version)) {
-              setVersion(plugin, version);
-            }
-            return plugin.deploy();
+              Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+              UpdateCenter uc = Hudson.getInstance().getUpdateCenter();
+              PluginRestoreUpdateCenter pruc = new PluginRestoreUpdateCenter();
+              
+              return pruc.addJob(pruc.new PluginRestoreJob(site, Hudson.getAuthentication(), plugin, version));
+            } else
+              return plugin.deploy();
           }
         }
       }
@@ -284,36 +288,5 @@ public class HudsonRestore {
     LOGGER
         .warning("Cannot find plugin '" + pluginID + "' with the version '" + version + "'. Please install manually!");
     return null;
-  }
-
-  /**
-   * manipulate existing plugin object to downgrade to a specific version.
-   * 
-   * @param plugin
-   * @param version
-   */
-  private void setVersion(Plugin plugin, String version) {
-    Class clazz = Plugin.class;
-    try {
-      Field versionField = clazz.getField("version");
-      versionField.setAccessible(true);
-      versionField.set(plugin.version, version);
-
-      String[] url = plugin.url.split("/");
-      url[url.length - 2] = version;
-      StringBuilder newUrl = new StringBuilder();
-      for (String s : url) {
-        newUrl.append(s);
-        newUrl.append("/");
-      }
-      newUrl.replace(newUrl.length() - 1, newUrl.length(), "");
-
-      Field urlField = clazz.getField("url");
-      urlField.setAccessible(true);
-      urlField.set(plugin.url, newUrl.toString());
-
-    } catch (Throwable e) {
-      LOGGER.log(Level.SEVERE, "Cannot downgrade plugin [" + plugin.name + "]. Please install manually.", e);
-    }
   }
 }

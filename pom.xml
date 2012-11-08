@@ -42,8 +42,6 @@
       <id>tofuatjava</id>
       <name>Thomas Fuerer</name>
       <email>tfuerer.javanet@gmail.com</email>
-      <organization>Borland (a Microfocus Company)</organization>
-      <organizationUrl>www.borland.com</organizationUrl>
       <timezone>CET</timezone>
     </developer>
     <developer>
@@ -60,10 +58,6 @@
     <developerConnection>scm:svn:https://svn.jenkins-ci.org/trunk/hudson/plugins/thinBackup</developerConnection>
     <url>http://fisheye.jenkins-ci.org/browse/Hudson/trunk/hudson/plugins/thinBackup</url>
   </scm>
-  <organization>
-    <name>Borland (a Microfocus Company)</name>
-    <url>www.borland.com</url>
-  </organization>
   <repositories>
    <repository>
       <id>repo.jenkins-ci.org</id>
@@ -89,9 +83,14 @@
   <dependencies>
     <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
-      <version>1.9.0-rc1</version>
-      <type>jar</type>
+      <artifactId>mockito-core</artifactId>
+      <version>1.9.5</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.10</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

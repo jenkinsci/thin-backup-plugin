@@ -40,11 +40,11 @@
                 <f:optionalBlock title="Restore next build number file (if found in backup)"
                     help="/plugin/thinBackup/help/help-restoreNextBuildNumber.html"
                     name="restoreNextBuildNumber" />
-                <!--
+                
                 <f:optionalBlock title="Restore plugins"
                     help="/plugin/thinBackup/help/help-restorePlugins.html"
                     name="restorePlugins" />
-                 -->
+                 
                     
               </f:section>
               
