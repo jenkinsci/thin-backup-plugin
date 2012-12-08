@@ -1,7 +1,11 @@
 package org.jvnet.hudson.plugins.thinbackup;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -40,15 +44,21 @@ public class TestHelper {
     return backupDir;
   }
   
-  public static File createJob(File jenkinsHome, String jobName) throws IOException {
-    final File jobsDir = new File(jenkinsHome, HudsonBackup.JOBS_DIR_NAME);
-    final File testJob = new File(jobsDir , jobName);
-    testJob.mkdir();
-    final File config = new File(testJob, "config.xml");
+  public static File createCloudBeesFolder(File jenkinsHome, String folderName) throws FileNotFoundException, IOException {
+    final File folderDir = new File(new File(jenkinsHome, HudsonBackup.JOBS_DIR_NAME), folderName);
+    folderDir.mkdirs();
+    
+    final File config = new File(folderDir, "config.xml");
     config.createNewFile();
     final BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(config));
     out.write(new ByteArrayBuffer(CONFIG_XML_CONTENTS).array());
     out.close();
+    
+    return folderDir;
+  }
+  
+  public static File createJob(File jenkinsHome, String jobName) throws IOException {
+    final File testJob = createJobsFolderWithConfiguration(jenkinsHome, jobName);
     final File nextBuildNumberFile = new File(testJob, HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME);
     nextBuildNumberFile.createNewFile();
     addBuildNumber(nextBuildNumberFile);
@@ -56,6 +66,17 @@ public class TestHelper {
     workspace.mkdir();
     new File(workspace, "neverBackupMe.txt").createNewFile();
     
+    return testJob;
+  }
+
+  private static File createJobsFolderWithConfiguration(File jenkinsHome, String jobName) throws IOException, FileNotFoundException {
+    final File testJob = new File(new File(jenkinsHome, HudsonBackup.JOBS_DIR_NAME), jobName);
+    testJob.mkdirs();
+    final File config = new File(testJob, "config.xml");
+    config.createNewFile();
+    final BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(config));
+    out.write(new ByteArrayBuffer(CONFIG_XML_CONTENTS).array());
+    out.close();
     return testJob;
   }
   
@@ -137,5 +158,23 @@ public class TestHelper {
         // catch me if you can!
       }
     }
+  }
+
+  public static ThinBackupPluginImpl createMockPlugin(File jenkinsHome, File backupDir) {
+    final ThinBackupPluginImpl mockPlugin = mock(ThinBackupPluginImpl.class);
+  
+    when(mockPlugin.getHudsonHome()).thenReturn(jenkinsHome);
+    when(mockPlugin.getFullBackupSchedule()).thenReturn("");
+    when(mockPlugin.getDiffBackupSchedule()).thenReturn("");
+    when(mockPlugin.getExpandedBackupPath()).thenReturn(backupDir.getAbsolutePath());
+    when(mockPlugin.getNrMaxStoredFull()).thenReturn(-1);
+    when(mockPlugin.isCleanupDiff()).thenReturn(false);
+    when(mockPlugin.isMoveOldBackupsToZipFile()).thenReturn(false);
+    when(mockPlugin.isBackupBuildResults()).thenReturn(true);
+    when(mockPlugin.isBackupBuildArchive()).thenReturn(false);
+    when(mockPlugin.isBackupNextBuildNumber()).thenReturn(false);
+    when(mockPlugin.getExcludedFilesRegex()).thenReturn("");
+  
+    return mockPlugin;
   }
 }

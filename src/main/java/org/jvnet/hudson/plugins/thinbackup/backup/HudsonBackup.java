@@ -16,6 +16,7 @@
  */
 package org.jvnet.hudson.plugins.thinbackup.backup;
 
+import groovy.swing.factory.HBoxFactory;
 import hudson.PluginWrapper;
 import hudson.model.Hudson;
 
@@ -46,6 +47,7 @@ import org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 
 public class HudsonBackup {
+
   private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
 
   public static final String BUILDS_DIR_NAME = "builds";
@@ -55,6 +57,7 @@ public class HudsonBackup {
   public static final String ARCHIVE_DIR_NAME = "archive";
   public static final String USERSCONTENTS_DIR_NAME = "userContent";
   public static final String NEXT_BUILD_NUMBER_FILE_NAME = "nextBuildNumber";
+  public static final String CONFIG_XML = "config.xml";
   public static final String XML_FILE_EXTENSION = ".xml";
   public static final String ZIP_FILE_EXTENSION = ".zip";
   public static final String INSTALLED_PLUGINS_XML = "installedPlugins" + XML_FILE_EXTENSION;
@@ -163,39 +166,48 @@ public class HudsonBackup {
     final File jobsDirectory = new File(hudsonHome.getAbsolutePath(), JOBS_DIR_NAME);
     final File jobsBackupDirectory = new File(backupDirectory.getAbsolutePath(), JOBS_DIR_NAME);
 
-    Collection<String> jobNames;
-    final Hudson hudson = Hudson.getInstance();
-    if (hudson != null) {
-      jobNames = hudson.getJobNames();
-    } else {
-      jobNames = Arrays.asList(jobsDirectory.list());
-    }
+    backupJobsDirectory(jobsDirectory, jobsBackupDirectory);
+    LOGGER.fine("DONE backing up job specific configuration files.");
+  }
 
+  private void backupJobsDirectory(final File jobsDirectory, final File jobsBackupDirectory) throws IOException {
+    Collection<String> jobNames = Arrays.asList(jobsDirectory.list());
     LOGGER.info(String.format("Found %d jobs to back up.", jobNames.size()));
-    LOGGER.fine(String.format("\t%s", jobNames));
+    LOGGER.fine(String.format("\t%s", jobNames));    
+
     for (final String jobName : jobNames) {
       final File jobDirectory = new File(jobsDirectory, jobName);
       if (jobDirectory.exists()) { // sub jobs e.g. maven modules need not be copied
         if (jobDirectory.canRead()) {
-          final File jobBackupDirectory = new File(jobsBackupDirectory, jobName);
-          backupJobConfigFor(jobDirectory, jobBackupDirectory);
-          backupBuildsFor(jobDirectory, jobBackupDirectory);
-          if (isMatrixJob(jobDirectory)) {
-            List<File> configurations = findAllConfigurations(new File(jobDirectory, HudsonBackup.CONFIGURATIONS_DIR_NAME));
-            for (File configurationDirectory : configurations) {
-              File configurationBackupDirectory = createConfigurationBackupDirectory(jobBackupDirectory, jobDirectory, configurationDirectory);
-              backupJobConfigFor(configurationDirectory, configurationBackupDirectory);
-              backupBuildsFor(configurationDirectory, configurationBackupDirectory);
-            }
-          }
-
+          File childJobsFolder = new File(jobDirectory, HudsonBackup.JOBS_DIR_NAME);
+          if (childJobsFolder.exists()) { // found CloudBeesFolder
+            File folderBackupDirectory = new File(jobsBackupDirectory, jobName);
+            File folderJobsBackupDirectory = new File(folderBackupDirectory, JOBS_DIR_NAME);
+            folderJobsBackupDirectory.mkdirs();
+            FileUtils.copyFile(new File(jobDirectory, CONFIG_XML), new File(folderBackupDirectory, CONFIG_XML));
+            backupJobsDirectory(childJobsFolder, folderJobsBackupDirectory);
+          } else
+            backupJob(jobDirectory, jobsBackupDirectory, jobName);
         } else {
           final String msg = String.format("Read access denied on directory '%s', cannot back up the job '%s'.", jobDirectory.getAbsolutePath(), jobName);
           LOGGER.severe(msg);
         }
       }
     }
-    LOGGER.fine("DONE backing up job specific configuration files.");
+  }
+
+  private void backupJob(final File jobDirectory, final File jobsBackupDirectory, final String jobName) throws IOException {
+    final File jobBackupDirectory = new File(jobsBackupDirectory, jobName);
+    backupJobConfigFor(jobDirectory, jobBackupDirectory);
+    backupBuildsFor(jobDirectory, jobBackupDirectory);
+    if (isMatrixJob(jobDirectory)) {
+      List<File> configurations = findAllConfigurations(new File(jobDirectory, HudsonBackup.CONFIGURATIONS_DIR_NAME));
+      for (File configurationDirectory : configurations) {
+        File configurationBackupDirectory = createConfigurationBackupDirectory(jobBackupDirectory, jobDirectory, configurationDirectory);
+        backupJobConfigFor(configurationDirectory, configurationBackupDirectory);
+        backupBuildsFor(configurationDirectory, configurationBackupDirectory);
+      }
+    }
   }
 
   private File createConfigurationBackupDirectory(File jobBackupdirectory, File jobDirectory, File configurationDirectory) {
@@ -207,7 +219,7 @@ public class HudsonBackup {
 
   private List<File> findAllConfigurations(File dir) {
     @SuppressWarnings("unchecked")
-    Collection<File> listFiles = FileUtils.listFiles(dir, FileFilterUtils.nameFileFilter("config.xml"), TrueFileFilter.INSTANCE);
+    Collection<File> listFiles = FileUtils.listFiles(dir, FileFilterUtils.nameFileFilter(CONFIG_XML), TrueFileFilter.INSTANCE);
 
     List<File> confs = new ArrayList<File>();
     for (File file : listFiles) {

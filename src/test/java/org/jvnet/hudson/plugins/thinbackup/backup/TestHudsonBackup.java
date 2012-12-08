@@ -16,7 +16,6 @@
  */
 package org.jvnet.hudson.plugins.thinbackup.backup;
 
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
@@ -36,8 +35,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.jvnet.hudson.plugins.thinbackup.TestHelper;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
-import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl;
+import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 
 public class TestHudsonBackup {
 
@@ -62,30 +61,12 @@ public class TestHudsonBackup {
     FileUtils.deleteDirectory(new File(Utils.THINBACKUP_TMP_DIR));
   }
   
-  private ThinBackupPluginImpl createMockPlugin() {
-    final ThinBackupPluginImpl mockPlugin = mock(ThinBackupPluginImpl.class);
-
-    when(mockPlugin.getHudsonHome()).thenReturn(jenkinsHome);
-    when(mockPlugin.getFullBackupSchedule()).thenReturn("");
-    when(mockPlugin.getDiffBackupSchedule()).thenReturn("");
-    when(mockPlugin.getExpandedBackupPath()).thenReturn(backupDir.getAbsolutePath());
-    when(mockPlugin.getNrMaxStoredFull()).thenReturn(-1);
-    when(mockPlugin.isCleanupDiff()).thenReturn(false);
-    when(mockPlugin.isMoveOldBackupsToZipFile()).thenReturn(false);
-    when(mockPlugin.isBackupBuildResults()).thenReturn(true);
-    when(mockPlugin.isBackupBuildArchive()).thenReturn(false);
-    when(mockPlugin.isBackupNextBuildNumber()).thenReturn(false);
-    when(mockPlugin.getExcludedFilesRegex()).thenReturn("");
-
-    return mockPlugin;
-  }
-
   @Test
   public void testBackup() throws Exception {
     final Calendar cal = Calendar.getInstance();
     cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE - 10));
 
-    final ThinBackupPluginImpl mockPlugin = createMockPlugin();
+    final ThinBackupPluginImpl mockPlugin = TestHelper.createMockPlugin(jenkinsHome, backupDir);
 
     new HudsonBackup(mockPlugin, BackupType.FULL, cal.getTime()).backup();
 
@@ -116,7 +97,7 @@ public class TestHudsonBackup {
     final Calendar cal = Calendar.getInstance();
     cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE - 10));
 
-    final ThinBackupPluginImpl mockPlugin = createMockPlugin();
+    final ThinBackupPluginImpl mockPlugin = TestHelper.createMockPlugin(jenkinsHome, backupDir);
     when(mockPlugin.getExcludedFilesRegex()).thenReturn("^.*\\.(log)$");
 
     new HudsonBackup(mockPlugin, BackupType.FULL, cal.getTime()).backup();
@@ -156,7 +137,7 @@ public class TestHudsonBackup {
     final Calendar cal = Calendar.getInstance();
     cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE - 10));
 
-    final ThinBackupPluginImpl mockPlugin = createMockPlugin();
+    final ThinBackupPluginImpl mockPlugin = TestHelper.createMockPlugin(jenkinsHome, backupDir);
     when(mockPlugin.isBackupBuildResults()).thenReturn(false);
 
     new HudsonBackup(mockPlugin, BackupType.FULL, cal.getTime()).backup();
@@ -192,7 +173,7 @@ public class TestHudsonBackup {
 
   @Test
   public void testHudsonDiffBackup() throws Exception {
-    final ThinBackupPluginImpl mockPlugin = createMockPlugin();
+    final ThinBackupPluginImpl mockPlugin = TestHelper.createMockPlugin(jenkinsHome, backupDir);
 
     performHudsonDiffBackup(mockPlugin);
 
@@ -206,7 +187,7 @@ public class TestHudsonBackup {
     final Calendar cal = Calendar.getInstance();
     cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE - 10));
 
-    final ThinBackupPluginImpl mockPlugin = createMockPlugin();
+    final ThinBackupPluginImpl mockPlugin = TestHelper.createMockPlugin(jenkinsHome, backupDir);
     when(mockPlugin.isBackupNextBuildNumber()).thenReturn(true);
 
     new HudsonBackup(mockPlugin, BackupType.FULL, cal.getTime()).backup();
@@ -238,7 +219,7 @@ public class TestHudsonBackup {
     final Calendar cal = Calendar.getInstance();
     cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE - 10));
 
-    final ThinBackupPluginImpl mockPlugin = createMockPlugin();
+    final ThinBackupPluginImpl mockPlugin = TestHelper.createMockPlugin(jenkinsHome, backupDir);
     when(mockPlugin.isBackupBuildArchive()).thenReturn(true);
 
     new HudsonBackup(mockPlugin, BackupType.FULL, cal.getTime()).backup();
