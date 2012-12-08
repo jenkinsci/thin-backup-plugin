@@ -54,9 +54,9 @@
     </developer>
   </developers>
   <scm>
-    <connection>scm:svn:https://svn.jenkins-ci.org/trunk/hudson/plugins/thinBackup</connection>
-    <developerConnection>scm:svn:https://svn.jenkins-ci.org/trunk/hudson/plugins/thinBackup</developerConnection>
-    <url>http://fisheye.jenkins-ci.org/browse/Hudson/trunk/hudson/plugins/thinBackup</url>
+    <connection>git@github.com:jenkinsci/thin-backup-plugin.git</connection>
+    <developerConnection>git@github.com:jenkinsci/thin-backup-plugin.git</developerConnection>
+    <url>https://github.com/jenkinsci/thin-backup-plugin</url>
   </scm>
   <repositories>
    <repository>
