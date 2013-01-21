@@ -177,7 +177,7 @@ public class HudsonBackup {
 
     for (final String jobName : jobNames) {
       final File jobDirectory = new File(jobsDirectory, jobName);
-      if (jobDirectory.exists()) { // sub jobs e.g. maven modules need not be copied
+      if (jobDirectory.exists() && jobDirectory.isDirectory()) { // sub jobs e.g. maven modules need not be copied
         if (jobDirectory.canRead()) {
           File childJobsFolder = new File(jobDirectory, HudsonBackup.JOBS_DIR_NAME);
           if (childJobsFolder.exists()) { // found CloudBeesFolder
