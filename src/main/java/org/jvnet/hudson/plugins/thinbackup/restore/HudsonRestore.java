@@ -19,7 +19,6 @@ package org.jvnet.hudson.plugins.thinbackup.restore;
 import hudson.PluginManager;
 import hudson.model.Hudson;
 import hudson.model.UpdateCenter;
-import hudson.model.UpdateCenter.InstallationJob;
 import hudson.model.UpdateCenter.UpdateCenterJob;
 import hudson.model.UpdateSite;
 import hudson.model.UpdateSite.Plugin;
@@ -275,10 +274,9 @@ public class HudsonRestore {
             LOGGER.info("Restore plugin '" + pluginID + "'.");
             if (!plugin.version.equals(version)) {
               Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
-              UpdateCenter uc = Hudson.getInstance().getUpdateCenter();
               PluginRestoreUpdateCenter pruc = new PluginRestoreUpdateCenter();
               
-              return pruc.addJob(pruc.new PluginRestoreJob(site, Hudson.getAuthentication(), plugin, version));
+              return pruc._addJob(pruc.new PluginRestoreJob(site, Hudson.getAuthentication(), plugin, version));
             } else
               return plugin.deploy();
           }

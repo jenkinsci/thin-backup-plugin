@@ -3,8 +3,6 @@ package org.jvnet.hudson.plugins.thinbackup.backup;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import groovy.swing.factory.HBoxFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Calendar;

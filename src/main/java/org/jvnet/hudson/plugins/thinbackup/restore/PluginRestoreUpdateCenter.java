@@ -94,10 +94,9 @@ public class PluginRestoreUpdateCenter extends UpdateCenter {
   
   }
 
-  private static final UpdateCenter ORIGINAL_UPDATECENTER = Hudson.getInstance().getUpdateCenter();  
   private Set<UpdateSite> knownUpdateSites = new HashSet<UpdateSite>();
 
-  synchronized Future<UpdateCenterJob> addJob(UpdateCenterJob job) {
+  synchronized Future<UpdateCenterJob> _addJob(UpdateCenterJob job) {
     if (knownUpdateSites.add(job.site))
       new ConnectionCheckJob(job.site).submit();
     return job.submit();

@@ -24,7 +24,8 @@ public class FileCollector extends DirectoryWalker {
   }
 
   @Override
-  protected void handleFile(final File file, final int depth, @SuppressWarnings("rawtypes") final Collection results) {
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  protected void handleFile(final File file, final int depth, final Collection results) {
     results.add(file.getAbsolutePath());
   }
 

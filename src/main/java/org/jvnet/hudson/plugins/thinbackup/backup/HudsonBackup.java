@@ -16,7 +16,6 @@
  */
 package org.jvnet.hudson.plugins.thinbackup.backup;
 
-import groovy.swing.factory.HBoxFactory;
 import hudson.PluginWrapper;
 import hudson.model.Hudson;
 

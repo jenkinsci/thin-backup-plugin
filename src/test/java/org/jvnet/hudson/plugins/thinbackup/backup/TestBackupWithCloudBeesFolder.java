@@ -1,22 +1,19 @@
 package org.jvnet.hudson.plugins.thinbackup.backup;
 
-import static org.junit.Assert.*;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Calendar;
-import java.util.Collection;
 
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.Matchers;
-import org.junit.Assert;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.jvnet.hudson.plugins.thinbackup.TestHelper;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
-import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl;
+import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 
 public class TestBackupWithCloudBeesFolder {
   private static final String TEST_FOLDER = "testFolder";
