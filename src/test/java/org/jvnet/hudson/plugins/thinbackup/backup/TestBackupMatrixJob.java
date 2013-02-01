@@ -1,8 +1,8 @@
 package org.jvnet.hudson.plugins.thinbackup.backup;
 
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import hudson.model.ItemGroup;
 import java.io.File;
 import java.io.IOException;
 import java.util.Calendar;
@@ -17,6 +17,7 @@ import org.jvnet.hudson.plugins.thinbackup.TestHelper;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
+import static org.mockito.Mockito.mock;
 
 public class TestBackupMatrixJob {
 
@@ -67,7 +68,7 @@ public class TestBackupMatrixJob {
 
     final ThinBackupPluginImpl mockPlugin = createMockPlugin();
 
-    new HudsonBackup(mockPlugin, BackupType.FULL, cal.getTime()).backup();
+    new HudsonBackup(mockPlugin, BackupType.FULL, cal.getTime(), mock(ItemGroup.class)).backup();
     
     String[] list = backupDir.list();
     Assert.assertEquals(1, list.length);

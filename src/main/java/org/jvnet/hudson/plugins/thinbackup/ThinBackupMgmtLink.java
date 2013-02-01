@@ -123,6 +123,7 @@ public class ThinBackupMgmtLink extends ManagementLink {
       @QueryParameter("cleanupDiff") final boolean cleanupDiff,
       @QueryParameter("backupBuildResults") final boolean backupBuildResults,
       @QueryParameter("backupBuildArchive") final boolean backupBuildArchive,
+      @QueryParameter("backupBuildsToKeepOnly") final boolean backupBuildsToKeepOnly,
       @QueryParameter("backupUserContents") final boolean backupUserContents,
       @QueryParameter("backupNextBuildNumber") final boolean backupNextBuildNumber,
       @QueryParameter("waitForIdle") final boolean waitForIdle,
@@ -139,6 +140,7 @@ public class ThinBackupMgmtLink extends ManagementLink {
     plugin.setMoveOldBackupsToZipFile(moveOldBackupsToZipFile);
     plugin.setBackupBuildResults(backupBuildResults);
     plugin.setBackupBuildArchive(backupBuildArchive);
+    plugin.setBackupBuildsToKeepOnly(backupBuildsToKeepOnly);
     plugin.setBackupUserContents(backupUserContents);
     plugin.setBackupNextBuildNumber(backupNextBuildNumber);
     plugin.setWaitForIdle(waitForIdle);

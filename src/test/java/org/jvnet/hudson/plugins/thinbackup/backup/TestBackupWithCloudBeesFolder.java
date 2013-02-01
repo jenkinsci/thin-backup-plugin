@@ -1,5 +1,7 @@
 package org.jvnet.hudson.plugins.thinbackup.backup;
 
+import hudson.model.ItemGroup;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Calendar;
@@ -14,6 +16,7 @@ import org.jvnet.hudson.plugins.thinbackup.TestHelper;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
+import static org.mockito.Mockito.mock;
 
 public class TestBackupWithCloudBeesFolder {
   private static final String TEST_FOLDER = "testFolder";
@@ -46,7 +49,7 @@ public class TestBackupWithCloudBeesFolder {
     cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE - 10));
     
     final ThinBackupPluginImpl mockPlugin = TestHelper.createMockPlugin(jenkinsHome, backupDir);
-    new HudsonBackup(mockPlugin, BackupType.FULL, cal.getTime()).backup();
+    new HudsonBackup(mockPlugin, BackupType.FULL, cal.getTime(), mock(ItemGroup.class)).backup();
     
     final File backup = new File(backupDir, backupDir.list()[0]);
     File rootJobsFolder = new File(backup, HudsonBackup.JOBS_DIR_NAME);
@@ -75,7 +78,7 @@ public class TestBackupWithCloudBeesFolder {
     cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE - 10));
     
     final ThinBackupPluginImpl mockPlugin = TestHelper.createMockPlugin(jenkinsHome, backupDir);
-    new HudsonBackup(mockPlugin, BackupType.FULL, cal.getTime()).backup();
+    new HudsonBackup(mockPlugin, BackupType.FULL, cal.getTime(), mock(ItemGroup.class)).backup();
     
     File subFolderJobsBackupDirectory = new File(backupDir, backupDir.list()[0]+"/jobs/"+TEST_FOLDER+"/jobs/subFolder/jobs");
     String[] list = subFolderJobsBackupDirectory.list();

@@ -16,6 +16,11 @@
  */
 package org.jvnet.hudson.plugins.thinbackup.backup;
 
+import hudson.model.FreeStyleBuild;
+import hudson.model.FreeStyleProject;
+import hudson.model.ItemGroup;
+import hudson.model.TopLevelItem;
+import hudson.util.RunList;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
@@ -23,6 +28,7 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -37,21 +43,25 @@ import org.jvnet.hudson.plugins.thinbackup.TestHelper;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
+import static org.mockito.Mockito.mock;
 
 public class TestHudsonBackup {
 
   private File backupDir;
   private File jenkinsHome;
+  private File buildDir;
+  private ItemGroup<TopLevelItem> mockHudson;
 
   @Before
   public void setup() throws IOException {
+    mockHudson = mock(ItemGroup.class);
+    
     File base = new File(System.getProperty("java.io.tmpdir"));
     backupDir = TestHelper.createBackupFolder(base);
 
     jenkinsHome = TestHelper.createBasicFolderStructure(base);
     File jobDir = TestHelper.createJob(jenkinsHome, TestHelper.TEST_JOB_NAME);
-    TestHelper.addNewBuildToJob(jobDir);
-    
+    buildDir = TestHelper.addNewBuildToJob(jobDir);
   }
   
   @After
@@ -68,7 +78,7 @@ public class TestHudsonBackup {
 
     final ThinBackupPluginImpl mockPlugin = TestHelper.createMockPlugin(jenkinsHome, backupDir);
 
-    new HudsonBackup(mockPlugin, BackupType.FULL, cal.getTime()).backup();
+    new HudsonBackup(mockPlugin, BackupType.FULL, cal.getTime(), mockHudson).backup();
 
     String[] list = backupDir.list();
     Assert.assertEquals(1, list.length);
@@ -100,7 +110,7 @@ public class TestHudsonBackup {
     final ThinBackupPluginImpl mockPlugin = TestHelper.createMockPlugin(jenkinsHome, backupDir);
     when(mockPlugin.getExcludedFilesRegex()).thenReturn("^.*\\.(log)$");
 
-    new HudsonBackup(mockPlugin, BackupType.FULL, cal.getTime()).backup();
+    new HudsonBackup(mockPlugin, BackupType.FULL, cal.getTime(), mockHudson).backup();
 
     String[] list = backupDir.list();
     Assert.assertEquals(1, list.length);
@@ -140,7 +150,7 @@ public class TestHudsonBackup {
     final ThinBackupPluginImpl mockPlugin = TestHelper.createMockPlugin(jenkinsHome, backupDir);
     when(mockPlugin.isBackupBuildResults()).thenReturn(false);
 
-    new HudsonBackup(mockPlugin, BackupType.FULL, cal.getTime()).backup();
+    new HudsonBackup(mockPlugin, BackupType.FULL, cal.getTime(), mockHudson).backup();
 
     String[] list = backupDir.list();
     Assert.assertEquals(1, list.length);
@@ -158,7 +168,7 @@ public class TestHudsonBackup {
     final Calendar cal = Calendar.getInstance();
     cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE - 10));
 
-    new HudsonBackup(mockPlugin, BackupType.FULL, cal.getTime()).backup();
+    new HudsonBackup(mockPlugin, BackupType.FULL, cal.getTime(), mockHudson).backup();
 
     // fake modification
     backupDir.listFiles((FileFilter) FileFilterUtils.prefixFileFilter(BackupType.FULL.toString()))[0]
@@ -168,7 +178,7 @@ public class TestHudsonBackup {
       globalConfigFile.setLastModified(System.currentTimeMillis() - 60000 * 120);
     }
 
-    new HudsonBackup(mockPlugin, BackupType.DIFF, new Date()).backup();
+    new HudsonBackup(mockPlugin, BackupType.DIFF, new Date(), mockHudson).backup();
   }
 
   @Test
@@ -190,7 +200,7 @@ public class TestHudsonBackup {
     final ThinBackupPluginImpl mockPlugin = TestHelper.createMockPlugin(jenkinsHome, backupDir);
     when(mockPlugin.isBackupNextBuildNumber()).thenReturn(true);
 
-    new HudsonBackup(mockPlugin, BackupType.FULL, cal.getTime()).backup();
+    new HudsonBackup(mockPlugin, BackupType.FULL, cal.getTime(), mockHudson).backup();
 
     String[] list = backupDir.list();
     Assert.assertEquals(1, list.length);
@@ -222,7 +232,7 @@ public class TestHudsonBackup {
     final ThinBackupPluginImpl mockPlugin = TestHelper.createMockPlugin(jenkinsHome, backupDir);
     when(mockPlugin.isBackupBuildArchive()).thenReturn(true);
 
-    new HudsonBackup(mockPlugin, BackupType.FULL, cal.getTime()).backup();
+    new HudsonBackup(mockPlugin, BackupType.FULL, cal.getTime(), mockHudson).backup();
 
     String[] list = backupDir.list();
     Assert.assertEquals(1, list.length);
@@ -246,4 +256,67 @@ public class TestHudsonBackup {
     Assert.assertEquals(2, list.length);
   }
 
+  @Test
+  public void testBackupKeptBuildsOnly_doNotKeep() throws Exception {
+    final Calendar cal = Calendar.getInstance();
+    cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE - 10));
+
+    final ThinBackupPluginImpl mockPlugin = TestHelper.createMockPlugin(jenkinsHome, backupDir);
+    
+    when(mockPlugin.isBackupBuildsToKeepOnly()).thenReturn(true);
+    
+    FreeStyleProject mockJob = mock(FreeStyleProject.class);
+    when(mockHudson.getItem(TestHelper.TEST_JOB_NAME)).thenReturn(mockJob);
+    FreeStyleBuild mockRun = mock(FreeStyleBuild.class);
+    when(mockJob.getBuilds()).thenReturn((RunList)RunList.fromRuns(Collections.singleton(mockRun)));
+    when(mockRun.getRootDir()).thenReturn(buildDir);
+
+    new HudsonBackup(mockPlugin, BackupType.FULL, cal.getTime(), mockHudson).backup();
+
+    String[] list = backupDir.list();
+    Assert.assertEquals(1, list.length);
+    final File backup = new File(backupDir, list[0]);
+    list = backup.list();
+    Assert.assertEquals(6, list.length);
+
+    final File job = new File(new File(backup, HudsonBackup.JOBS_DIR_NAME), TestHelper.TEST_JOB_NAME);
+    list = job.list();
+    Assert.assertEquals(1, list.length);
+    Assert.assertEquals("config.xml", list[0]);    
+  }  
+  
+  @Test
+  public void testBackupKeptBuildsOnly_keep() throws Exception {
+    final Calendar cal = Calendar.getInstance();
+    cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE - 10));
+
+    final ThinBackupPluginImpl mockPlugin = TestHelper.createMockPlugin(jenkinsHome, backupDir);
+    
+    when(mockPlugin.isBackupBuildsToKeepOnly()).thenReturn(true);
+    
+    FreeStyleProject mockJob = mock(FreeStyleProject.class);
+    when(mockHudson.getItem(TestHelper.TEST_JOB_NAME)).thenReturn(mockJob);
+    FreeStyleBuild mockRun = mock(FreeStyleBuild.class);
+    // for some reason Mockito has issues mocking this interface and so is is used to return true to isKeepLog()
+    when(mockRun.getWhyKeepLog()).thenReturn("x");
+    when(mockJob.getBuilds()).thenReturn((RunList)RunList.fromRuns(Collections.singleton(mockRun)));
+    when(mockRun.getRootDir()).thenReturn(buildDir);
+
+    new HudsonBackup(mockPlugin, BackupType.FULL, cal.getTime(), mockHudson).backup();
+
+    String[] list = backupDir.list();
+    Assert.assertEquals(1, list.length);
+    final File backup = new File(backupDir, list[0]);
+    list = backup.list();
+    Assert.assertEquals(6, list.length);
+
+    final File job = new File(new File(backup, HudsonBackup.JOBS_DIR_NAME), TestHelper.TEST_JOB_NAME);
+    final List<String> arrayList = Arrays.asList(job.list());
+    Assert.assertEquals(2, arrayList.size());
+    Assert.assertFalse(arrayList.contains(HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME));
+
+    final File build = new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), TestHelper.CONCRET_BUILD_DIRECTORY_NAME);
+    list = build.list();
+    Assert.assertEquals(7, list.length);
+  }
 }
