@@ -18,6 +18,11 @@ package org.jvnet.hudson.plugins.thinbackup.backup;
 
 import hudson.PluginWrapper;
 import hudson.model.Hudson;
+import hudson.model.ItemGroup;
+import hudson.model.Job;
+import hudson.model.Run;
+import hudson.model.TopLevelItem;
+import hudson.util.RunList;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -69,15 +74,17 @@ public class HudsonBackup {
   private final BackupType backupType;
   private final Date latestFullBackupDate;
   private Pattern excludedFilesRegexPattern = null;
+  private ItemGroup<TopLevelItem> hudson;
 
   public HudsonBackup(final ThinBackupPluginImpl plugin, final BackupType backupType) {
-    this(plugin, backupType, new Date());
+    this(plugin, backupType, new Date(), Hudson.getInstance());
   }
 
   /**
    * package visible constructor for unit testing purposes only.
    */
-  protected HudsonBackup(final ThinBackupPluginImpl plugin, final BackupType backupType, final Date date) {
+  protected HudsonBackup(final ThinBackupPluginImpl plugin, final BackupType backupType, final Date date, ItemGroup<TopLevelItem> hudson) {
+    this.hudson = hudson;
     this.plugin = plugin;
     this.hudsonHome = plugin.getHudsonHome();
 
@@ -255,9 +262,10 @@ public class HudsonBackup {
       if (buildsDir.exists() && buildsDir.isDirectory()) {
         final Collection<String> builds = Arrays.asList(buildsDir.list());
         if (builds != null) {
+          TopLevelItem job = hudson.getItem(jobDirectory.getName());
           for (final String build : builds) {
             final File srcDir = new File(buildsDir, build);
-            if (!isSymLinkFile(srcDir)) {
+            if (!isSymLinkFile(srcDir) && (!plugin.isBackupBuildsToKeepOnly() || isBuildToKeep(job, srcDir))) {
               final File destDir = new File(new File(jobBackupDirectory, BUILDS_DIR_NAME), build);
               backupBuildFiles(srcDir, destDir);
               backupBuildArchive(srcDir, destDir);
@@ -267,7 +275,22 @@ public class HudsonBackup {
       }
     }
   }
-
+  
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  private boolean isBuildToKeep(TopLevelItem item, File buildDir) {
+    if (item instanceof Job) {
+      Job job = (Job) item;
+      RunList<Run> builds = job.getBuilds();
+      for (Run run : builds) {
+        if (run.getRootDir().equals(buildDir)) {
+          return run.isKeepLog();
+        }
+      }
+    }
+    // default to true, in the case we can't resolve this folder in the Hudson instance
+    return true;
+  }
+  
   private void backupBuildFiles(final File srcDir, final File destDir) throws IOException {
     final IOFileFilter changelogFilter = FileFilterUtils.andFileFilter(DirectoryFileFilter.DIRECTORY,
         FileFilterUtils.nameFileFilter(CHANGELOG_HISTORY_PLUGIN_DIR_NAME));

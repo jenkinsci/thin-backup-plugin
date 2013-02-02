@@ -75,6 +75,10 @@
                             help="/plugin/thinBackup/help/help-backupBuildArchive.html"
                             checked="${it.configuration.backupBuildArchive}"
                             name="backupBuildArchive" />
+                        <f:optionalBlock title="Backup only builds marked to keep"
+                            help="/plugin/thinBackup/help/help-backupBuildToKeepOnly.html"
+                            checked="${it.configuration.backupBuildsToKeepOnly}"
+                            name="backupBuildsToKeepOnly" />
                     </f:optionalBlock>
                     
                     <f:optionalBlock title="Backup 'userContent' folder"
