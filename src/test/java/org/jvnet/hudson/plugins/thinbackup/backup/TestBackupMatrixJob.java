@@ -20,7 +20,7 @@ import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 import static org.mockito.Mockito.mock;
 
 public class TestBackupMatrixJob {
-
+  
   private File backupDir;
   private File jenkinsHome;
 
