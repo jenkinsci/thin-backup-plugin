@@ -53,6 +53,7 @@ public class ThinBackupPluginImpl extends Plugin {
   private boolean backupBuildArchive = false;
   private boolean backupUserContents = false;
   private boolean backupNextBuildNumber = false;
+  private boolean backupBuildsToKeepOnly = false;
 
   private static ThinBackupPluginImpl instance = null;
 
@@ -185,6 +186,14 @@ public class ThinBackupPluginImpl extends Plugin {
 
   public boolean isBackupBuildArchive() {
     return backupBuildArchive;
+  }
+
+  public void setBackupBuildsToKeepOnly(boolean backupBuildsToKeepOnly) {
+    this.backupBuildsToKeepOnly = backupBuildsToKeepOnly;
+  }
+
+  public boolean isBackupBuildsToKeepOnly() {
+    return backupBuildsToKeepOnly;
   }
 
   public void setBackupNextBuildNumber(final boolean backupNextBuildNumber) {
