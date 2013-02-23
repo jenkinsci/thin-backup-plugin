@@ -16,12 +16,13 @@
  */
 package org.jvnet.hudson.plugins.thinbackup.backup;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import hudson.model.FreeStyleBuild;
-import hudson.model.FreeStyleProject;
 import hudson.model.ItemGroup;
 import hudson.model.TopLevelItem;
+import hudson.model.FreeStyleProject;
 import hudson.util.RunList;
-import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -43,7 +44,6 @@ import org.jvnet.hudson.plugins.thinbackup.TestHelper;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
-import static org.mockito.Mockito.mock;
 
 public class TestHudsonBackup {
 

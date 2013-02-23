@@ -1,5 +1,6 @@
 package org.jvnet.hudson.plugins.thinbackup.backup;
 
+import static org.mockito.Mockito.mock;
 import hudson.model.ItemGroup;
 
 import java.io.File;
@@ -16,7 +17,6 @@ import org.jvnet.hudson.plugins.thinbackup.TestHelper;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
-import static org.mockito.Mockito.mock;
 
 public class TestBackupWithCloudBeesFolder {
   private static final String TEST_FOLDER = "testFolder";
