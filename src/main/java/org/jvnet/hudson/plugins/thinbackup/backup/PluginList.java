@@ -29,7 +29,7 @@ import org.apache.commons.lang.StringUtils;
 
 public class PluginList implements Comparable<PluginList> {
   private Map<String, String> plugins;
-  transient private final File pluginsXml;
+  private transient final File pluginsXml;
 
   public PluginList(final File pluginsXml) {
     this.pluginsXml = pluginsXml;

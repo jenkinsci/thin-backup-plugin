@@ -56,6 +56,8 @@ import org.jvnet.hudson.plugins.thinbackup.backup.PluginList;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 
 public class HudsonRestore {
+  private static final int SLEEP_TIMEOUT = 500;
+
   private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
 
   private final String backupPath;
@@ -72,8 +74,6 @@ public class HudsonRestore {
     this.restoreFromDate = restoreFromDate;
     this.restoreNextBuildNumber = restoreNextBuildNumber;
     this.restorePlugins = restorePlugins;
-    //this.restorePlugins = false;
-
     this.availablePluginLocations = new HashMap<String, List<Plugin>>();
   }
 
@@ -230,7 +230,7 @@ public class HudsonRestore {
     boolean finished = false;
     while (!finished) {
       try {
-        Thread.sleep(500);
+        Thread.sleep(SLEEP_TIMEOUT);
       } catch (InterruptedException e) {
         // nothing to do
       }

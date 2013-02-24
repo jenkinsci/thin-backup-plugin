@@ -50,7 +50,6 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
           final StreamTaskListener l = createListener();
           try {
             SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
-
             execute(l);
           } catch (final IOException e) {
             e.printStackTrace(l.fatalError(e.getMessage()));
@@ -59,13 +58,12 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
           } finally {
             l.closeQuietly();
           }
-
           logger.log(Level.FINEST, "Finished " + name + ". " + (System.currentTimeMillis() - startTime) + " ms");
         }
       }, name + " thread");
       thread.start();
-    } catch (final Throwable t) {
-      logger.log(Level.SEVERE, name + " thread failed with error", t);
+    } catch (final Exception e) {
+      logger.log(Level.SEVERE, name + " thread failed with error", e);
     }
   }
 

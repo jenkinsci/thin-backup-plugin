@@ -135,10 +135,9 @@ public class BackupSet implements Comparable<BackupSet> {
                 zipFile.getName()));
             success = false;
           }
-        } else if (tmpName.startsWith(BackupType.DIFF.toString())) {
-          if (!diffBackupsNames.contains(tmpName)) {
-            diffBackupsNames.add(tmpName);
-          }
+        } else if (tmpName.startsWith(BackupType.DIFF.toString()) &&
+                   !diffBackupsNames.contains(tmpName)) {
+          diffBackupsNames.add(tmpName);
         }
       }
     } catch (final IOException e) {

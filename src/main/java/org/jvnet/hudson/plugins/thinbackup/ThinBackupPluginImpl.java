@@ -38,6 +38,8 @@ import antlr.ANTLRException;
 
 public class ThinBackupPluginImpl extends Plugin {
 
+  private static final int VERY_HIGH_TIMEOUT = 12 * 60;
+
   private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
 
   private String fullBackupSchedule = "";
@@ -235,7 +237,7 @@ public class ThinBackupPluginImpl extends Plugin {
       return validation;
     
     int intTimeout = Integer.parseInt(timeout);
-    if (intTimeout > 12 * 60)
+    if (intTimeout > VERY_HIGH_TIMEOUT)
       return FormValidation.warning("You choose a very long timeout. The value need to be in minutes.");
     else
       return FormValidation.ok();

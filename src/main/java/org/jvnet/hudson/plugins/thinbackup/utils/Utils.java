@@ -44,6 +44,8 @@ import org.jvnet.hudson.plugins.thinbackup.backup.BackupSet;
 import org.jvnet.hudson.plugins.thinbackup.backup.HudsonBackup;
 
 public class Utils {
+  private static final int SLEEP_TIMEOUT = 500;
+
   private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
 
   private static final int QUIETMODE_MONITORING_SLEEP = 500;
@@ -58,6 +60,8 @@ public class Utils {
       + "thinBackupTmpDir";
   public static final int FORCE_QUIETMODE_TIMEOUT_MINUTES = 120;
 
+  private Utils() {}
+  
   /**
    * Waits until all Hudson slaves are idle.
    */
@@ -463,7 +467,7 @@ public class Utils {
   public static void waitUntilFileCanBeRead(File f) {
     while (!f.canRead()) {
       try {
-        Thread.sleep(500);
+        Thread.sleep(SLEEP_TIMEOUT);
       } catch (InterruptedException e) {
         // nothing to do
       }
