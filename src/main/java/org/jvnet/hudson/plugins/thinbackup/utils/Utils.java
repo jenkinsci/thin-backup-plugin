@@ -43,7 +43,7 @@ import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 import org.jvnet.hudson.plugins.thinbackup.backup.BackupSet;
 import org.jvnet.hudson.plugins.thinbackup.backup.HudsonBackup;
 
-public class Utils {
+public final class Utils {
   private static final int SLEEP_TIMEOUT = 500;
 
   private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
