@@ -264,11 +264,11 @@ public class HudsonBackup {
         if (builds != null) {
           TopLevelItem job = hudson.getItem(jobDirectory.getName());
           for (final String build : builds) {
-            final File srcDir = new File(buildsDir, build);
-            if (!isSymLinkFile(srcDir) && (!plugin.isBackupBuildsToKeepOnly() || isBuildToKeep(job, srcDir))) {
+            final File source = new File(buildsDir, build);
+            if (!isSymLinkFile(source) && (!plugin.isBackupBuildsToKeepOnly() || isBuildToKeep(job, source))) {
               final File destDir = new File(new File(jobBackupDirectory, BUILDS_DIR_NAME), build);
-              backupBuildFiles(srcDir, destDir);
-              backupBuildArchive(srcDir, destDir);
+              backupBuildFiles(source, destDir);
+              backupBuildArchive(source, destDir);
             }
           }
         }
@@ -291,15 +291,19 @@ public class HudsonBackup {
     return true;
   }
   
-  private void backupBuildFiles(final File srcDir, final File destDir) throws IOException {
-    final IOFileFilter changelogFilter = FileFilterUtils.andFileFilter(DirectoryFileFilter.DIRECTORY,
-        FileFilterUtils.nameFileFilter(CHANGELOG_HISTORY_PLUGIN_DIR_NAME));
-    final IOFileFilter fileFilter = FileFilterUtils.andFileFilter(FileFileFilter.FILE, getFileAgeDiffFilter());
-
-    IOFileFilter filter = FileFilterUtils.orFileFilter(changelogFilter, fileFilter);
-    filter = FileFilterUtils.andFileFilter(filter, getExcludedFilesFilter());
-    filter = FileFilterUtils.andFileFilter(filter, FileFilterUtils.notFileFilter(FileFilterUtils.suffixFileFilter(ZIP_FILE_EXTENSION)));
-    FileUtils.copyDirectory(srcDir, destDir, filter);
+  private void backupBuildFiles(final File source, final File destination) throws IOException {
+    if (source.isDirectory()) {
+      final IOFileFilter changelogFilter = FileFilterUtils.andFileFilter(DirectoryFileFilter.DIRECTORY,
+          FileFilterUtils.nameFileFilter(CHANGELOG_HISTORY_PLUGIN_DIR_NAME));
+      final IOFileFilter fileFilter = FileFilterUtils.andFileFilter(FileFileFilter.FILE, getFileAgeDiffFilter());
+  
+      IOFileFilter filter = FileFilterUtils.orFileFilter(changelogFilter, fileFilter);
+      filter = FileFilterUtils.andFileFilter(filter, getExcludedFilesFilter());
+      filter = FileFilterUtils.andFileFilter(filter, FileFilterUtils.notFileFilter(FileFilterUtils.suffixFileFilter(ZIP_FILE_EXTENSION)));
+      FileUtils.copyDirectory(source, destination, filter);
+    } else {
+      FileUtils.copyFile(source, destination);
+    }
   }
 
   private void backupBuildArchive(final File buildSrcDir, final File buildDestDir) throws IOException {

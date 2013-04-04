@@ -79,7 +79,7 @@ public class PluginRestoreUpdateCenter extends UpdateCenter {
     }
   
     @Override
-    protected void _run() throws IOException {
+    protected void _run() throws IOException, InstallationStatus {
       super._run();
   
       PluginWrapper pw = plugin.getInstalled();
