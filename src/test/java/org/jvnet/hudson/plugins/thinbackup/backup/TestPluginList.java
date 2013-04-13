@@ -19,7 +19,7 @@ package org.jvnet.hudson.plugins.thinbackup.backup;
 import java.io.File;
 import java.io.IOException;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.After;

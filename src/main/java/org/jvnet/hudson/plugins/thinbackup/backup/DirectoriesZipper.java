@@ -8,6 +8,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
@@ -15,7 +16,7 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.DirectoryWalker;
 
-public class DirectoriesZipper extends DirectoryWalker implements Closeable {
+public class DirectoriesZipper extends DirectoryWalker<Object> implements Closeable {
   private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
 
   public static final int BUFFER_SIZE = 512 * 1024;
@@ -30,7 +31,7 @@ public class DirectoriesZipper extends DirectoryWalker implements Closeable {
   }
 
   public void addToZip(final File directory) throws IOException {
-    walk(directory, null);
+    walk(directory, Collections.emptyList());
   }
 
   @Override
@@ -39,7 +40,7 @@ public class DirectoriesZipper extends DirectoryWalker implements Closeable {
   }
 
   @Override
-  protected void handleFile(final File file, final int depth, @SuppressWarnings("rawtypes") final Collection results) {
+  protected void handleFile(final File file, final int depth, final Collection<Object> results) {
     try {
       final FileInputStream fi = new FileInputStream(file);
       final BufferedInputStream origin = new BufferedInputStream(fi);

@@ -188,8 +188,9 @@ public final class Utils {
    * @return an unordered list of backup directories of the given backup type.
    */
   public static List<File> getBackupTypeDirectories(final File parentDir, final BackupType backupType) {
-    IOFileFilter prefixFilter = FileFilterUtils.prefixFileFilter(backupType.toString());
-    prefixFilter = FileFilterUtils.andFileFilter(prefixFilter, DirectoryFileFilter.DIRECTORY);
+    IOFileFilter prefixFilter = FileFilterUtils.and(
+        FileFilterUtils.prefixFileFilter(backupType.toString()), 
+        DirectoryFileFilter.DIRECTORY);
 
     final File[] existingDirs = parentDir.listFiles((FilenameFilter) prefixFilter);
     if (existingDirs == null) {
@@ -204,10 +205,10 @@ public final class Utils {
    * @return an unordered list of zipped backupsets in the given directory.
    */
   public static List<File> getBackupSetZipFiles(final File parentDir) {
-    IOFileFilter zipFileFilter = FileFilterUtils.prefixFileFilter(BackupSet.BACKUPSET_ZIPFILE_PREFIX);
-    zipFileFilter = FileFilterUtils.andFileFilter(zipFileFilter,
-        FileFilterUtils.suffixFileFilter(HudsonBackup.ZIP_FILE_EXTENSION));
-    zipFileFilter = FileFilterUtils.andFileFilter(zipFileFilter, FileFileFilter.FILE);
+    IOFileFilter zipFileFilter = FileFilterUtils.and(
+        FileFilterUtils.prefixFileFilter(BackupSet.BACKUPSET_ZIPFILE_PREFIX),
+        FileFilterUtils.suffixFileFilter(HudsonBackup.ZIP_FILE_EXTENSION),
+        FileFileFilter.FILE);
 
     final File[] existingZips = parentDir.listFiles((FilenameFilter) zipFileFilter);
     if (existingZips == null) {

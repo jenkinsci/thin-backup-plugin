@@ -19,10 +19,11 @@ package org.jvnet.hudson.plugins.thinbackup.backup;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 
 import org.apache.commons.io.DirectoryWalker;
 
-public class DirectoryCleaner extends DirectoryWalker {
+public class DirectoryCleaner extends DirectoryWalker<Object> {
 
   /**
    * Deletes all empty directories, including rootDir if it is empty at the end.
@@ -31,7 +32,7 @@ public class DirectoryCleaner extends DirectoryWalker {
    * @throws IOException
    */
   public void removeEmptyDirectories(final File rootDir) throws IOException {
-    walk(rootDir, null);
+    walk(rootDir, Collections.emptyList());
   }
 
   @Override

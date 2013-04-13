@@ -8,7 +8,7 @@ import java.util.List;
 
 import org.apache.commons.io.DirectoryWalker;
 
-public class FileCollector extends DirectoryWalker {
+public class FileCollector extends DirectoryWalker<String> {
 
   /**
    * Recursively gets all files from the given directory.

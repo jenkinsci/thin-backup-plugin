@@ -33,7 +33,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
@@ -268,7 +268,7 @@ public class TestHudsonBackup {
     FreeStyleProject mockJob = mock(FreeStyleProject.class);
     when(mockHudson.getItem(TestHelper.TEST_JOB_NAME)).thenReturn(mockJob);
     FreeStyleBuild mockRun = mock(FreeStyleBuild.class);
-    when(mockJob.getBuilds()).thenReturn((RunList)RunList.fromRuns(Collections.singleton(mockRun)));
+    when(mockJob.getBuilds()).thenReturn((RunList<FreeStyleBuild>)RunList.fromRuns(Collections.singleton(mockRun)));
     when(mockRun.getRootDir()).thenReturn(buildDir);
 
     new HudsonBackup(mockPlugin, BackupType.FULL, cal.getTime(), mockHudson).backup();
@@ -299,7 +299,7 @@ public class TestHudsonBackup {
     FreeStyleBuild mockRun = mock(FreeStyleBuild.class);
     // for some reason Mockito has issues mocking this interface and so is is used to return true to isKeepLog()
     when(mockRun.getWhyKeepLog()).thenReturn("x");
-    when(mockJob.getBuilds()).thenReturn((RunList)RunList.fromRuns(Collections.singleton(mockRun)));
+    when(mockJob.getBuilds()).thenReturn((RunList<FreeStyleBuild>)RunList.fromRuns(Collections.singleton(mockRun)));
     when(mockRun.getRootDir()).thenReturn(buildDir);
 
     new HudsonBackup(mockPlugin, BackupType.FULL, cal.getTime(), mockHudson).backup();

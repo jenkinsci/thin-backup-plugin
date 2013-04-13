@@ -103,9 +103,9 @@ public class HudsonRestore {
   private boolean restoreFromDirectories(final String parentDirectory) throws IOException {
     boolean success = false;
 
-    IOFileFilter suffixFilter = FileFilterUtils.suffixFileFilter(Utils.DIRECTORY_NAME_DATE_FORMAT
-        .format(restoreFromDate));
-    suffixFilter = FileFilterUtils.andFileFilter(suffixFilter, DirectoryFileFilter.DIRECTORY);
+    IOFileFilter suffixFilter = FileFilterUtils.and(
+        FileFilterUtils.suffixFileFilter(Utils.DIRECTORY_NAME_DATE_FORMAT.format(restoreFromDate)), 
+        DirectoryFileFilter.DIRECTORY);
 
     final File[] candidates = new File(parentDirectory).listFiles((FileFilter) suffixFilter);
     if (candidates.length > 1) {
@@ -131,10 +131,10 @@ public class HudsonRestore {
   private boolean restoreFromZipFile() throws IOException {
     boolean success = false;
 
-    IOFileFilter zippedBackupSetsFilter = FileFilterUtils.prefixFileFilter(BackupSet.BACKUPSET_ZIPFILE_PREFIX);
-    zippedBackupSetsFilter = FileFilterUtils.andFileFilter(zippedBackupSetsFilter,
-        FileFilterUtils.suffixFileFilter(HudsonBackup.ZIP_FILE_EXTENSION));
-    zippedBackupSetsFilter = FileFilterUtils.andFileFilter(zippedBackupSetsFilter, FileFileFilter.FILE);
+    IOFileFilter zippedBackupSetsFilter = FileFilterUtils.and(
+        FileFilterUtils.prefixFileFilter(BackupSet.BACKUPSET_ZIPFILE_PREFIX),
+        FileFilterUtils.suffixFileFilter(HudsonBackup.ZIP_FILE_EXTENSION),
+        FileFileFilter.FILE);
 
     final File[] candidates = new File(backupPath).listFiles((FileFilter) zippedBackupSetsFilter);
     for (final File candidate : candidates) {
@@ -158,7 +158,6 @@ public class HudsonRestore {
     if (restoreNextBuildNumber) {
       restoreNextBuildNumberFilter = FileFilterUtils.trueFileFilter();
 
-      @SuppressWarnings("unchecked")
       final Collection<File> restore = FileUtils.listFiles(toRestore, nextBuildNumberFileFilter,
           TrueFileFilter.INSTANCE);
       final Map<String, Integer> nextBuildNumbers = new HashMap<String, Integer>();
@@ -174,7 +173,6 @@ public class HudsonRestore {
         }
       }
 
-      @SuppressWarnings("unchecked")
       final Collection<File> current = FileUtils.listFiles(hudsonHome, nextBuildNumberFileFilter,
           TrueFileFilter.INSTANCE);
       for (final File file : current) {
