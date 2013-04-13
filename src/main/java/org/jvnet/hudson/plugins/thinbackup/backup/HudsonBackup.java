@@ -158,10 +158,11 @@ public class HudsonBackup {
   private void backupGlobalXmls() throws IOException {
     LOGGER.fine("Backing up global configuration files...");
 
-    IOFileFilter suffixFileFilter = FileFilterUtils.suffixFileFilter(XML_FILE_EXTENSION);
-    suffixFileFilter = FileFilterUtils.andFileFilter(FileFileFilter.FILE, suffixFileFilter);
-    suffixFileFilter = FileFilterUtils.andFileFilter(suffixFileFilter, getFileAgeDiffFilter());
-    suffixFileFilter = FileFilterUtils.andFileFilter(suffixFileFilter, getExcludedFilesFilter());
+    IOFileFilter suffixFileFilter = FileFilterUtils.and(
+        FileFileFilter.FILE,
+        FileFilterUtils.suffixFileFilter(XML_FILE_EXTENSION),
+        getFileAgeDiffFilter(),
+        getExcludedFilesFilter());
     FileUtils.copyDirectory(hudsonHome, backupDirectory, suffixFileFilter);
 
     LOGGER.fine("DONE backing up global configuration files.");
@@ -224,7 +225,6 @@ public class HudsonBackup {
   }
 
   private List<File> findAllConfigurations(File dir) {
-    @SuppressWarnings("unchecked")
     Collection<File> listFiles = FileUtils.listFiles(dir, FileFilterUtils.nameFileFilter(CONFIG_XML), TrueFileFilter.INSTANCE);
 
     List<File> confs = new ArrayList<File>();
@@ -240,9 +240,7 @@ public class HudsonBackup {
   }
 
   private void backupJobConfigFor(final File jobDirectory, final File jobBackupDirectory) throws IOException {
-    IOFileFilter filter = FileFilterUtils.suffixFileFilter(XML_FILE_EXTENSION);
-    filter = FileFilterUtils.andFileFilter(filter, getFileAgeDiffFilter());
-    filter = FileFilterUtils.andFileFilter(filter, getExcludedFilesFilter());
+    IOFileFilter filter = FileFilterUtils.and(FileFilterUtils.suffixFileFilter(XML_FILE_EXTENSION), getFileAgeDiffFilter(), getExcludedFilesFilter());
     FileUtils.copyDirectory(jobDirectory, jobBackupDirectory, filter);
     backupNextBuildNumberFile(jobDirectory, jobBackupDirectory);
   }
@@ -293,26 +291,27 @@ public class HudsonBackup {
   
   private void backupBuildFiles(final File source, final File destination) throws IOException {
     if (source.isDirectory()) {
-      final IOFileFilter changelogFilter = FileFilterUtils.andFileFilter(DirectoryFileFilter.DIRECTORY,
+      final IOFileFilter changelogFilter = FileFilterUtils.and(DirectoryFileFilter.DIRECTORY,
           FileFilterUtils.nameFileFilter(CHANGELOG_HISTORY_PLUGIN_DIR_NAME));
-      final IOFileFilter fileFilter = FileFilterUtils.andFileFilter(FileFileFilter.FILE, getFileAgeDiffFilter());
+      final IOFileFilter fileFilter = FileFilterUtils.and(FileFileFilter.FILE, getFileAgeDiffFilter());
   
-      IOFileFilter filter = FileFilterUtils.orFileFilter(changelogFilter, fileFilter);
-      filter = FileFilterUtils.andFileFilter(filter, getExcludedFilesFilter());
-      filter = FileFilterUtils.andFileFilter(filter, FileFilterUtils.notFileFilter(FileFilterUtils.suffixFileFilter(ZIP_FILE_EXTENSION)));
+      IOFileFilter filter = FileFilterUtils.and(
+          FileFilterUtils.or(changelogFilter, fileFilter), 
+          getExcludedFilesFilter(),
+          FileFilterUtils.notFileFilter(FileFilterUtils.suffixFileFilter(ZIP_FILE_EXTENSION)));
       FileUtils.copyDirectory(source, destination, filter);
-    } else {
+    } else if (FileUtils.isSymlink(source)) {
       FileUtils.copyFile(source, destination);
-    }
+    } // on linux system we have links which are ignored for now
   }
 
   private void backupBuildArchive(final File buildSrcDir, final File buildDestDir) throws IOException {
     if (plugin.isBackupBuildArchive()) {
       final File archiveSrcDir = new File(buildSrcDir, ARCHIVE_DIR_NAME);
       if (archiveSrcDir.isDirectory()) {
-        final IOFileFilter filter = FileFilterUtils.orFileFilter(
+        final IOFileFilter filter = FileFilterUtils.or(
                 FileFilterUtils.directoryFileFilter(), 
-                FileFilterUtils.andFileFilter(FileFileFilter.FILE, getFileAgeDiffFilter()));
+                FileFilterUtils.and(FileFileFilter.FILE, getFileAgeDiffFilter()));
         FileUtils.copyDirectory(archiveSrcDir, new File(buildDestDir, "archive"), filter);
       }
     }
@@ -323,9 +322,10 @@ public class HudsonBackup {
     if (srcDirectory.exists() && srcDirectory.isDirectory()) {
       LOGGER.fine(String.format("Backing up %s...", folderName));
       final File destDirectory = new File(backupDirectory.getAbsolutePath(), folderName);
-      IOFileFilter filter = getFileAgeDiffFilter();
-      filter = FileFilterUtils.andFileFilter(filter, getExcludedFilesFilter());
-      filter = FileFilterUtils.orFileFilter(filter, DirectoryFileFilter.DIRECTORY);
+      IOFileFilter filter = FileFilterUtils.and(
+          getFileAgeDiffFilter(),
+          getExcludedFilesFilter(),
+          DirectoryFileFilter.DIRECTORY);
       FileUtils.copyDirectory(srcDirectory, destDirectory, filter);
       LOGGER.fine(String.format("DONE backing up %s.", folderName));
     }
