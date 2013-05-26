@@ -18,6 +18,7 @@ package org.jvnet.hudson.plugins.thinbackup.backup;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import hudson.Functions;
 import hudson.model.FreeStyleBuild;
 import hudson.model.ItemGroup;
 import hudson.model.TopLevelItem;
@@ -33,11 +34,10 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import org.junit.Assert;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.jvnet.hudson.plugins.thinbackup.TestHelper;
@@ -53,7 +53,7 @@ public class TestHudsonBackup {
   private ItemGroup<TopLevelItem> mockHudson;
 
   @Before
-  public void setup() throws IOException {
+  public void setup() throws IOException, InterruptedException {
     mockHudson = mock(ItemGroup.class);
     
     File base = new File(System.getProperty("java.io.tmpdir"));
@@ -88,7 +88,10 @@ public class TestHudsonBackup {
 
     final File job = new File(new File(backup, HudsonBackup.JOBS_DIR_NAME), TestHelper.TEST_JOB_NAME);
     final List<String> arrayList = Arrays.asList(job.list());
-    Assert.assertEquals(2, arrayList.size());
+    if (Functions.isWindows())
+      Assert.assertEquals(2, arrayList.size());
+    else
+      Assert.assertEquals(4, arrayList.size());
     Assert.assertFalse(arrayList.contains(HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME));
 
     final File build = new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), TestHelper.CONCRET_BUILD_DIRECTORY_NAME);
@@ -100,7 +103,7 @@ public class TestHudsonBackup {
         HudsonBackup.CHANGELOG_HISTORY_PLUGIN_DIR_NAME);
     list = changelogHistory.list();
     Assert.assertEquals(2, list.length);
-  }
+  }  
 
   @Test
   public void testBackupWithExludes() throws Exception {

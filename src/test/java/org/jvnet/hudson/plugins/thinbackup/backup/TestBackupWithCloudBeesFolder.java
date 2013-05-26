@@ -25,7 +25,7 @@ public class TestBackupWithCloudBeesFolder {
   private File cloudBeesFolder;
 
   @Before
-  public void setup() throws IOException {
+  public void setup() throws IOException, InterruptedException {
     File base = new File(System.getProperty("java.io.tmpdir"));
     backupDir = TestHelper.createBackupFolder(base);
 

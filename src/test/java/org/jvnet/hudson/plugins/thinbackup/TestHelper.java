@@ -2,6 +2,8 @@ package org.jvnet.hudson.plugins.thinbackup;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import hudson.Util;
+import hudson.util.StreamTaskListener;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -9,6 +11,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.util.List;
 
@@ -80,12 +83,12 @@ public class TestHelper {
     return testJob;
   }
   
-  public static File addNewBuildToJob(File job) throws IOException {
+  public static File addNewBuildToJob(File job) throws IOException, InterruptedException {
     final File builds = new File(job, HudsonBackup.BUILDS_DIR_NAME);
     builds.mkdir();
     final File build = new File(builds, CONCRET_BUILD_DIRECTORY_NAME);
     build.mkdir();
-
+    
     final File changelogDir = new File(build, HudsonBackup.CHANGELOG_HISTORY_PLUGIN_DIR_NAME);
     changelogDir.mkdir();
     new File(changelogDir, "1.xml").createNewFile();
@@ -102,10 +105,13 @@ public class TestHelper {
     archiveDir.mkdir();
     new File(archiveDir, "someFile.log").createNewFile();
     
+    Util.createSymlink(job, HudsonBackup.BUILDS_DIR_NAME+"/"+CONCRET_BUILD_DIRECTORY_NAME, "lastSuccessful", new StreamTaskListener(new StringWriter()));
+    Util.createSymlink(job, HudsonBackup.BUILDS_DIR_NAME+"/"+CONCRET_BUILD_DIRECTORY_NAME, "lastStable", new StreamTaskListener(new StringWriter()));
+
     return build;
   }
   
-  public static void addSingleConfigurationResult(File job) throws IOException  {
+  public static void addSingleConfigurationResult(File job) throws IOException, InterruptedException  {
     File configurations = new File(job, HudsonBackup.CONFIGURATIONS_DIR_NAME);
     configurations.mkdir();
     File axis_x = new File(configurations, "axis-x");

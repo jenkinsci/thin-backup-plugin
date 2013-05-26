@@ -16,6 +16,7 @@
  */
 package org.jvnet.hudson.plugins.thinbackup.backup;
 
+import hudson.Util;
 import hudson.PluginWrapper;
 import hudson.model.ItemGroup;
 import hudson.model.TopLevelItem;
@@ -23,10 +24,12 @@ import hudson.model.Hudson;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.util.RunList;
+import hudson.util.StreamTaskListener;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -184,8 +187,8 @@ public class HudsonBackup {
 
     for (final String jobName : jobNames) {
       final File jobDirectory = new File(jobsDirectory, jobName);
-      if (jobDirectory.exists() && jobDirectory.isDirectory()) { // sub jobs e.g. maven modules need not be copied
-        if (jobDirectory.canRead()) {
+      if (jobDirectory.exists() && jobDirectory.canRead()) {
+        if (jobDirectory.isDirectory()) { // sub jobs e.g. maven modules need not be copied
           File childJobsFolder = new File(jobDirectory, HudsonBackup.JOBS_DIR_NAME);
           if (childJobsFolder.exists()) { // found CloudBeesFolder
             File folderBackupDirectory = new File(jobsBackupDirectory, jobName);
@@ -195,12 +198,19 @@ public class HudsonBackup {
             backupJobsDirectory(childJobsFolder, folderJobsBackupDirectory);
           } else
             backupJob(jobDirectory, jobsBackupDirectory, jobName);
-        } else {
-          final String msg = String.format("Read access denied on directory '%s', cannot back up the job '%s'.", jobDirectory.getAbsolutePath(), jobName);
-          LOGGER.severe(msg);
+        } else if (FileUtils.isSymlink(jobDirectory)) {
+          try {
+            Util.createSymlink(jobsDirectory.getParentFile(), Util.resolveSymlink(jobDirectory), jobDirectory.getName(), new StreamTaskListener(new StringWriter()));
+          } catch (InterruptedException e) {
+            LOGGER.severe("Cannot backup Symlink: "+jobsBackupDirectory.getPath());
+            LOGGER.log(Level.FINE, e.getLocalizedMessage(), e);
+          }
         }
+      } else {
+        final String msg = String.format("Read access denied on directory '%s', cannot back up the job '%s'.", jobDirectory.getAbsolutePath(), jobName);
+        LOGGER.severe(msg);
       }
-    }
+    } 
   }
 
   private void backupJob(final File jobDirectory, final File jobsBackupDirectory, final String jobName) throws IOException {

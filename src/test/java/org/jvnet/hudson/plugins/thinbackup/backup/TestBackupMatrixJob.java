@@ -8,10 +8,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Calendar;
 
-import org.junit.Assert;
-
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.jvnet.hudson.plugins.thinbackup.TestHelper;
@@ -25,7 +24,7 @@ public class TestBackupMatrixJob {
   private File jenkinsHome;
 
   @Before
-  public void setup() throws IOException {
+  public void setup() throws IOException, InterruptedException {
     File base = new File(System.getProperty("java.io.tmpdir"));
     backupDir = TestHelper.createBackupFolder(base);
 

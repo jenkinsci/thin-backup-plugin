@@ -8,10 +8,9 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
-import org.junit.Assert;
-
 import org.codehaus.plexus.util.FileUtils;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.jvnet.hudson.plugins.thinbackup.FileCollector;
@@ -29,7 +28,7 @@ public class TestHudsonRestore {
   private List<String> originalFiles;
 
   @Before
-  public void setup() throws IOException {
+  public void setup() throws IOException, InterruptedException {
     File base = new File(System.getProperty("java.io.tmpdir"));
     backupDir = TestHelper.createBackupFolder(base);
 

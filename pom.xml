@@ -59,7 +59,7 @@
     <url>https://github.com/jenkinsci/thin-backup-plugin</url>
   </scm>
   <repositories>
-   <repository>
+    <repository>
       <id>repo.jenkins-ci.org</id>
       <url>http://repo.jenkins-ci.org/public/</url>
     </repository>
@@ -117,6 +117,13 @@
   <build>
     <pluginManagement>
       <plugins>
+        <plugin>
+          <groupId>org.jenkins-ci.tools</groupId>
+          <artifactId>maven-hpi-plugin</artifactId>
+          <configuration>
+            <pluginFirstClassLoader>true</pluginFirstClassLoader>
+          </configuration>
+        </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>

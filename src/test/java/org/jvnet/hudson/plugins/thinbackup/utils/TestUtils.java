@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Assert;
-
 import org.junit.Test;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 import org.jvnet.hudson.plugins.thinbackup.backup.BackupDirStructureSetup;
