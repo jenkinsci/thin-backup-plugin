@@ -273,10 +273,18 @@ public class HudsonBackup {
           TopLevelItem job = hudson.getItem(jobDirectory.getName());
           for (final String build : builds) {
             final File source = new File(buildsDir, build);
-            if (!isSymLinkFile(source) && (!plugin.isBackupBuildsToKeepOnly() || isBuildToKeep(job, source))) {
+            if ((!plugin.isBackupBuildsToKeepOnly() || isBuildToKeep(job, source))) {
               final File destDir = new File(new File(jobBackupDirectory, BUILDS_DIR_NAME), build);
-              backupBuildFiles(source, destDir);
-              backupBuildArchive(source, destDir);
+              if (!isSymLinkFile(source)) {
+                backupBuildFiles(source, destDir);
+                backupBuildArchive(source, destDir);
+              } else {
+                try {
+                  Util.createSymlink(jobBackupDirectory, source.getAbsolutePath(), destDir.getAbsolutePath(), new StreamTaskListener(new StringWriter()));
+                } catch (InterruptedException e) {
+                  throw new IOException(e);
+                }
+              }
             }
           }
         }
