@@ -319,8 +319,14 @@ public class HudsonBackup {
           FileFilterUtils.notFileFilter(FileFilterUtils.suffixFileFilter(ZIP_FILE_EXTENSION)));
       FileUtils.copyDirectory(source, destination, filter);
     } else if (FileUtils.isSymlink(source)) {
+      try {
+        Util.createSymlink(destination, source.getAbsolutePath(), destination.getAbsolutePath(), new StreamTaskListener(new StringWriter()));
+      } catch (InterruptedException e) {
+        throw new IOException(e);
+      }
+    } else if (source.isFile()) {
       FileUtils.copyFile(source, destination);
-    } // on linux system we have links which are ignored for now
+    }
   }
 
   private void backupBuildArchive(final File buildSrcDir, final File buildDestDir) throws IOException {
