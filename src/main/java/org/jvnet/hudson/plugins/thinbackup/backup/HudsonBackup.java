@@ -16,7 +16,6 @@
  */
 package org.jvnet.hudson.plugins.thinbackup.backup;
 
-import hudson.Util;
 import hudson.PluginWrapper;
 import hudson.model.ItemGroup;
 import hudson.model.TopLevelItem;
@@ -24,12 +23,10 @@ import hudson.model.Hudson;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.util.RunList;
-import hudson.util.StreamTaskListener;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -199,12 +196,7 @@ public class HudsonBackup {
           } else
             backupJob(jobDirectory, jobsBackupDirectory, jobName);
         } else if (FileUtils.isSymlink(jobDirectory)) {
-          try {
-            Util.createSymlink(jobsDirectory.getParentFile(), Util.resolveSymlink(jobDirectory), jobDirectory.getName(), new StreamTaskListener(new StringWriter()));
-          } catch (InterruptedException e) {
-            LOGGER.severe("Cannot backup Symlink: "+jobsBackupDirectory.getPath());
-            LOGGER.log(Level.FINE, e.getLocalizedMessage(), e);
-          }
+          // TODO: check if copySymLink needed here
         }
       } else {
         final String msg = String.format("Read access denied on directory '%s', cannot back up the job '%s'.", jobDirectory.getAbsolutePath(), jobName);
@@ -279,11 +271,7 @@ public class HudsonBackup {
                 backupBuildFiles(source, destDir);
                 backupBuildArchive(source, destDir);
               } else {
-                try {
-                  Util.createSymlink(jobBackupDirectory, source.getAbsolutePath(), destDir.getAbsolutePath(), new StreamTaskListener(new StringWriter()));
-                } catch (InterruptedException e) {
-                  throw new IOException(e);
-                }
+                // TODO: add copy symlink
               }
             }
           }
@@ -319,11 +307,7 @@ public class HudsonBackup {
           FileFilterUtils.notFileFilter(FileFilterUtils.suffixFileFilter(ZIP_FILE_EXTENSION)));
       FileUtils.copyDirectory(source, destination, filter);
     } else if (FileUtils.isSymlink(source)) {
-      try {
-        Util.createSymlink(destination, source.getAbsolutePath(), destination.getAbsolutePath(), new StreamTaskListener(new StringWriter()));
-      } catch (InterruptedException e) {
-        throw new IOException(e);
-      }
+      // TODO: check if copy symlink needed here
     } else if (source.isFile()) {
       FileUtils.copyFile(source, destination);
     }
