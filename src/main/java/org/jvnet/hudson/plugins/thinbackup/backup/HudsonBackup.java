@@ -332,8 +332,8 @@ public class HudsonBackup {
       final File destDirectory = new File(backupDirectory.getAbsolutePath(), folderName);
       IOFileFilter filter = FileFilterUtils.and(
           getFileAgeDiffFilter(),
-          getExcludedFilesFilter(),
-          DirectoryFileFilter.DIRECTORY);
+          getExcludedFilesFilter());
+      filter = FileFilterUtils.or(filter, DirectoryFileFilter.DIRECTORY);
       FileUtils.copyDirectory(srcDirectory, destDirectory, filter);
       LOGGER.fine(String.format("DONE backing up %s.", folderName));
     }
