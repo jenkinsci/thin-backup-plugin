@@ -474,4 +474,8 @@ public final class Utils {
       }
     }
   }
+  
+  public void copySymLink(File from, File to) {
+    
+  }
 }
