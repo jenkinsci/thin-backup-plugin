@@ -16,14 +16,8 @@
  */
 package org.jvnet.hudson.plugins.thinbackup.utils;
 
-import hudson.Util;
-import hudson.model.StreamBuildListener;
-import hudson.util.StreamTaskListener;
-
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
@@ -32,11 +26,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
-import org.hamcrest.collection.IsArrayContainingInAnyOrder;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
+import org.junit.Before;
 import org.junit.Test;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 import org.jvnet.hudson.plugins.thinbackup.backup.BackupDirStructureSetup;
@@ -44,16 +36,16 @@ import org.jvnet.hudson.plugins.thinbackup.backup.BackupSet;
 
 public class TestUtils extends BackupDirStructureSetup {
 
-  private static File tmpDir;
+  private File tmpDir;
 
-  @BeforeClass
-  public static void init() {
+  @Before
+  public void init() {
     tmpDir = new File(System.getenv("tmp"), "test");
     tmpDir.mkdir();
   }
   
-  @AfterClass
-  public static void cleanup() throws IOException {
+  @After
+  public void cleanup() throws IOException {
     FileUtils.deleteDirectory(tmpDir);
   }
   
@@ -183,16 +175,4 @@ public class TestUtils extends BackupDirStructureSetup {
       // if an exception is caught, everything is AOK.
     }
   }
-  
-  @Test @Ignore
-  public void testCopySymLink() throws Exception {
-    File file = File.createTempFile("file", null, tmpDir);
-    Util.createSymlink(tmpDir, file.getName(), "link", new StreamBuildListener(new FileOutputStream("link")));
-    
-    Assert.assertThat(tmpDir.list(), IsArrayContainingInAnyOrder.<String>arrayContainingInAnyOrder(file.getName(), "link"));
-
-    
-  }
-  
-
 }
