@@ -54,8 +54,8 @@
     </developer>
   </developers>
   <scm>
-    <connection>scm:git:ssh://github.com/jenkinsci/thin-backup-plugin.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com/jenkinsci/thin-backup-plugin.git</developerConnection>
+    <connection>https://github.com/jenkinsci/thin-backup-plugin.git</connection>
+    <developerConnection>https://git@github.com/jenkinsci/thin-backup-plugin.git</developerConnection>
     <url>https://github.com/jenkinsci/thin-backup-plugin</url>
   </scm>
   <repositories>
