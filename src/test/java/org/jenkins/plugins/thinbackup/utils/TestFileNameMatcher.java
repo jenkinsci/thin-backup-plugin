@@ -27,5 +27,10 @@ public class TestFileNameMatcher {
     assertThat(new File("test"), new FileNameMatcher(new File("folder", "test")));
     assertThat(new File("folder", "test"), new FileNameMatcher(new File("test")));
   }
+  
+  @Test
+  public void noMatchForNonFileTypes() throws Exception {
+    assertFalse(new FileNameMatcher(new File("test1")).matches("test"));
+  }
 
 }
