@@ -14,33 +14,34 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see http://www.gnu.org/licenses.
  */
-package org.jvnet.hudson.plugins.thinbackup.backup;
+package org.jenkins.plugins.thinbackup;
+
+import hudson.Plugin;
+import hudson.model.Hudson;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.logging.Logger;
 
-import org.apache.commons.io.DirectoryWalker;
+public class ThinBackupPluginImpl extends Plugin {
+  private static final Logger LOGGER = Logger.getLogger("org.jenkins.plugins.thinbackup");
+  private static ThinBackupPluginImpl instance = null;
 
-public class DirectoryCleaner extends DirectoryWalker<Object> {
-
-  /**
-   * Deletes all empty directories, including rootDir if it is empty at the end.
-   * 
-   * @param rootDir
-   * @throws IOException
-   */
-  public void removeEmptyDirectories(final File rootDir) throws IOException {
-    walk(rootDir, Collections.emptyList());
+  public ThinBackupPluginImpl() {
+    instance = this;
   }
 
   @Override
-  protected void handleDirectoryEnd(final File directory, final int depth,
-      @SuppressWarnings("rawtypes") final Collection results) {
-    if (directory.list().length == 0) {
-      directory.delete();
-    }
+  public void start() throws Exception {
+    super.start();
+    load();
+    LOGGER.fine("'thinBackup' plugin initialized.");
   }
 
+  public static ThinBackupPluginImpl getInstance() {
+    return instance;
+  }
+
+  public File getHudsonHome() {
+    return Hudson.getInstance().getRootDir();
+  }
 }
