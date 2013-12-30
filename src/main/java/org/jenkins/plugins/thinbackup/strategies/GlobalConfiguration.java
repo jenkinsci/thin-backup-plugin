@@ -32,13 +32,13 @@ final class GlobalConfiguration extends AbstractStrategy implements IStrategy {
   }
 
   @Override
-  public void restore(List<File> toRestore) {
+  public void restore(List<File> toRestore) throws RestoreException {
     for (File file : toRestore) {
       try {
         if (file.isFile())
           FileUtils.copyFileToDirectory(file, getJenkinsHome());
       } catch (IOException e) {
-        new RestoreException("Cannot restore global configuration file.", e);
+        throw new RestoreException("Cannot restore global configuration file.", e);
       }
     }
   }

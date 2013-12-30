@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.hamcrest.Matchers;
+import org.jenkins.plugins.thinbackup.exceptions.RestoreException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -28,7 +29,7 @@ public class TestGlobalConfigurationRestore extends AbstractRestoreTestUtils {
   }
   
   @Test
-  public void restoreAvailableXMLConfiguration() {
+  public void restoreAvailableXMLConfiguration() throws RestoreException {
     globalConfiguration.restore(backuped);
 
     String[] restored = new File(restoredTempDir).list();
@@ -43,7 +44,7 @@ public class TestGlobalConfigurationRestore extends AbstractRestoreTestUtils {
   }
   
   @Test
-  public void doNotRestoreFolders() {
+  public void doNotRestoreFolders() throws RestoreException {
     backuped = new ArrayList<File>(backuped);
     backuped.add(new File("jobs", "job1"));
     globalConfiguration.restore(backuped);
@@ -54,7 +55,7 @@ public class TestGlobalConfigurationRestore extends AbstractRestoreTestUtils {
   }
   
   @Test
-  public void overrideConfigurationsAllreadyExists() throws IOException {
+  public void overrideConfigurationsAllreadyExists() throws IOException, RestoreException {
     new File(restoredTempDir, UPDATECENTER_CONFIG).createNewFile();
     
     globalConfiguration.restore(backuped);    

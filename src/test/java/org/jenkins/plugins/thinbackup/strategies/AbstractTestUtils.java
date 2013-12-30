@@ -17,14 +17,14 @@ public abstract class AbstractTestUtils {
 
   protected static String createTempToBackupDirectory() {
     String systemTempDir = System.getProperty("java.io.tmpdir");
-    File newTempDir = new File(systemTempDir, "thinBackupTests/toBackup");
+    File newTempDir = new File(systemTempDir, "thinBackupTests"+File.separator+"toBackup");
     newTempDir.mkdirs();
     return newTempDir.getPath();
   }
   
   protected static String createTempRestoredDirectory() {
     String systemTempDir = System.getProperty("java.io.tmpdir");
-    File newTempDir = new File(systemTempDir, "thinBackupTests/restored");
+    File newTempDir = new File(systemTempDir, "thinBackupTests"+File.separator+"restored");
     newTempDir.mkdirs();
     return newTempDir.getPath();
   }

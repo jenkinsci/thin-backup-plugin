@@ -6,7 +6,6 @@
     <version>1.533</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
-  <groupId>org.jenkins-ci.plugins</groupId>
   <artifactId>thinBackup</artifactId>
   <name>ThinBackup</name>
   <version>1.8-SNAPSHOT</version>
