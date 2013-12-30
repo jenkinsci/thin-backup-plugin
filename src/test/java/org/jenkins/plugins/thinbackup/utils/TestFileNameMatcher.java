@@ -16,6 +16,11 @@ public class TestFileNameMatcher {
   }
   
   @Test
+  public void simpleMatch2() {
+    assertTrue(new FileNameMatcher("test").matches(new File("test")));
+  }
+  
+  @Test
   public void simpleNotMatch() {
     assertFalse(new FileNameMatcher(new File("test1")).matches(new File("test")));
     assertFalse(new FileNameMatcher(new File("test")).matches(new File("test1")));

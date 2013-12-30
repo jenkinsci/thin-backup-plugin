@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -19,7 +20,7 @@ final class GlobalConfiguration extends AbstractStrategy implements IStrategy {
   }
 
   @Override
-  public List<File> backup() {
+  public Collection<File> backup() {
     // formatter:off
     IOFileFilter suffixFilter = FileFilterUtils.or(
         FileFilterUtils.suffixFileFilter(".xml"), 

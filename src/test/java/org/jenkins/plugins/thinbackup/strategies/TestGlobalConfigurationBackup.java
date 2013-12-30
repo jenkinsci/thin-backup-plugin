@@ -1,36 +1,25 @@
 package org.jenkins.plugins.thinbackup.strategies;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
+import java.util.Collection;
 
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.Matchers;
 import org.jenkins.plugins.thinbackup.utils.FileNameMatcher;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class TestGlobalConfigurationBackup {
+public class TestGlobalConfigurationBackup extends AbstractBackupTestUtils {
   private static final String UPDATECENTER_CONFIG = "hudson.model.UpdateCenter.xml";
   private static final String NODE_CONFIG = "nodeMonitors.xml";
   private static final String IDENTITY_KEY = "identity.key";
   private static final String SECRET_KEY = "secret.key";
 
-  private static String toBackupTempDir;
   private GlobalConfiguration globalConfiguration;
-
-  @BeforeClass
-  public static void init() {
-    String systemTempDir = System.getProperty("java.io.tmpdir");
-    File newTempDir = new File(systemTempDir, "thinBackupTests/toBackup");
-    newTempDir.mkdirs();
-    toBackupTempDir = newTempDir.getPath();
-  }
 
   @Before
   public void setup() {
@@ -60,22 +49,17 @@ public class TestGlobalConfigurationBackup {
     FileUtils.cleanDirectory(new File(toBackupTempDir));
   }
 
-  @AfterClass
-  public static void cleanup() throws IOException {
-    FileUtils.deleteDirectory(new File(toBackupTempDir).getParentFile());
-  }
-
   @Test
   @SuppressWarnings("unchecked")
   public void backupAvailableXMLConfiguration() {
-    List<File> backupedFiles = globalConfiguration.backup();
+    Collection<File> backupedFiles = globalConfiguration.backup();
 
     // @formatter:off
     assertThat(backupedFiles, Matchers.containsInAnyOrder(
-        new FileNameMatcher(new File(UPDATECENTER_CONFIG)), 
-        new FileNameMatcher(new File(NODE_CONFIG)),
-        new FileNameMatcher(new File(SECRET_KEY)), 
-        new FileNameMatcher(new File(IDENTITY_KEY))));
+        new FileNameMatcher(UPDATECENTER_CONFIG), 
+        new FileNameMatcher(NODE_CONFIG),
+        new FileNameMatcher(SECRET_KEY), 
+        new FileNameMatcher(IDENTITY_KEY)));
     // @formatter:on
   }
   
@@ -83,27 +67,27 @@ public class TestGlobalConfigurationBackup {
   public void backupOnlyConfiguration() throws IOException {
     new File(toBackupTempDir, "someThingNotToBackup").createNewFile();
     
-    List<File> backupedFiles = globalConfiguration.backup();
+    Collection<File> backupedFiles = globalConfiguration.backup();
 
-    assertThat(backupedFiles, Matchers.hasItem(Matchers.not(new FileNameMatcher(new File("someThingNotToBackup")))));
+    assertThat(backupedFiles, Matchers.hasItem(Matchers.not(new FileNameMatcher("someThingNotToBackup"))));
   }
   
   @Test
   public void doNotBackupFolders() throws IOException {
     new File(toBackupTempDir, "jobs").mkdir();
     
-    List<File> backupedFiles = globalConfiguration.backup();
+    Collection<File> backupedFiles = globalConfiguration.backup();
 
-    assertThat(backupedFiles, Matchers.hasItem(Matchers.not(new FileNameMatcher(new File("jobs")))));
+    assertThat(backupedFiles, Matchers.hasItem(Matchers.not(new FileNameMatcher("jobs"))));
   }
   
   @Test
   public void backupUnknownConfiguration() throws IOException {
     new File(toBackupTempDir, "thinBackup.xml").createNewFile();
     
-    List<File> backupedFiles = globalConfiguration.backup();
+    Collection<File> backupedFiles = globalConfiguration.backup();
 
-    assertThat(backupedFiles, Matchers.hasItem(new FileNameMatcher(new File("thinBackup.xml"))));
+    assertThat(backupedFiles, Matchers.hasItem(new FileNameMatcher("thinBackup.xml")));
   }
 
 }
