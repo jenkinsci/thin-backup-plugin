@@ -91,6 +91,22 @@
                         checked="${it.configuration.backupNextBuildNumber}"
                         name="backupNextBuildNumber" />
 
+                    <f:optionalBlock title="Backup plugins archives"
+                        help="/plugin/thinBackup/help/help-backupPlugins.html"
+                        checked="${it.configuration.backupPluginArchives}"
+                        name="backupPluginArchives" >
+                    </f:optionalBlock>
+
+                    <f:optionalBlock title="Backup additional files"
+                        help="/plugin/thinBackup/help/help-backupAdditionalFiles.html"
+                        checked="${it.configuration.backupAdditionalFiles}"
+                        name="backupAdditionalFiles">
+                        <f:entry title="Files included in backup (regular expression)" field="backupAdditionalFilesRegex">
+                            <f:textbox value="${it.configuration.backupAdditionalFilesRegex}" name="backupAdditionalFilesRegex"
+                                checkUrl="'${rootURL}/plugin/thinBackup/checkExcludedFilesRegex?value='+escape(this.value)"/>
+                        </f:entry>
+                    </f:optionalBlock>
+                    
                     <f:optionalBlock title="Clean up differential backups"
                         help="/plugin/thinBackup/help/help-cleanupDiff.html"
                         checked="${it.configuration.cleanupDiff}"

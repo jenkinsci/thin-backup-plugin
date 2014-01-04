@@ -53,7 +53,10 @@ public class ThinBackupPluginImpl extends Plugin {
   private boolean moveOldBackupsToZipFile = false;
   private boolean backupBuildResults = true;
   private boolean backupBuildArchive = false;
+  private boolean backupPluginArchives = false;
   private boolean backupUserContents = false;
+  private boolean backupAdditionalFiles = false;
+  private String backupAdditionalFilesRegex = null;
   private boolean backupNextBuildNumber = false;
   private boolean backupBuildsToKeepOnly = false;
 
@@ -220,6 +223,30 @@ public class ThinBackupPluginImpl extends Plugin {
 
   public String getExcludedFilesRegex() {
     return excludedFilesRegex;
+  }
+  
+  public void setBackupPluginArchives(final boolean backupPluginArchives) {
+    this.backupPluginArchives = backupPluginArchives;
+  }
+
+  public boolean isBackupPluginArchives() {
+    return backupPluginArchives;
+  }
+	  
+  public void setBackupAdditionalFiles(final boolean backupAdditionalFiles) {
+    this.backupAdditionalFiles = backupAdditionalFiles;
+  }
+
+  public boolean isBackupAdditionalFiles() {
+    return backupAdditionalFiles;
+  }
+
+  public void setBackupAdditionalFilesRegex(final String backupAdditionalFilesRegex) {
+    this.backupAdditionalFilesRegex = backupAdditionalFilesRegex;
+  }
+
+  public String getBackupAdditionalFilesRegex() {
+    return backupAdditionalFilesRegex;
   }
 
   public void setWaitForIdle(boolean waitForIdle) {

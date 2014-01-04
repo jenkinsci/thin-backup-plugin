@@ -126,6 +126,9 @@ public class ThinBackupMgmtLink extends ManagementLink {
       @QueryParameter("backupBuildsToKeepOnly") final boolean backupBuildsToKeepOnly,
       @QueryParameter("backupUserContents") final boolean backupUserContents,
       @QueryParameter("backupNextBuildNumber") final boolean backupNextBuildNumber,
+      @QueryParameter("backupPluginArchives") final boolean backupPluginArchives,
+      @QueryParameter("backupAdditionalFiles") final boolean backupAdditionalFiles,
+      @QueryParameter("backupAdditionalFilesRegex") final String backupAdditionalFilesRegex,
       @QueryParameter("waitForIdle") final boolean waitForIdle,
       @QueryParameter("forceQuietModeTimeout") final String forceQuietModeTimeout) throws IOException {
     Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
@@ -143,6 +146,9 @@ public class ThinBackupMgmtLink extends ManagementLink {
     plugin.setBackupBuildsToKeepOnly(backupBuildsToKeepOnly);
     plugin.setBackupUserContents(backupUserContents);
     plugin.setBackupNextBuildNumber(backupNextBuildNumber);
+    plugin.setBackupPluginArchives(backupPluginArchives);
+    plugin.setBackupAdditionalFiles(backupAdditionalFiles);
+    plugin.setBackupAdditionalFilesRegex(backupAdditionalFilesRegex);
     plugin.setWaitForIdle(waitForIdle);
     plugin.setForceQuietModeTimeout(Integer.parseInt(forceQuietModeTimeout));
     plugin.save();
