@@ -1,5 +1,7 @@
 package org.jenkins.plugins.thinbackup.strategies;
 
+import hudson.Extension;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -13,7 +15,8 @@ import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.jenkins.plugins.thinbackup.exceptions.RestoreException;
 
-final class GlobalConfiguration extends AbstractStrategy implements IStrategy {
+@Extension
+public final class GlobalConfiguration extends Strategy {
 
   public GlobalConfiguration(File jenkinsHome) {
     super(jenkinsHome);

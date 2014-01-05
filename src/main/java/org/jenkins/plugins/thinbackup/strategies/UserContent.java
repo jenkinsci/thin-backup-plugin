@@ -1,5 +1,7 @@
 package org.jenkins.plugins.thinbackup.strategies;
 
+import hudson.Extension;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
@@ -8,7 +10,8 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.jenkins.plugins.thinbackup.exceptions.RestoreException;
 
-final class UserContent extends AbstractStrategy implements IStrategy {
+@Extension
+public final class UserContent extends  Strategy {
   static final String ROOTFOLDER_NAME = "userContent";
   
   public UserContent(File jenkinsHome) {
