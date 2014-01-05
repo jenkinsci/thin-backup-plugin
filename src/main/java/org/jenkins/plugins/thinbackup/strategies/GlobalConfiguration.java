@@ -1,11 +1,12 @@
 package org.jenkins.plugins.thinbackup.strategies;
 
+import hudson.Extension;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFileFilter;
@@ -13,7 +14,8 @@ import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.jenkins.plugins.thinbackup.exceptions.RestoreException;
 
-final class GlobalConfiguration extends AbstractStrategy implements IStrategy {
+@Extension
+public final class GlobalConfiguration extends Strategy {
 
   public GlobalConfiguration(File jenkinsHome) {
     super(jenkinsHome);
@@ -32,7 +34,7 @@ final class GlobalConfiguration extends AbstractStrategy implements IStrategy {
   }
 
   @Override
-  public void restore(List<File> toRestore) throws RestoreException {
+  public void restore(Collection<File> toRestore) throws RestoreException {
     for (File file : toRestore) {
       try {
         if (file.isFile())

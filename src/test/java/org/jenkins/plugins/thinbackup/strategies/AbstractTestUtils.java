@@ -15,16 +15,23 @@ public abstract class AbstractTestUtils {
     FileUtils.deleteDirectory(tempJenkinsHome);
   }
 
-  protected static String createTempToBackupDirectory() {
+  public static String createTempToBackupDirectory() {
     String systemTempDir = System.getProperty("java.io.tmpdir");
     File newTempDir = new File(systemTempDir, "thinBackupTests"+File.separator+"toBackup");
     newTempDir.mkdirs();
     return newTempDir.getPath();
   }
   
-  protected static String createTempRestoredDirectory() {
+  public static String createTempRestoredDirectory() {
     String systemTempDir = System.getProperty("java.io.tmpdir");
     File newTempDir = new File(systemTempDir, "thinBackupTests"+File.separator+"restored");
+    newTempDir.mkdirs();
+    return newTempDir.getPath();
+  }
+  
+  public static String createTempBackupDirectory() {
+    String systemTempDir = System.getProperty("java.io.tmpdir");
+    File newTempDir = new File(systemTempDir, "thinBackupTests"+File.separator+"backuped");
     newTempDir.mkdirs();
     return newTempDir.getPath();
   }
