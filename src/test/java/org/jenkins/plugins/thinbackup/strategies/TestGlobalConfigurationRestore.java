@@ -12,7 +12,6 @@ import org.hamcrest.Matchers;
 import org.jenkins.plugins.thinbackup.exceptions.RestoreException;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class TestGlobalConfigurationRestore extends AbstractRestoreTestUtils {
@@ -65,8 +64,10 @@ public class TestGlobalConfigurationRestore extends AbstractRestoreTestUtils {
     assertThat(restored, Matchers.hasItem(Matchers.not("jobs")));
   }
   
-  @Test @Ignore
-  public void missingFileWritePermission() {
-    // TODO: find out how to simulate a missing file permission
+  @Test(expected = RestoreException.class)
+  public void cannotRestore() throws IOException, RestoreException {
+    File backuped = new File(restoredTempDir, UPDATECENTER_CONFIG);
+    backuped.createNewFile();
+    globalConfiguration.restore(Arrays.asList(backuped));
   }
 }

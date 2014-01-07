@@ -12,6 +12,7 @@ import org.hamcrest.Matchers;
 import org.jenkins.plugins.thinbackup.exceptions.RestoreException;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class TestUserContentRestore extends AbstractRestoreTestUtils {
@@ -51,6 +52,16 @@ public class TestUserContentRestore extends AbstractRestoreTestUtils {
     
     restored = Arrays.asList(new File(restoredTempDir, UserContent.ROOTFOLDER_NAME).list());
     assertThat(restored, Matchers.contains("readme.txt"));
+  }
+  
+  @Test(expected = RestoreException.class)
+  public void cannotRestore() throws IOException, RestoreException {
+    userContent = new UserContent(new File("c:\fileDoNotExist"));
+    File root = new File(backupedTempDir, UserContent.ROOTFOLDER_NAME);
+    root.mkdir();
+    File backuped = new File(root, "readme.txt");
+    backuped.createNewFile();
+    userContent.restore(Arrays.asList(backuped));
   }
 
 }
