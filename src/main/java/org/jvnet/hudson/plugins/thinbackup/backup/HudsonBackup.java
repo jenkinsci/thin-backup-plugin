@@ -61,11 +61,17 @@ public class HudsonBackup {
   public static final String ARCHIVE_DIR_NAME = "archive";
   public static final String USERSCONTENTS_DIR_NAME = "userContent";
   public static final String NEXT_BUILD_NUMBER_FILE_NAME = "nextBuildNumber";
+  public static final String PLUGINS_DIR_NAME = "plugins";
   public static final String CONFIG_XML = "config.xml";
   public static final String XML_FILE_EXTENSION = ".xml";
+  public static final String JPI_FILE_EXTENSION = ".jpi";
+  public static final String HPI_FILE_EXTENSION = ".hpi";
+  public static final String DISABLED_EXTENSION = ".disabled";
   public static final String ZIP_FILE_EXTENSION = ".zip";
   public static final String INSTALLED_PLUGINS_XML = "installedPlugins" + XML_FILE_EXTENSION;
   public static final String CHANGELOG_HISTORY_PLUGIN_DIR_NAME = "changelog-history";
+  public static final String SVN_CREDENTIALS_FILE_NAME = "subversion.credentials";
+  public static final String SVN_EXTERNALS_FILE_NAME = "svnexternals.txt";
 
   private final ThinBackupPluginImpl plugin;
   private final File hudsonHome;
@@ -74,6 +80,7 @@ public class HudsonBackup {
   private final BackupType backupType;
   private final Date latestFullBackupDate;
   private Pattern excludedFilesRegexPattern = null;
+  private Pattern backupAdditionalFilesRegexPattern = null;
   private ItemGroup<TopLevelItem> hudson;
 
   public HudsonBackup(final ThinBackupPluginImpl plugin, final BackupType backupType) {
@@ -89,12 +96,22 @@ public class HudsonBackup {
     this.hudsonHome = plugin.getHudsonHome();
 
     final String excludedFilesRegex = plugin.getExcludedFilesRegex();
-    if ((excludedFilesRegex != null) && !excludedFilesRegex.isEmpty()) {
+    if ((excludedFilesRegex != null) && !excludedFilesRegex.trim().isEmpty()) {
       try {
         excludedFilesRegexPattern = Pattern.compile(excludedFilesRegex);
       } catch (final PatternSyntaxException pse) {
         LOGGER.log(Level.SEVERE, String.format("Regex pattern '%s' for excluding files is invalid, and will be disregarded.", excludedFilesRegex), pse);
         excludedFilesRegexPattern = null;
+      }
+    }
+
+    final String backupAdditionalFilesRegex = plugin.getBackupAdditionalFilesRegex();
+    if ((backupAdditionalFilesRegex != null) && !backupAdditionalFilesRegex.trim().isEmpty()) {
+      try {
+        backupAdditionalFilesRegexPattern = Pattern.compile(backupAdditionalFilesRegex);
+      } catch (final PatternSyntaxException pse) {
+        LOGGER.log(Level.SEVERE, String.format("Regex pattern '%s' for including additional files to back up, is invalid, and will be disregarded.", backupAdditionalFilesRegex), pse);
+        backupAdditionalFilesRegexPattern = null;
       }
     }
 
@@ -141,12 +158,18 @@ public class HudsonBackup {
     backupGlobalXmls();
     backupJobs();
     backupRootFolder(USERS_DIR_NAME);
-    storePluginListIfChanged();
 
     if (plugin.isBackupUserContents())
       backupRootFolder(USERSCONTENTS_DIR_NAME);
 
-    new DirectoryCleaner().removeEmptyDirectories(backupDirectory);
+    if (plugin.isBackupPluginArchives())
+        backupPluginArchives();
+    storePluginListIfChanged();
+
+    if (plugin.isBackupAdditionalFiles())
+        backupAdditionalFiles();
+
+    (new DirectoryCleaner()).removeEmptyDirectories(backupDirectory);
 
     if (backupType == BackupType.FULL) {
       cleanupDiffs();
@@ -219,6 +242,50 @@ public class HudsonBackup {
     }
   }
 
+  private void backupPluginArchives() throws IOException {
+    LOGGER.fine("Backing up actual plugin archives...");
+
+    final IOFileFilter pluginArchivesFilter = FileFilterUtils.or(
+              FileFilterUtils.suffixFileFilter(JPI_FILE_EXTENSION),
+              FileFilterUtils.suffixFileFilter(HPI_FILE_EXTENSION));
+    final IOFileFilter disabledPluginMarkersFilter = FileFilterUtils.or(
+              FileFilterUtils.suffixFileFilter(JPI_FILE_EXTENSION+DISABLED_EXTENSION),
+              FileFilterUtils.suffixFileFilter(HPI_FILE_EXTENSION+DISABLED_EXTENSION));
+
+    final IOFileFilter filter = FileFilterUtils.and(
+              FileFileFilter.FILE,
+              FileFilterUtils.or(pluginArchivesFilter, disabledPluginMarkersFilter));
+      
+    backupRootFolder(PLUGINS_DIR_NAME, filter);
+
+    LOGGER.fine("DONE backing up actual plugin archives.");
+  }
+
+  private void backupAdditionalFiles() throws IOException {
+    LOGGER.info("Backing up additional files...");
+
+    
+    
+    if (backupAdditionalFilesRegexPattern != null) {
+    	final IOFileFilter addFilesFilter = new RegexFileFilter(backupAdditionalFilesRegexPattern);
+        
+        final IOFileFilter filter = FileFilterUtils.and(
+                addFilesFilter,
+                FileFilterUtils.or(
+                  DirectoryFileFilter.DIRECTORY,
+                  FileFilterUtils.and(
+                    getFileAgeDiffFilter(),
+                    getExcludedFilesFilter())));
+
+        FileUtils.copyDirectory(hudsonHome, backupDirectory, filter);
+    }
+    else {
+      LOGGER.info("No Additional File regex was provided: selecting no Additional Files to back up.");
+    }
+    
+    LOGGER.info("DONE backing up Additional Files.");
+  }
+  
   private File createConfigurationBackupDirectory(File jobBackupdirectory, File jobDirectory, File configurationDirectory) {
     String pathToConfiguration = configurationDirectory.getAbsolutePath();
     String pathToJob = jobDirectory.getAbsolutePath();
@@ -242,7 +309,14 @@ public class HudsonBackup {
   }
 
   private void backupJobConfigFor(final File jobDirectory, final File jobBackupDirectory) throws IOException {
-    IOFileFilter filter = FileFilterUtils.and(FileFilterUtils.suffixFileFilter(XML_FILE_EXTENSION), getFileAgeDiffFilter(), getExcludedFilesFilter());
+    final IOFileFilter filter = FileFilterUtils.and(
+      FileFilterUtils.or(
+        FileFilterUtils.suffixFileFilter(XML_FILE_EXTENSION),
+        FileFilterUtils.nameFileFilter(SVN_CREDENTIALS_FILE_NAME),
+        FileFilterUtils.nameFileFilter(SVN_EXTERNALS_FILE_NAME)),
+      getFileAgeDiffFilter(), 
+      getExcludedFilesFilter());
+    
     FileUtils.copyDirectory(jobDirectory, jobBackupDirectory, filter);
     backupNextBuildNumberFile(jobDirectory, jobBackupDirectory);
   }
@@ -326,11 +400,16 @@ public class HudsonBackup {
   }
 
   private void backupRootFolder(String folderName) throws IOException {
+	backupRootFolder(folderName, TrueFileFilter.INSTANCE);
+  }
+
+  private void backupRootFolder(String folderName, IOFileFilter fileFilter) throws IOException {
     final File srcDirectory = new File(hudsonHome.getAbsolutePath(), folderName);
     if (srcDirectory.exists() && srcDirectory.isDirectory()) {
       LOGGER.fine(String.format("Backing up %s...", folderName));
       final File destDirectory = new File(backupDirectory.getAbsolutePath(), folderName);
       IOFileFilter filter = FileFilterUtils.and(
+          fileFilter,
           getFileAgeDiffFilter(),
           getExcludedFilesFilter());
       filter = FileFilterUtils.or(filter, DirectoryFileFilter.DIRECTORY);
