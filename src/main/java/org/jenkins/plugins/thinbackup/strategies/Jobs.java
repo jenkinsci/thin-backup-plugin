@@ -1,7 +1,5 @@
 package org.jenkins.plugins.thinbackup.strategies;
 
-import hudson.Extension;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
@@ -10,9 +8,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.jenkins.plugins.thinbackup.exceptions.RestoreException;
 
-@Extension
-public final class UserContent extends Strategy {
-  static final String ROOTFOLDER_NAME = "userContent";
+public class Jobs extends Strategy {
+  static final String ROOTFOLDER_NAME = "jobs";
 
   @Override
   public Collection<File> backup() {

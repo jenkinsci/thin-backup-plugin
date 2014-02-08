@@ -17,10 +17,6 @@ import org.jenkins.plugins.thinbackup.exceptions.RestoreException;
 @Extension
 public final class GlobalConfiguration extends Strategy {
 
-  public GlobalConfiguration(File jenkinsHome) {
-    super(jenkinsHome);
-  }
-
   @Override
   public Collection<File> backup() {
     // formatter:off

@@ -6,27 +6,27 @@ import hudson.ExtensionPoint;
 import java.io.File;
 import java.util.Collection;
 
-import jenkins.model.Jenkins;
-
 import org.jenkins.plugins.thinbackup.exceptions.RestoreException;
+
+import jenkins.model.Jenkins;
 
 public abstract class Strategy implements ExtensionPoint {
 
-  protected final File jenkinsHome;
-
-  public Strategy(File jenkinsHome) {
-    this.jenkinsHome = jenkinsHome;
-  }
+  private File jenkinsHome;
 
   public abstract Collection<File> backup();
 
   public abstract void restore(Collection<File> toRestore) throws RestoreException;
 
+  public static ExtensionList<Strategy> all(Jenkins jenkins) {
+    return jenkins != null ? jenkins.getExtensionList(Strategy.class) : new ExtensionList<Strategy>(jenkins, Strategy.class) {};
+  }
+
   public File getJenkinsHome() {
     return jenkinsHome;
   }
 
-  public static ExtensionList<Strategy> all(Jenkins jenkins) {
-    return jenkins != null ? jenkins.getExtensionList(Strategy.class) : new ExtensionList<Strategy>(jenkins, Strategy.class) {};
+  public void setJenkinsHome(File jenkinsHome) {
+    this.jenkinsHome = jenkinsHome;
   }
 }
