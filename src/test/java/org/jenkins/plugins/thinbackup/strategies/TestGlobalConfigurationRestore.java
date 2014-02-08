@@ -19,7 +19,8 @@ public class TestGlobalConfigurationRestore extends AbstractRestoreTestUtils {
 
   @Before
   public void setup() throws IOException {
-    globalConfiguration = new GlobalConfiguration(new File(restoredTempDir));
+    globalConfiguration = new GlobalConfiguration();
+    globalConfiguration.setJenkinsHome(new File(restoredTempDir));
   }
 
   @After

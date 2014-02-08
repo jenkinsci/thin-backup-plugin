@@ -12,7 +12,6 @@ import org.hamcrest.Matchers;
 import org.jenkins.plugins.thinbackup.exceptions.RestoreException;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class TestUserContentRestore extends AbstractRestoreTestUtils {
@@ -20,7 +19,8 @@ public class TestUserContentRestore extends AbstractRestoreTestUtils {
 
   @Before
   public void setup() throws IOException {
-    userContent = new UserContent(new File(restoredTempDir));
+    userContent = new UserContent();
+    userContent.setJenkinsHome(new File(restoredTempDir));
   }
 
   @After
@@ -56,7 +56,9 @@ public class TestUserContentRestore extends AbstractRestoreTestUtils {
   
   @Test(expected = RestoreException.class)
   public void cannotRestore() throws IOException, RestoreException {
-    userContent = new UserContent(new File("c:\fileDoNotExist"));
+    userContent = new UserContent();
+    userContent.setJenkinsHome(new File("c:\fileDoNotExist"));
+    
     File root = new File(backupedTempDir, UserContent.ROOTFOLDER_NAME);
     root.mkdir();
     File backuped = new File(root, "readme.txt");

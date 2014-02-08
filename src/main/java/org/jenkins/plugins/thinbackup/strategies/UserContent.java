@@ -7,20 +7,17 @@ import java.io.IOException;
 import java.util.Collection;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.jenkins.plugins.thinbackup.exceptions.RestoreException;
 
 @Extension
-public final class UserContent extends  Strategy {
+public final class UserContent extends Strategy {
   static final String ROOTFOLDER_NAME = "userContent";
-  
-  public UserContent(File jenkinsHome) {
-    super(jenkinsHome);
-  }
 
   @Override
   public Collection<File> backup() {
     File userContent = new File(getJenkinsHome(), ROOTFOLDER_NAME);
-    return FileUtils.listFiles(userContent, null, true);
+    return FileUtils.listFilesAndDirs(userContent, FileFilterUtils.trueFileFilter(), FileFilterUtils.trueFileFilter());
   }
 
   @Override

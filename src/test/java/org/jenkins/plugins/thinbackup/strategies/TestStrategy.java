@@ -2,7 +2,6 @@ package org.jenkins.plugins.thinbackup.strategies;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
-
 import jenkins.model.Jenkins;
 import hudson.ExtensionList;
 
@@ -18,6 +17,7 @@ public class TestStrategy {
     assertThat(list, Matchers.notNullValue(ExtensionList.class));
   }
   
+  @SuppressWarnings("unchecked")
   @Test
   public void foundExtensions() {
     ExtensionList<Strategy> mockList = mock(ExtensionList.class);

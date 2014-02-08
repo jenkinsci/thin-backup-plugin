@@ -40,7 +40,8 @@ public class TestGlobalConfigurationBackup extends AbstractBackupTestUtils {
       }
     }
 
-    globalConfiguration = new GlobalConfiguration(new File(toBackupTempDir));
+    globalConfiguration = new GlobalConfiguration();
+    globalConfiguration.setJenkinsHome(new File(toBackupTempDir));
   }
 
   @After

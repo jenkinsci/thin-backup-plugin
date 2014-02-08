@@ -24,7 +24,8 @@ public class TestUserContentBackup extends AbstractBackupTestUtils {
     
     new File(userContentRoot, "readme.txt").createNewFile();
     
-    userContent = new UserContent(new File(toBackupTempDir));
+    userContent = new UserContent();
+    userContent.setJenkinsHome(new File(toBackupTempDir));
   }
   
   @After
@@ -37,6 +38,7 @@ public class TestUserContentBackup extends AbstractBackupTestUtils {
     Collection<File> backup = userContent.backup();
     
     assertThat(backup, Matchers.contains(
+        new FileNameMatcher(UserContent.ROOTFOLDER_NAME),
         new FileNameMatcher(UserContent.ROOTFOLDER_NAME+File.separator+"readme.txt")));
   }
   
