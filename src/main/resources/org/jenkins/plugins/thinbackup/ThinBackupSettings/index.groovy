@@ -2,24 +2,23 @@ package org.jvnet.hudson.plugins.thinbackup.ThinBackupMgmtLink
 
 def f=namespace(lib.FormTagLib)
 def l=namespace(lib.LayoutTagLib)
-def st=namespace("jelly:stapler")
 
 l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName) {
-  include(app, "sidepanel.jelly")
-  l.main-panel {
+  l.main_panel {
     h1 {
-      img(src:"${imagesURL}/48x48/"+it.iconFileName)
-      text("thinBackup Configuration")
+      img(src:rootURL+my.iconPath)
+      text("ThinBackup Configuration")
     }
-    
+
     f.form(method:"POST", action:"saveSettings") {
       f.section(title:"Backup Settings") {
         f.entry(title:"Backup directory:", field:"backupPath") {
-          f.textbox(value:h.defaulted(instance?.configuration.backupPath))  
+          f.textbox(value:my.configuration.backupPath)
         }
       }
     }
   }
+}
 
  /* <f:form method="post" action="saveSettings">
        <f:section title="Backup settings">
@@ -105,4 +104,3 @@ checkUrl="'${rootURL}/plugin/thinBackup/checkForceQuietModeTimeout?value='+escap
       </f:section>
   </f:form>
 </l:main-panel>*/
-}
