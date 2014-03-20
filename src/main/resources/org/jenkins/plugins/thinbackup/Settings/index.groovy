@@ -11,10 +11,16 @@ l.layout(norefresh:true, permission:app.ADMINISTER, title:my.displayName) {
     }
 
     f.form(method:"POST", action:"saveSettings") {
+      set("instance",my);
       f.section(title:"Backup Settings") {
-        f.entry(title:"Backup directory:", field:"backupPath") {
+        f.entry(title:"Backup directory:", field:"configuration/backupPath") {
           f.textbox(value:my.configuration.backupPath)
         }
+      }
+      
+      f.bottomButtonBar {
+          f.submit(value:_("Save"))
+          f.apply()
       }
     }
   }
