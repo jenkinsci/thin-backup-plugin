@@ -6,12 +6,13 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
+import org.jenkins.plugins.thinbackup.utils.TestUtils;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 
-public abstract class AbstractRestoreTestUtils extends AbstractTestUtils {
+public abstract class AbstractRestoreTestUtils extends TestUtils {
 
   protected static String backupedTempDir;
   protected static String restoredTempDir;

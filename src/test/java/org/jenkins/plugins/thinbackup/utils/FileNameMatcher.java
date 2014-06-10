@@ -3,6 +3,7 @@ package org.jenkins.plugins.thinbackup.utils;
 import java.io.File;
 
 import org.hamcrest.CustomMatcher;
+import org.hamcrest.Matcher;
 
 public class FileNameMatcher extends CustomMatcher<File> {
 

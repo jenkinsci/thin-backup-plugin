@@ -15,8 +15,8 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.jenkins.plugins.thinbackup.exceptions.RestoreException;
-import org.jenkins.plugins.thinbackup.strategies.AbstractTestUtils;
 import org.jenkins.plugins.thinbackup.strategies.Strategy;
+import org.jenkins.plugins.thinbackup.utils.TestUtils;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -29,8 +29,8 @@ public class TestFileRestore {
 
   @BeforeClass
   public static void init() {
-    backupDir = new File(AbstractTestUtils.createTempBackupDirectory());
-    restoreDir = new File(AbstractTestUtils.createTempRestoredDirectory());
+    backupDir = new File(TestUtils.createTempBackupDirectory());
+    restoreDir = new File(TestUtils.createTempRestoredDirectory());
   }
   
   @After
@@ -41,7 +41,7 @@ public class TestFileRestore {
   
   @AfterClass
   public static void cleanup() throws IOException {
-    AbstractTestUtils.removeTempJenkinsHome(backupDir.getParentFile());
+    TestUtils.removeTempJenkinsHome(backupDir.getParentFile());
   }
   
   @Test

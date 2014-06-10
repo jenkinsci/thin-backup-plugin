@@ -1,11 +1,11 @@
-package org.jenkins.plugins.thinbackup.strategies;
+package org.jenkins.plugins.thinbackup.utils;
 
 import java.io.File;
 import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 
-public abstract class AbstractTestUtils {
+public class TestUtils {
   protected static final String UPDATECENTER_CONFIG = "hudson.model.UpdateCenter.xml";
   protected static final String NODE_CONFIG = "nodeMonitors.xml";
   protected static final String IDENTITY_KEY = "identity.key";

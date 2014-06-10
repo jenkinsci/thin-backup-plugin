@@ -13,9 +13,9 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.Matchers;
 import org.jenkins.plugins.thinbackup.exceptions.BackupException;
-import org.jenkins.plugins.thinbackup.strategies.AbstractTestUtils;
 import org.jenkins.plugins.thinbackup.strategies.Strategy;
 import org.jenkins.plugins.thinbackup.utils.FileNameMatcher;
+import org.jenkins.plugins.thinbackup.utils.TestUtils;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -28,8 +28,8 @@ public class TestFileBackup {
 
   @BeforeClass
   public static void init() {
-    toBackupDir = new File(AbstractTestUtils.createTempToBackupDirectory());
-    backupDir = new File(AbstractTestUtils.createTempBackupDirectory());
+    toBackupDir = new File(TestUtils.createTempToBackupDirectory());
+    backupDir = new File(TestUtils.createTempBackupDirectory());
   }
   
   @After
@@ -40,7 +40,7 @@ public class TestFileBackup {
   
   @AfterClass
   public static void cleanup() throws IOException {
-    AbstractTestUtils.removeTempJenkinsHome(backupDir.getParentFile());
+    TestUtils.removeTempJenkinsHome(backupDir.getParentFile());
   }
   
   @Test

@@ -7,7 +7,7 @@ import java.util.List;
 
 @Extension
 public class ThinBackupMgmtLink extends ManagementLink {
-
+  
   @Override
   public String getDisplayName() {
     return "ThinBackup";
@@ -38,5 +38,4 @@ public class ThinBackupMgmtLink extends ManagementLink {
   public List<ThinBackupMenu> getAll() {
     return ThinBackupMenu.all();
   }
-
 }
