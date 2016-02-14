@@ -52,7 +52,7 @@ public class ThinBackupMgmtLink extends ManagementLink {
 
   @Override
   public String getIconFileName() {
-    return "package.gif";
+    return "package.png";
   }
 
   @Override
