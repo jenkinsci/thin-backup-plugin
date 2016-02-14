@@ -88,10 +88,7 @@ public class TestHudsonBackup {
 
     final File job = new File(new File(backup, HudsonBackup.JOBS_DIR_NAME), TestHelper.TEST_JOB_NAME);
     final List<String> arrayList = Arrays.asList(job.list());
-    if (Functions.isWindows())
-      Assert.assertEquals(2, arrayList.size());
-    else
-      Assert.assertEquals(4, arrayList.size());
+    Assert.assertEquals(2, arrayList.size());
     Assert.assertFalse(arrayList.contains(HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME));
 
     final File build = new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), TestHelper.CONCRET_BUILD_DIRECTORY_NAME);

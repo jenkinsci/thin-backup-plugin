@@ -135,6 +135,20 @@ public class TestHelper {
     addBuildNumber(nextBuildnumber);
   }
   
+  public static void addSinglePromotionResult(File job) throws IOException, InterruptedException  {
+    File promotions = new File(job, HudsonBackup.PROMOTIONS_DIR_NAME);
+    promotions.mkdir();
+    File promotion_x = new File(promotions, "promotion-x");
+    promotion_x.mkdir();
+
+    addNewBuildToJob(promotion_x);
+
+    new File(promotion_x, "config.xml").createNewFile();
+    File nextBuildnumber = new File(promotion_x, "nextBuildNumber");
+    nextBuildnumber.createNewFile();
+    addBuildNumber(nextBuildnumber);
+  }
+  
   public static boolean containsStringEndingWith(final List<String> strings, final String pattern) {
     boolean contains = false;
 

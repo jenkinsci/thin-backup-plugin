@@ -56,6 +56,7 @@ public class HudsonBackup {
 
   public static final String BUILDS_DIR_NAME = "builds";
   public static final String CONFIGURATIONS_DIR_NAME = "configurations";
+  public static final String PROMOTIONS_DIR_NAME = "promotions";
   public static final String JOBS_DIR_NAME = "jobs";
   public static final String USERS_DIR_NAME = "users";
   public static final String ARCHIVE_DIR_NAME = "archive";
@@ -235,9 +236,17 @@ public class HudsonBackup {
     if (isMatrixJob(jobDirectory)) {
       List<File> configurations = findAllConfigurations(new File(jobDirectory, HudsonBackup.CONFIGURATIONS_DIR_NAME));
       for (File configurationDirectory : configurations) {
-        File configurationBackupDirectory = createConfigurationBackupDirectory(jobBackupDirectory, jobDirectory, configurationDirectory);
+        File configurationBackupDirectory = createBackupDirectory(jobBackupDirectory, jobDirectory, configurationDirectory);
         backupJobConfigFor(configurationDirectory, configurationBackupDirectory);
         backupBuildsFor(configurationDirectory, configurationBackupDirectory);
+      }
+    }
+    if (isPromotedJob(jobDirectory)) {
+      List<File> promotions = findAllConfigurations(new File(jobDirectory, HudsonBackup.PROMOTIONS_DIR_NAME));
+      for (File promotionDirectory : promotions) {
+        File promotionBackupDirectory = createBackupDirectory(jobBackupDirectory, jobDirectory, promotionDirectory);
+        backupJobConfigFor(promotionDirectory, promotionBackupDirectory);
+        backupBuildsFor(promotionDirectory, promotionBackupDirectory);
       }
     }
   }
@@ -286,7 +295,7 @@ public class HudsonBackup {
     LOGGER.info("DONE backing up Additional Files.");
   }
   
-  private File createConfigurationBackupDirectory(File jobBackupdirectory, File jobDirectory, File configurationDirectory) {
+  private File createBackupDirectory(File jobBackupdirectory, File jobDirectory, File configurationDirectory) {
     String pathToConfiguration = configurationDirectory.getAbsolutePath();
     String pathToJob = jobDirectory.getAbsolutePath();
 
@@ -308,6 +317,10 @@ public class HudsonBackup {
     return new File(jobDirectory, CONFIGURATIONS_DIR_NAME).isDirectory();
   }
 
+  private boolean isPromotedJob(File jobDirectory) {
+    return new File(jobDirectory, PROMOTIONS_DIR_NAME).isDirectory();
+  }
+  
   private void backupJobConfigFor(final File jobDirectory, final File jobBackupDirectory) throws IOException {
     final IOFileFilter filter = FileFilterUtils.and(
       FileFilterUtils.or(
