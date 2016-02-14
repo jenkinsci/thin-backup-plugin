@@ -105,12 +105,12 @@
       <version>2.4</version>
     </dependency>
   </dependencies>
-  <distributionManagement>
+  <!-- <distributionManagement>
     <repository>
       <id>maven.jenkins-ci.org</id>
       <url>http://maven.jenkins-ci.org:8081/content/repositories/releases/</url>
     </repository>
-  </distributionManagement>
+  </distributionManagement> -->
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
