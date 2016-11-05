@@ -59,10 +59,6 @@ public class PluginList implements Comparable<PluginList> {
     }
   }
 
-  /**
-   * @param other
-   * @return -1 if <i>other</i> is different than <b>this</b>.
-   */
   @Override
   public int compareTo(final PluginList other) {
     if (other == null) {

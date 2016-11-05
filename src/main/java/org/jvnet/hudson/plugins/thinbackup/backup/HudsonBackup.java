@@ -88,9 +88,7 @@ public class HudsonBackup {
     this(plugin, backupType, new Date(), Hudson.getInstance());
   }
 
-  /**
-   * package visible constructor for unit testing purposes only.
-   */
+  // package visible constructor for unit testing purposes only.
   protected HudsonBackup(final ThinBackupPluginImpl plugin, final BackupType backupType, final Date date, ItemGroup<TopLevelItem> hudson) {
     this.hudson = hudson;
     this.plugin = plugin;
@@ -576,11 +574,7 @@ public class HudsonBackup {
     @Override
     public void run() {
       LOGGER.fine("Starting zipper thread...");
-      try {
-        Utils.moveOldBackupsToZipFile(backupRoot, currentBackup);
-      } catch (final IOException ioe) {
-        LOGGER.log(Level.SEVERE, "Cannot zip old backups.", ioe);
-      }
+      Utils.moveOldBackupsToZipFile(backupRoot, currentBackup);
       LOGGER.fine("DONE zipping.");
     }
   }

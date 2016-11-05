@@ -13,8 +13,8 @@ import java.util.logging.Level;
 import org.acegisecurity.context.SecurityContextHolder;
 
 /**
- * Duplicated code from <i>hudson.model.AsyncPeriodicWork<i> to reduce the log levels in {@link #doRun()} from INFO to
- * FINEST so the logs are not spammed.
+ * Duplicated code from <i>hudson.model.AsyncPeriodicWork</i> to reduce the log levels in {@link #doRun()} from INFO to
+ * FINEST so the logs are not spamed.
  * 
  * All other functionality is exactly the same as in the original class.
  */
@@ -77,6 +77,8 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
 
   /**
    * Determines the log file that records the result of this task.
+   * 
+   * @return log file
    */
   protected File getLogFile() {
     return new File(Hudson.getInstance().getRootDir(), name + ".log");
