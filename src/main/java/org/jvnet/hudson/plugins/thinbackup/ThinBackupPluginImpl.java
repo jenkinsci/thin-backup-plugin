@@ -339,14 +339,6 @@ public class ThinBackupPluginImpl extends Plugin {
     }
   }
 
-  /**
-   * @param res
-   * @param rsp
-   * @param regex
-   * @return FormValidation.Kind.OK if the regex is valid, FormValidation.Kind.WARNING if the regex is valid but
-   *         consists only of whitespaces or has leading and/or trailing whitespaces, and FormValidation.Kind.ERROR if
-   *         the regex syntax is invalid.
-   */
   public FormValidation doCheckExcludedFilesRegex(final StaplerRequest res, final StaplerResponse rsp,
       @QueryParameter("value") final String regex) {
 

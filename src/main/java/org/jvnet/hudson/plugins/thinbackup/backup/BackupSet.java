@@ -262,7 +262,7 @@ public class BackupSet implements Comparable<BackupSet> {
    * 
    * @return a new BackupSet referencing the unzipped directories, or the current BackupSet if it was either not created
    *         from a ZIP file or is invalid. In case of an error an invalid BackupSet is returned.
-   * @throws IOException
+   * @throws IOException - if an I/O error occurs.
    */
   public BackupSet unzip() throws IOException {
     BackupSet result = null;
@@ -282,10 +282,10 @@ public class BackupSet implements Comparable<BackupSet> {
    * the BackupSet was unzipped to can be retrieved with getUnzipDir(). Before using the returned BackupSet, it should
    * be checked if it is valid.
    * 
-   * @param directory
+   * @param directory target directory
    * @return a new BackupSet referencing the unzipped directories, or the current BackupSet if it was either not created
    *         from a ZIP file or is invalid. In case of an error an invalid BackupSet is returned.
-   * @throws IOException
+   * @throws IOException - if an I/O error occurs.
    */
   public BackupSet unzipTo(final File directory) throws IOException {
     BackupSet result = null;
@@ -341,7 +341,7 @@ public class BackupSet implements Comparable<BackupSet> {
   }
 
   /**
-   * @param directory
+   * @param directory target directory
    * @return a reference to the created ZIP file, the current ZIP file if the BackupSet was created from one (because no
    *         zipping is performed in this case), or null if this BackupSet is invalid.
    */
@@ -434,7 +434,7 @@ public class BackupSet implements Comparable<BackupSet> {
   }
 
   /**
-   * @param directory
+   * @param directory directory to search for
    * @return true if this BackupSet contains a backup directory with the same name or if directory is null. Note that
    *         only the top level backup directories are checked, not any other contents of the BackupSet.
    */
@@ -459,7 +459,7 @@ public class BackupSet implements Comparable<BackupSet> {
   }
 
   /**
-   * @param date
+   * @param date date to search for
    * @return true if a backup for the given date exists in this BackupSet.
    */
   public boolean containsBackupForDate(final Date date) {

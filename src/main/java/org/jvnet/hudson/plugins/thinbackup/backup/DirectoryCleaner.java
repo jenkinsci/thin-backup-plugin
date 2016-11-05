@@ -28,8 +28,8 @@ public class DirectoryCleaner extends DirectoryWalker<Object> {
   /**
    * Deletes all empty directories, including rootDir if it is empty at the end.
    * 
-   * @param rootDir
-   * @throws IOException
+   * @param rootDir  the directory to start from, not null
+   * @throws IOException if an I/O Error occurs
    */
   public void removeEmptyDirectories(final File rootDir) throws IOException {
     walk(rootDir, Collections.emptyList());

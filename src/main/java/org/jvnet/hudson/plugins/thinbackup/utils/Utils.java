@@ -35,6 +35,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.servlet.ServletException;
+
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.FileFileFilter;
 import org.apache.commons.io.filefilter.FileFilterUtils;
@@ -95,8 +97,7 @@ public final class Utils {
    *          specifies when a quiet mode is forced. 0 = no timeout.
    * @param unit
    *          specifies the time unit for the value of timeout.
-   * 
-   * @throws IOException
+   * @throws IOException ?
    */
   public static void waitUntilIdleAndSwitchToQuietMode(int timeout, TimeUnit unit) throws IOException {
     Hudson hudson = Hudson.getInstance();
@@ -127,7 +128,7 @@ public final class Utils {
   }
 
   /**
-   * @param directory
+   * @param directory directory to get the date from
    * @return the date component of a directory name formatted in the thinBackup standard
    */
   public static Date getDateFromBackupDirectory(final File directory) {
@@ -135,7 +136,7 @@ public final class Utils {
   }
 
   /**
-   * @param directoryName
+   * @param directoryName directory name to get the date from
    * @return the date component of a directory name formatted in the thinBackup standard
    */
   public static Date getDateFromBackupDirectoryName(final String directoryName) {
@@ -162,7 +163,7 @@ public final class Utils {
    * @param displayFormattedDate
    *          a String in the display format date
    * @return the string formatted in the directory names' date format
-   * @throws ParseException
+   * @throws ParseException if the beginning of the specified parameter cannot be parsed.
    */
   public static String convertToDirectoryNameDateFormat(final String displayFormattedDate) throws ParseException {
     final Date displayDate = DISPLAY_DATE_FORMAT.parse(displayFormattedDate);
@@ -170,11 +171,11 @@ public final class Utils {
   }
 
   /**
-   * @param parent
-   * @param backupType
-   * @param date
+   * @param parent root directory of all backups
+   * @param backupType type of backup
+   * @param date date of backup
    * @return a reference to a file in the given parent directory with a name formatted like
-   *         "<BACKUP_TYPE>-yyyy-MM-dd_HH-mm".
+   *         "&lt;BACKUP_TYPE&gt;-yyyy-MM-dd_HH-mm".
    */
   public static File getFormattedDirectory(final File parent, final BackupType backupType, final Date date) {
     final File formattedDirectory = new File(parent, String.format("%s-%s", backupType,
@@ -183,8 +184,8 @@ public final class Utils {
   }
 
   /**
-   * @param parentDir
-   * @param backupType
+   * @param parentDir root directory of all backups
+   * @param backupType type of backup
    * @return an unordered list of backup directories of the given backup type.
    */
   public static List<File> getBackupTypeDirectories(final File parentDir, final BackupType backupType) {
@@ -201,7 +202,7 @@ public final class Utils {
   }
 
   /**
-   * @param parentDir
+   * @param parentDir root directory of all backups
    * @return an unordered list of zipped backupsets in the given directory.
    */
   public static List<File> getBackupSetZipFiles(final File parentDir) {
@@ -219,7 +220,7 @@ public final class Utils {
   }
 
   /**
-   * @param diffBackup
+   * @param diffBackup diff backup
    * @return the full backup referenced by the given diff backup, or null if none can be found.
    */
   public static File getReferencedFullBackup(final File diffBackup) {
@@ -252,7 +253,7 @@ public final class Utils {
   }
 
   /**
-   * @param fullBackup
+   * @param fullBackup fill backup
    * @return a list of all diff backups which reference the given full backup.
    */
   public static List<File> getReferencingDiffBackups(final File fullBackup) {
@@ -274,7 +275,7 @@ public final class Utils {
   }
 
   /**
-   * @param directory
+   * @param directory root directory of all backups
    * @return a list of backups in the given directory (both FULL and DIFF), displayed as the respective backup date,
    *         from both directories and ZIP files, ordered descending by the date encoded in the backups' name.
    */
@@ -320,7 +321,7 @@ public final class Utils {
   }
 
   /**
-   * @param directory
+   * @param directory root directory of all backups
    * @return a list of valid (@see BackupSet#isValid) backup sets that exists as directories (not as ZIP files) in the
    *         given directory, ordered ascending by the backup date of the BackupSets' full backup.
    */
@@ -340,7 +341,7 @@ public final class Utils {
   }
 
   /**
-   * @param directory
+   * @param directory root directory of all backups
    * @return a list of valid (@see BackupSet#isValid) backup sets that exists as ZIP files (not as directories) in the
    *         given directory, ordered ascending by the backup date of the BackupSets' full backup.
    */
@@ -360,7 +361,7 @@ public final class Utils {
   }
 
   /**
-   * @param directory
+   * @param directory root directory of all backups
    * @return a list of valid (@see BackupSet#isValid) backup sets in the given directory, ordered ascending by the
    *         backup date of the BackupSets' full backup.
    */
@@ -378,12 +379,11 @@ public final class Utils {
    * Moves all backup sets (that are not already zipped) other than the one containing currentBackup to ZIP files
    * located in backupRoot.
    * 
-   * @param backupRoot
+   * @param backupRoot root directory of all backups
    * @param currentBackup
    *          specified which backup should be omitted from being moved. If null, all backups are moved to ZIP files.
-   * @throws IOException
    */
-  public static void moveOldBackupsToZipFile(final File backupRoot, final File currentBackup) throws IOException {
+  public static void moveOldBackupsToZipFile(final File backupRoot, final File currentBackup) {
     LOGGER.fine("Moving old backups to zip files...");
 
     final List<BackupSet> validBackupSets = Utils.getValidBackupSetsFromDirectories(backupRoot);
@@ -422,9 +422,7 @@ public final class Utils {
     return internalExpandEnvironmentVariables(path, System.getenv());
   }
 
-  /**
-   * For unit testing purposes only. Use @link {expandEnvironmentVariables}.
-   */
+  // For unit testing purposes only. Use @link {expandEnvironmentVariables}.
   protected static String internalExpandEnvironmentVariables(final String path,
       final Map<String, String> environmentVariables) throws EnvironmentVariableNotDefinedException {
 
