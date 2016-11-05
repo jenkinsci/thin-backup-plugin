@@ -9,7 +9,7 @@
   <groupId>org.jvnet.hudson.plugins</groupId>
   <artifactId>thinBackup</artifactId>
   <name>ThinBackup</name>
-  <version>1.9-SNAPSHOT</version>
+  <version>1.8-SNAPSHOT</version>
   <packaging>hpi</packaging>
   <licenses>
     <license>
@@ -57,7 +57,6 @@
     <connection>scm:git:https://github.com/jenkinsci/thin-backup-plugin.git</connection>
     <developerConnection>scm:git:https://git@github.com/jenkinsci/thin-backup-plugin.git</developerConnection>
     <url>https://github.com/jenkinsci/thin-backup-plugin</url>
-    <tag>HEAD</tag>
   </scm>
   <repositories>
     <repository>
