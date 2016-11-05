@@ -99,7 +99,7 @@ public final class Utils {
    *          specifies the time unit for the value of timeout.
    * @throws IOException ?
    */
-  public static void waitUntilIdleAndSwitchToQuietMode(int timeout, TimeUnit unit) throws IOException {
+  public static void waitUntilIdleAndSwitchToQuietMode(int timeout, TimeUnit unit) throws IOException, ServletException{
     Hudson hudson = Hudson.getInstance();
     final Computer computers[] = hudson.getComputers();
 
