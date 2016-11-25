@@ -16,7 +16,6 @@ import java.io.Writer;
 import java.util.List;
 
 import org.jvnet.hudson.plugins.thinbackup.backup.HudsonBackup;
-import org.mortbay.io.ByteArrayBuffer;
 
 public class TestHelper {
   public static final String CONFIG_XML_CONTENTS = "FILLED WITH DATA... ";
@@ -54,7 +53,7 @@ public class TestHelper {
     final File config = new File(folderDir, "config.xml");
     config.createNewFile();
     final BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(config));
-    out.write(new ByteArrayBuffer(CONFIG_XML_CONTENTS).array());
+    out.write(CONFIG_XML_CONTENTS.getBytes());
     out.close();
     
     return folderDir;
@@ -78,7 +77,7 @@ public class TestHelper {
     final File config = new File(testJob, "config.xml");
     config.createNewFile();
     final BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(config));
-    out.write(new ByteArrayBuffer(CONFIG_XML_CONTENTS).array());
+    out.write(CONFIG_XML_CONTENTS.getBytes());
     out.close();
     return testJob;
   }
