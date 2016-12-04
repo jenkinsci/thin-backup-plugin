@@ -21,6 +21,7 @@ public class TestHelper {
   public static final String CONFIG_XML_CONTENTS = "FILLED WITH DATA... ";
   public static final String CONCRET_BUILD_DIRECTORY_NAME = "2011-01-08_22-26-40";
   public static final String TEST_JOB_NAME = "test";
+  public static final String TEST_NODE_NAME = "node1";
 
   public static File createBasicFolderStructure(File base) throws IOException {
     File root = new File(base, "RootDirForHudsonBackupTest");
@@ -33,6 +34,7 @@ public class TestHelper {
     new File(root, "hudson.model.UpdateCenter.xml").createNewFile();
     new File(root, HudsonBackup.JOBS_DIR_NAME).mkdir();
     new File(root, HudsonBackup.USERS_DIR_NAME).mkdir();
+    new File(root, HudsonBackup.NODES_DIR_NAME).mkdir();
     new File(root, HudsonBackup.USERSCONTENTS_DIR_NAME).mkdir();
     new File(root, "plugins").mkdir();
     
@@ -195,5 +197,16 @@ public class TestHelper {
     when(mockPlugin.getExcludedFilesRegex()).thenReturn("");
   
     return mockPlugin;
+  }
+  
+  public static File createNode(File jenkinsHome, String nodeName) throws IOException {
+    final File testNode = new File(new File(jenkinsHome, HudsonBackup.NODES_DIR_NAME), nodeName);
+    testNode.mkdirs();
+    final File config = new File(testNode, "config.xml");
+    config.createNewFile();
+    final BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(config));
+    out.write(CONFIG_XML_CONTENTS.getBytes());
+    out.close();
+    return testNode;
   }
 }
