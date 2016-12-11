@@ -5,7 +5,7 @@ import hudson.model.ItemGroup;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Calendar;
+import java.util.Date;
 
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.Matchers;
@@ -45,11 +45,8 @@ public class TestBackupWithCloudBeesFolder {
   
   @Test
   public void testCloudBeesFolderBackup() throws Exception {
-    final Calendar cal = Calendar.getInstance();
-    cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE - 10));
-    
     final ThinBackupPluginImpl mockPlugin = TestHelper.createMockPlugin(jenkinsHome, backupDir);
-    new HudsonBackup(mockPlugin, BackupType.FULL, cal.getTime(), mock(ItemGroup.class)).backup();
+    new HudsonBackup(mockPlugin, BackupType.FULL, new Date(), mock(ItemGroup.class)).backup();
     
     final File backup = new File(backupDir, backupDir.list()[0]);
     File rootJobsFolder = new File(backup, HudsonBackup.JOBS_DIR_NAME);
@@ -74,11 +71,8 @@ public class TestBackupWithCloudBeesFolder {
     File subFolderDirectory = TestHelper.createCloudBeesFolder(cloudBeesFolder, "subFolder");
     TestHelper.createJob(subFolderDirectory, "folderJob");
     
-    final Calendar cal = Calendar.getInstance();
-    cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE - 10));
-    
     final ThinBackupPluginImpl mockPlugin = TestHelper.createMockPlugin(jenkinsHome, backupDir);
-    new HudsonBackup(mockPlugin, BackupType.FULL, cal.getTime(), mock(ItemGroup.class)).backup();
+    new HudsonBackup(mockPlugin, BackupType.FULL, new Date(), mock(ItemGroup.class)).backup();
     
     File subFolderJobsBackupDirectory = new File(backupDir, backupDir.list()[0]+"/jobs/"+TEST_FOLDER+"/jobs/subFolder/jobs");
     String[] list = subFolderJobsBackupDirectory.list();

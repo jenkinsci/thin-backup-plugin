@@ -63,6 +63,7 @@ public class HudsonBackup {
   public static final String USERSCONTENTS_DIR_NAME = "userContent";
   public static final String NEXT_BUILD_NUMBER_FILE_NAME = "nextBuildNumber";
   public static final String PLUGINS_DIR_NAME = "plugins";
+  public static final String NODES_DIR_NAME = "nodes";
   public static final String CONFIG_XML = "config.xml";
   public static final String XML_FILE_EXTENSION = ".xml";
   public static final String JPI_FILE_EXTENSION = ".jpi";
@@ -157,6 +158,7 @@ public class HudsonBackup {
     backupGlobalXmls();
     backupJobs();
     backupRootFolder(USERS_DIR_NAME);
+    backupNodes();
 
     if (plugin.isBackupUserContents())
       backupRootFolder(USERSCONTENTS_DIR_NAME);
@@ -293,6 +295,15 @@ public class HudsonBackup {
     LOGGER.info("DONE backing up Additional Files.");
   }
   
+  private void backupNodes() throws IOException {
+    LOGGER.fine("Backing up nodes configuration files...");
+
+    final IOFileFilter filter = FileFilterUtils.nameFileFilter(CONFIG_XML);
+    backupRootFolder(NODES_DIR_NAME, filter);
+
+    LOGGER.fine("DONE backing up nodes configuration files.");
+  }
+
   private File createBackupDirectory(File jobBackupdirectory, File jobDirectory, File configurationDirectory) {
     String pathToConfiguration = configurationDirectory.getAbsolutePath();
     String pathToJob = jobDirectory.getAbsolutePath();

@@ -73,12 +73,9 @@ public class TestHudsonBackup {
   
   @Test
   public void testBackup() throws Exception {
-    final Calendar cal = Calendar.getInstance();
-    cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE - 10));
-
     final ThinBackupPluginImpl mockPlugin = TestHelper.createMockPlugin(jenkinsHome, backupDir);
 
-    new HudsonBackup(mockPlugin, BackupType.FULL, cal.getTime(), mockHudson).backup();
+    new HudsonBackup(mockPlugin, BackupType.FULL, new Date(), mockHudson).backup();
 
     String[] list = backupDir.list();
     Assert.assertEquals(1, list.length);
@@ -104,13 +101,10 @@ public class TestHudsonBackup {
 
   @Test
   public void testBackupWithExludes() throws Exception {
-    final Calendar cal = Calendar.getInstance();
-    cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE - 10));
-
     final ThinBackupPluginImpl mockPlugin = TestHelper.createMockPlugin(jenkinsHome, backupDir);
     when(mockPlugin.getExcludedFilesRegex()).thenReturn("^.*\\.(log)$");
 
-    new HudsonBackup(mockPlugin, BackupType.FULL, cal.getTime(), mockHudson).backup();
+    new HudsonBackup(mockPlugin, BackupType.FULL, new Date(), mockHudson).backup();
 
     String[] list = backupDir.list();
     Assert.assertEquals(1, list.length);
@@ -144,13 +138,10 @@ public class TestHudsonBackup {
 
   @Test
   public void testBackupWithoutBuildResults() throws Exception {
-    final Calendar cal = Calendar.getInstance();
-    cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE - 10));
-
     final ThinBackupPluginImpl mockPlugin = TestHelper.createMockPlugin(jenkinsHome, backupDir);
     when(mockPlugin.isBackupBuildResults()).thenReturn(false);
 
-    new HudsonBackup(mockPlugin, BackupType.FULL, cal.getTime(), mockHudson).backup();
+    new HudsonBackup(mockPlugin, BackupType.FULL, new Date(), mockHudson).backup();
 
     String[] list = backupDir.list();
     Assert.assertEquals(1, list.length);
@@ -166,7 +157,7 @@ public class TestHudsonBackup {
 
   public void performHudsonDiffBackup(final ThinBackupPluginImpl mockPlugin) throws Exception {
     final Calendar cal = Calendar.getInstance();
-    cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE - 10));
+    cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE) - 10);
 
     new HudsonBackup(mockPlugin, BackupType.FULL, cal.getTime(), mockHudson).backup();
 
@@ -194,13 +185,10 @@ public class TestHudsonBackup {
 
   @Test
   public void testBackupNextBuildNumber() throws Exception {
-    final Calendar cal = Calendar.getInstance();
-    cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE - 10));
-
     final ThinBackupPluginImpl mockPlugin = TestHelper.createMockPlugin(jenkinsHome, backupDir);
     when(mockPlugin.isBackupNextBuildNumber()).thenReturn(true);
 
-    new HudsonBackup(mockPlugin, BackupType.FULL, cal.getTime(), mockHudson).backup();
+    new HudsonBackup(mockPlugin, BackupType.FULL, new Date(), mockHudson).backup();
 
     String[] list = backupDir.list();
     Assert.assertEquals(1, list.length);
@@ -226,13 +214,10 @@ public class TestHudsonBackup {
 
   @Test
   public void testBackupArchive() throws Exception {
-    final Calendar cal = Calendar.getInstance();
-    cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE - 10));
-
     final ThinBackupPluginImpl mockPlugin = TestHelper.createMockPlugin(jenkinsHome, backupDir);
     when(mockPlugin.isBackupBuildArchive()).thenReturn(true);
 
-    new HudsonBackup(mockPlugin, BackupType.FULL, cal.getTime(), mockHudson).backup();
+    new HudsonBackup(mockPlugin, BackupType.FULL, new Date(), mockHudson).backup();
 
     String[] list = backupDir.list();
     Assert.assertEquals(1, list.length);
@@ -258,9 +243,6 @@ public class TestHudsonBackup {
 
   @Test
   public void testBackupKeptBuildsOnly_doNotKeep() throws Exception {
-    final Calendar cal = Calendar.getInstance();
-    cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE - 10));
-
     final ThinBackupPluginImpl mockPlugin = TestHelper.createMockPlugin(jenkinsHome, backupDir);
     
     when(mockPlugin.isBackupBuildsToKeepOnly()).thenReturn(true);
@@ -271,7 +253,7 @@ public class TestHudsonBackup {
     when(mockJob.getBuilds()).thenReturn((RunList<FreeStyleBuild>)RunList.fromRuns(Collections.singleton(mockRun)));
     when(mockRun.getRootDir()).thenReturn(buildDir);
 
-    new HudsonBackup(mockPlugin, BackupType.FULL, cal.getTime(), mockHudson).backup();
+    new HudsonBackup(mockPlugin, BackupType.FULL, new Date(), mockHudson).backup();
 
     String[] list = backupDir.list();
     Assert.assertEquals(1, list.length);
@@ -287,9 +269,6 @@ public class TestHudsonBackup {
   
   @Test
   public void testBackupKeptBuildsOnly_keep() throws Exception {
-    final Calendar cal = Calendar.getInstance();
-    cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE - 10));
-
     final ThinBackupPluginImpl mockPlugin = TestHelper.createMockPlugin(jenkinsHome, backupDir);
     
     when(mockPlugin.isBackupBuildsToKeepOnly()).thenReturn(true);
@@ -302,7 +281,7 @@ public class TestHudsonBackup {
     when(mockJob.getBuilds()).thenReturn((RunList<FreeStyleBuild>)RunList.fromRuns(Collections.singleton(mockRun)));
     when(mockRun.getRootDir()).thenReturn(buildDir);
 
-    new HudsonBackup(mockPlugin, BackupType.FULL, cal.getTime(), mockHudson).backup();
+    new HudsonBackup(mockPlugin, BackupType.FULL, new Date(), mockHudson).backup();
 
     String[] list = backupDir.list();
     Assert.assertEquals(1, list.length);
@@ -318,5 +297,30 @@ public class TestHudsonBackup {
     final File build = new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), TestHelper.CONCRET_BUILD_DIRECTORY_NAME);
     list = build.list();
     Assert.assertEquals(7, list.length);
+  }
+  
+  @Test
+  public void testBackupNodes() throws Exception {
+    TestHelper.createNode(jenkinsHome, TestHelper.TEST_NODE_NAME);
+
+    final ThinBackupPluginImpl mockPlugin = TestHelper.createMockPlugin(jenkinsHome, backupDir);
+
+    new HudsonBackup(mockPlugin, BackupType.FULL, new Date(), mockHudson).backup();
+
+    String[] list = backupDir.list();
+    Assert.assertEquals(1, list.length);
+    final File backup = new File(backupDir, list[0]);
+    list = backup.list();
+    Assert.assertEquals(7, list.length);
+
+    final File nodes = new File(backup, HudsonBackup.NODES_DIR_NAME);
+    list = nodes.list();
+    Assert.assertEquals(1, list.length);
+    Assert.assertEquals(TestHelper.TEST_NODE_NAME, list[0]);
+
+    final File node = new File(nodes, TestHelper.TEST_NODE_NAME);
+    list = node.list();
+    Assert.assertEquals(1, list.length);
+    Assert.assertEquals(HudsonBackup.CONFIG_XML, list[0]);
   }
 }
