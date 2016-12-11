@@ -6,7 +6,7 @@ import hudson.model.ItemGroup;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Calendar;
+import java.util.Date;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
@@ -62,12 +62,9 @@ public class TestBackupMatrixJob {
   
   @Test
   public void testFullBuildResultsBackup() throws IOException {
-    final Calendar cal = Calendar.getInstance();
-    cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE - 10));
-
     final ThinBackupPluginImpl mockPlugin = createMockPlugin();
 
-    new HudsonBackup(mockPlugin, BackupType.FULL, cal.getTime(), mock(ItemGroup.class)).backup();
+    new HudsonBackup(mockPlugin, BackupType.FULL, new Date(), mock(ItemGroup.class)).backup();
     
     String[] list = backupDir.list();
     Assert.assertEquals(1, list.length);
