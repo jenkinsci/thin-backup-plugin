@@ -18,6 +18,7 @@ package org.jvnet.hudson.plugins.thinbackup.utils;
 
 import hudson.model.Computer;
 import hudson.model.Hudson;
+import jenkins.model.Jenkins;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.FileFileFilter;
 import org.apache.commons.io.filefilter.FileFilterUtils;
@@ -462,5 +463,10 @@ public final class Utils {
                 // nothing to do
             }
         }
+    }
+    public static boolean isQuiteDownOngoingButNeedsToCancel(final boolean waitForIdle, final Jenkins jenkinsInstance) {
+        if (jenkinsInstance != null)
+            return !waitForIdle && jenkinsInstance.isQuietingDown() && Utils.isPluginInitiatedQuiteMode();
+        return false;
     }
 }

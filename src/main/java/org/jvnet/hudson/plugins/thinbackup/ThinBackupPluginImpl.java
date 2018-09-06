@@ -37,6 +37,8 @@ import org.kohsuke.stapler.StaplerResponse;
 
 import antlr.ANTLRException;
 
+import static org.jvnet.hudson.plugins.thinbackup.utils.Utils.isQuiteDownOngoingButNeedsToCancel;
+
 public class ThinBackupPluginImpl extends Plugin {
 
   private static final int VERY_HIGH_TIMEOUT = 12 * 60;
@@ -251,16 +253,12 @@ public class ThinBackupPluginImpl extends Plugin {
   }
 
   public void setWaitForIdle(boolean waitForIdle) {
-    Jenkins instance = Jenkins.getInstance();
+    Jenkins jenkinsInstance = Jenkins.getInstance();
 
-    if (isQuiteDownOngoingButNeedsToCancel(waitForIdle, instance))
-      instance.doCancelQuietDown();
+    if (isQuiteDownOngoingButNeedsToCancel(waitForIdle, jenkinsInstance))
+      jenkinsInstance.doCancelQuietDown();
 
     this.waitForIdle = waitForIdle;
-  }
-
-  private boolean isQuiteDownOngoingButNeedsToCancel(boolean waitForIdle, Jenkins instance) {
-    return !waitForIdle && instance.isQuietingDown() && Utils.isPluginInitiatedQuiteMode();
   }
 
   public boolean isWaitForIdle() {

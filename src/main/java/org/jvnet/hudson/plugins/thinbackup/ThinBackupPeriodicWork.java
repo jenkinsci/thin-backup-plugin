@@ -97,7 +97,7 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
               backupPath);
       LOGGER.log(Level.SEVERE, msg, e);
     } finally {
-      if (!inQuietModeBeforeBackup)
+      if (!inQuietModeBeforeBackup || Utils.isQuiteDownOngoingButNeedsToCancel(plugin.isWaitForIdle(), hudson))
         hudson.doCancelQuietDown();
       else
         LOGGER.info("Backup process finsihed, but still in quiet mode as before. The quiet mode needs to be cancled manually, because it is not sure who is putting jenkins/hudson into quiet mode.");
