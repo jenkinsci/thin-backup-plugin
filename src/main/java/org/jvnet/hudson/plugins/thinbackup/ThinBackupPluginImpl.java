@@ -27,6 +27,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import jenkins.model.Jenkins;
 import org.apache.commons.lang.StringUtils;
 import org.jvnet.hudson.plugins.thinbackup.utils.EnvironmentVariableNotDefinedException;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
@@ -35,6 +36,8 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import antlr.ANTLRException;
+
+import static org.jvnet.hudson.plugins.thinbackup.utils.Utils.isQuiteDownOngoingButNeedsToCancel;
 
 public class ThinBackupPluginImpl extends Plugin {
 
@@ -250,6 +253,11 @@ public class ThinBackupPluginImpl extends Plugin {
   }
 
   public void setWaitForIdle(boolean waitForIdle) {
+    Jenkins jenkinsInstance = Jenkins.getInstance();
+
+    if (isQuiteDownOngoingButNeedsToCancel(waitForIdle, jenkinsInstance))
+      jenkinsInstance.doCancelQuietDown();
+
     this.waitForIdle = waitForIdle;
   }
 
