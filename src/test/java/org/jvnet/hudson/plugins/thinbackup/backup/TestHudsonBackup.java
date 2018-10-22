@@ -18,7 +18,7 @@ package org.jvnet.hudson.plugins.thinbackup.backup;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import hudson.Functions;
+
 import hudson.model.FreeStyleBuild;
 import hudson.model.ItemGroup;
 import hudson.model.TopLevelItem;

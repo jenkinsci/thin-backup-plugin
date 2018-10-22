@@ -29,8 +29,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.servlet.ServletException;
-
 import org.apache.commons.lang.StringUtils;
 import org.jvnet.hudson.plugins.thinbackup.backup.HudsonBackup;
 import org.jvnet.hudson.plugins.thinbackup.hudson.model.AsyncPeriodicWork;
