@@ -164,20 +164,10 @@ public class TestHelper {
   }
   
   private static void addBuildNumber(final File nextBuildNumberFile) {
-    Writer w = null;
-    try {
-      w = new FileWriter(nextBuildNumberFile);
+    try (Writer w = new FileWriter(nextBuildNumberFile)) {
       w.write("1234");
     } catch (final IOException e) {
       // catch me if you can!
-    } finally {
-      try {
-        if (w != null) {
-          w.close();
-        }
-      } catch (final IOException e) {
-        // catch me if you can!
-      }
     }
   }
 
