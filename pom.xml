@@ -38,7 +38,7 @@
 
 	<description>
     Backs up the most important global and job specific configuration files. 
-  </description>
+	</description>
 	<url>https://wiki.jenkins-ci.org/display/JENKINS/thinBackup</url>
 
 	<developers>
@@ -62,8 +62,8 @@
 		<connection>scm:git:https://github.com/jenkinsci/thin-backup-plugin.git</connection>
 		<developerConnection>scm:git:https://git@github.com/jenkinsci/thin-backup-plugin.git</developerConnection>
 		<url>https://github.com/jenkinsci/thin-backup-plugin</url>
-	  <tag>HEAD</tag>
-  </scm>
+		<tag>HEAD</tag>
+	</scm>
 
 	<repositories>
 		<repository>
@@ -154,7 +154,7 @@
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>findbugs-maven-plugin</artifactId>
 				<configuration>
-				    <skip>true</skip>
+					<skip>true</skip>
 				</configuration>
 			</plugin>
 		</plugins>
