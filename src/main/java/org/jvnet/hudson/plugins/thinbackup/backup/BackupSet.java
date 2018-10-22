@@ -87,7 +87,7 @@ public class BackupSet implements Comparable<BackupSet> {
   private boolean initialize() {
     boolean success = false;
 
-    diffBackupsNames = new ArrayList<String>();
+    diffBackupsNames = new ArrayList<>();
 
     if (inZipFile) {
       success = initializeFromZipFile();
@@ -167,7 +167,7 @@ public class BackupSet implements Comparable<BackupSet> {
       success = true;
     }
     if (success && (diffBackups != null) && !diffBackups.isEmpty()) {
-      diffBackupsNames = new ArrayList<String>(diffBackups.size());
+      diffBackupsNames = new ArrayList<>(diffBackups.size());
       for (final File diffBackup : diffBackups) {
         final String tmpName = diffBackup.getName();
         if (!diffBackupsNames.contains(tmpName)) {

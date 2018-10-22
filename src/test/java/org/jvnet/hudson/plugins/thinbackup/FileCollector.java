@@ -30,7 +30,7 @@ public class FileCollector extends DirectoryWalker<String> {
    * @throws IOException
    */
   public List<String> getFilesAsString(final File rootDir) throws IOException {
-    final ArrayList<String> result = new ArrayList<String>();
+    final ArrayList<String> result = new ArrayList<>();
     walk(rootDir, result);
     return result;
   }

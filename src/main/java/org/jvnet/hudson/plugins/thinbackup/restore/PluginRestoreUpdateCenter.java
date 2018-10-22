@@ -94,7 +94,7 @@ public class PluginRestoreUpdateCenter extends UpdateCenter {
   
   }
 
-  private Set<UpdateSite> knownUpdateSites = new HashSet<UpdateSite>();
+  private Set<UpdateSite> knownUpdateSites = new HashSet<>();
 
   synchronized Future<UpdateCenterJob> _addJob(UpdateCenterJob job) {
     if (knownUpdateSites.add(job.site))

@@ -33,7 +33,7 @@ public class PluginList implements Comparable<PluginList> {
 
   public PluginList(final File pluginsXml) {
     this.pluginsXml = pluginsXml;
-    plugins = new HashMap<String, String>();
+    plugins = new HashMap<>();
   }
 
   public Map<String, String> getPlugins() {

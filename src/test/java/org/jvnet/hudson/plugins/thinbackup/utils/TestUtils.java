@@ -155,7 +155,7 @@ public class TestUtils extends BackupDirStructureSetup {
 
   @Test
   public void testExpandEnvironmentVariables() {
-    final Map<String, String> map = new HashMap<String, String>();
+    final Map<String, String> map = new HashMap<>();
     map.put("TEST_VAR", "REPLACEMENT");
     String path = "${TEST_VAR}";
     Assert.assertEquals("REPLACEMENT", Utils.internalExpandEnvironmentVariables(path, map));

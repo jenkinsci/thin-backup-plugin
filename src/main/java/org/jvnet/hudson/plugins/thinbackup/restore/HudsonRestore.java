@@ -74,7 +74,7 @@ public class HudsonRestore {
     this.restoreFromDate = restoreFromDate;
     this.restoreNextBuildNumber = restoreNextBuildNumber;
     this.restorePlugins = restorePlugins;
-    this.availablePluginLocations = new HashMap<String, List<Plugin>>();
+    this.availablePluginLocations = new HashMap<>();
   }
 
   public void restore() {
@@ -160,7 +160,7 @@ public class HudsonRestore {
 
       final Collection<File> restore = FileUtils.listFiles(toRestore, nextBuildNumberFileFilter,
           TrueFileFilter.INSTANCE);
-      final Map<String, Integer> nextBuildNumbers = new HashMap<String, Integer>();
+      final Map<String, Integer> nextBuildNumbers = new HashMap<>();
       for (final File file : restore) {
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
           nextBuildNumbers.put(file.getParentFile().getName(), Integer.parseInt(reader.readLine()));
@@ -202,7 +202,7 @@ public class HudsonRestore {
     PluginList pluginList = new PluginList(backupedPlugins);
     pluginList.load();
     Map<String, String> toRestorePlugins = pluginList.getPlugins();
-    List<Future<UpdateCenterJob>> pluginRestoreJobs = new ArrayList<Future<UpdateCenterJob>>(toRestorePlugins.size());
+    List<Future<UpdateCenterJob>> pluginRestoreJobs = new ArrayList<>(toRestorePlugins.size());
     PluginManager pluginManager = Hudson.getInstance().getPluginManager();
     for (Entry<String, String> entry : toRestorePlugins.entrySet()) {
       if (pluginManager.getPlugin(entry.getKey()) == null) { // if any version of this plugin is installed do nothing
