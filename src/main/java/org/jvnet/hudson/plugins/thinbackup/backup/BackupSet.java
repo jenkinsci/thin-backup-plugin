@@ -227,32 +227,32 @@ public class BackupSet implements Comparable<BackupSet> {
 
   @Override
   public String toString() {
-    final StringBuffer strBuf = new StringBuffer();
+    final StringBuilder sb = new StringBuilder();
 
-    strBuf.append("[FULL backup: ");
+    sb.append("[FULL backup: ");
     if (fullBackupName != null) {
-      strBuf.append(fullBackupName);
+      sb.append(fullBackupName);
     } else {
-      strBuf.append("NONE");
+      sb.append("NONE");
     }
-    strBuf.append("; DIFF backups: ");
+    sb.append("; DIFF backups: ");
     boolean hasDiffs = false;
     if (diffBackupsNames != null) {
       for (final String diffBackup : diffBackupsNames) {
-        strBuf.append(diffBackup);
-        strBuf.append(",");
+        sb.append(diffBackup);
+        sb.append(",");
       }
       if (diffBackupsNames.size() > 0) {
-        strBuf.deleteCharAt(strBuf.length() - 1);
+        sb.deleteCharAt(sb.length() - 1);
         hasDiffs = true;
       }
     }
     if (!hasDiffs) {
-      strBuf.append("NONE");
+      sb.append("NONE");
     }
-    strBuf.append("]");
+    sb.append("]");
 
-    return strBuf.toString();
+    return sb.toString();
   }
 
   /**
