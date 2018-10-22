@@ -20,7 +20,6 @@ import hudson.Extension;
 import hudson.model.TaskListener;
 import hudson.model.Hudson;
 import hudson.scheduler.CronTab;
-import hudson.util.TimeUnit2;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -143,7 +142,7 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
       final long delay = nextExecution.getTimeInMillis() - currentTime;
 
       LOGGER.fine(MessageFormat.format("Current time: {0,date,medium} {0,time,long}. Next execution ({3}) in {2} seconds which is {1,date,medium} {1,time,long}",
-          new Date(currentTime), nextExecution.getTime(), TimeUnit2.MILLISECONDS.toSeconds(delay), backupType));
+          new Date(currentTime), nextExecution.getTime(), TimeUnit.MILLISECONDS.toSeconds(delay), backupType));
 
       if (delay < 0) {
         final String msg = "Delay is a negative number, which means the next execution is in the past! This happens for Hudson/Jenkins installations with version 1.395 or below. Please upgrade to fix this.";
