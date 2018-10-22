@@ -76,7 +76,7 @@ public class TestBackupPromotedJob {
     
     Assert.assertTrue(new File(jobBackup, HudsonBackup.PROMOTIONS_DIR_NAME).exists());
     Assert.assertTrue(new File(jobBackup, HudsonBackup.PROMOTIONS_DIR_NAME+"/promotion-x").exists());
-    Assert.assertTrue(new File(jobBackup, HudsonBackup.PROMOTIONS_DIR_NAME+"/promotion-x/"+HudsonBackup.BUILDS_DIR_NAME+"/"+TestHelper.CONCRET_BUILD_DIRECTORY_NAME+"/build.xml").exists());
+    Assert.assertTrue(new File(jobBackup, HudsonBackup.PROMOTIONS_DIR_NAME+"/promotion-x/"+HudsonBackup.BUILDS_DIR_NAME+"/"+TestHelper.CONCRETE_BUILD_DIRECTORY_NAME +"/build.xml").exists());
   }
 
 }

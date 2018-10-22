@@ -99,7 +99,7 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
       if (!inQuietModeBeforeBackup)
         hudson.doCancelQuietDown();
       else
-        LOGGER.info("Backup process finsihed, but still in quiet mode as before. The quiet mode needs to be cancled manually, because it is not sure who is putting jenkins/hudson into quiet mode.");
+        LOGGER.info("Backup process finished, but still in quiet mode as before. The quiet mode needs to be canceled manually, because it is not clear who is putting jenkins/hudson into quiet mode.");
     }
   }
 

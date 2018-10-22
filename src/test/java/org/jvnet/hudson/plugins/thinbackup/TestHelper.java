@@ -19,7 +19,7 @@ import org.jvnet.hudson.plugins.thinbackup.backup.HudsonBackup;
 
 public class TestHelper {
   public static final String CONFIG_XML_CONTENTS = "FILLED WITH DATA... ";
-  public static final String CONCRET_BUILD_DIRECTORY_NAME = "2011-01-08_22-26-40";
+  public static final String CONCRETE_BUILD_DIRECTORY_NAME = "2011-01-08_22-26-40";
   public static final String TEST_JOB_NAME = "test";
   public static final String TEST_NODE_NAME = "node1";
 
@@ -87,7 +87,7 @@ public class TestHelper {
   public static File addNewBuildToJob(File job) throws IOException, InterruptedException {
     final File builds = new File(job, HudsonBackup.BUILDS_DIR_NAME);
     builds.mkdir();
-    final File build = new File(builds, CONCRET_BUILD_DIRECTORY_NAME);
+    final File build = new File(builds, CONCRETE_BUILD_DIRECTORY_NAME);
     build.mkdir();
     
     final File changelogDir = new File(build, HudsonBackup.CHANGELOG_HISTORY_PLUGIN_DIR_NAME);
@@ -106,8 +106,8 @@ public class TestHelper {
     archiveDir.mkdir();
     new File(archiveDir, "someFile.log").createNewFile();
     
-    Util.createSymlink(job, HudsonBackup.BUILDS_DIR_NAME+"/"+CONCRET_BUILD_DIRECTORY_NAME, "lastSuccessful", new StreamTaskListener(new StringWriter()));
-    Util.createSymlink(job, HudsonBackup.BUILDS_DIR_NAME+"/"+CONCRET_BUILD_DIRECTORY_NAME, "lastStable", new StreamTaskListener(new StringWriter()));
+    Util.createSymlink(job, HudsonBackup.BUILDS_DIR_NAME+"/"+ CONCRETE_BUILD_DIRECTORY_NAME, "lastSuccessful", new StreamTaskListener(new StringWriter()));
+    Util.createSymlink(job, HudsonBackup.BUILDS_DIR_NAME+"/"+ CONCRETE_BUILD_DIRECTORY_NAME, "lastStable", new StreamTaskListener(new StringWriter()));
 
     return build;
   }

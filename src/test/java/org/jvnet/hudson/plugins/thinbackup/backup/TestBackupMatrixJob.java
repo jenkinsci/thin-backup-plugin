@@ -77,8 +77,8 @@ public class TestBackupMatrixJob {
     Assert.assertTrue(new File(jobBackup, HudsonBackup.CONFIGURATIONS_DIR_NAME).exists());
     Assert.assertTrue(new File(jobBackup, HudsonBackup.CONFIGURATIONS_DIR_NAME+"/axis-x/a").exists());
     Assert.assertTrue(new File(jobBackup, HudsonBackup.CONFIGURATIONS_DIR_NAME+"/axis-x/b").exists());
-    Assert.assertTrue(new File(jobBackup, HudsonBackup.CONFIGURATIONS_DIR_NAME+"/axis-x/a/"+HudsonBackup.BUILDS_DIR_NAME+"/"+TestHelper.CONCRET_BUILD_DIRECTORY_NAME+"/build.xml").exists());
-    Assert.assertTrue(new File(jobBackup, HudsonBackup.CONFIGURATIONS_DIR_NAME+"/axis-x/b/"+HudsonBackup.BUILDS_DIR_NAME+"/"+TestHelper.CONCRET_BUILD_DIRECTORY_NAME+"/build.xml").exists());
+    Assert.assertTrue(new File(jobBackup, HudsonBackup.CONFIGURATIONS_DIR_NAME+"/axis-x/a/"+HudsonBackup.BUILDS_DIR_NAME+"/"+TestHelper.CONCRETE_BUILD_DIRECTORY_NAME +"/build.xml").exists());
+    Assert.assertTrue(new File(jobBackup, HudsonBackup.CONFIGURATIONS_DIR_NAME+"/axis-x/b/"+HudsonBackup.BUILDS_DIR_NAME+"/"+TestHelper.CONCRETE_BUILD_DIRECTORY_NAME +"/build.xml").exists());
   }
 
 }
