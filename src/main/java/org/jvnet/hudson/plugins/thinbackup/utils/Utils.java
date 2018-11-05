@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2011  Matthias Steinkogler, Thomas Fürer
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -34,8 +34,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.servlet.ServletException;
 
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.FileFileFilter;
@@ -121,7 +119,7 @@ public final class Utils {
       }
 
       if (!hudson.isQuietingDown() && starttime + unit.toMillis(timeout) < System.currentTimeMillis()) {
-        LOGGER.info("Force quiet mode for jenkins now and wait unilt all executors are idle.");
+        LOGGER.info("Force quiet mode for jenkins now and wait until all executors are idle.");
         hudson.doQuietDown();
       }
     } while (running);
@@ -257,7 +255,7 @@ public final class Utils {
    * @return a list of all diff backups which reference the given full backup.
    */
   public static List<File> getReferencingDiffBackups(final File fullBackup) {
-    final List<File> diffBackups = new ArrayList<File>();
+    final List<File> diffBackups = new ArrayList<>();
     if (fullBackup.getName().startsWith(BackupType.DIFF.toString())) {
       return diffBackups;
     }
@@ -280,7 +278,7 @@ public final class Utils {
    *         from both directories and ZIP files, ordered descending by the date encoded in the backups' name.
    */
   public static List<String> getBackupsAsDates(final File directory) {
-    final List<String> backupDates = new ArrayList<String>();
+    final List<String> backupDates = new ArrayList<>();
 
     final List<BackupSet> backupSets = getValidBackupSets(directory);
     for (final BackupSet backupSet : backupSets) {
@@ -328,7 +326,7 @@ public final class Utils {
   public static List<BackupSet> getValidBackupSetsFromDirectories(final File directory) {
     final Collection<File> backups = Utils.getBackupTypeDirectories(directory, BackupType.FULL);
 
-    final List<BackupSet> validSets = new ArrayList<BackupSet>();
+    final List<BackupSet> validSets = new ArrayList<>();
     for (final File backup : backups) {
       final BackupSet set = new BackupSet(backup);
       if (set.isValid()) {
@@ -348,7 +346,7 @@ public final class Utils {
   public static List<BackupSet> getValidBackupSetsFromZips(final File directory) {
     final Collection<File> backups = Utils.getBackupSetZipFiles(directory);
 
-    final List<BackupSet> validSets = new ArrayList<BackupSet>();
+    final List<BackupSet> validSets = new ArrayList<>();
     for (final File backup : backups) {
       final BackupSet set = new BackupSet(backup);
       if (set.isValid()) {
@@ -366,7 +364,7 @@ public final class Utils {
    *         backup date of the BackupSets' full backup.
    */
   public static List<BackupSet> getValidBackupSets(final File directory) {
-    final List<BackupSet> validSets = new ArrayList<BackupSet>();
+    final List<BackupSet> validSets = new ArrayList<>();
 
     validSets.addAll(getValidBackupSetsFromDirectories(directory));
     validSets.addAll(getValidBackupSetsFromZips(directory));

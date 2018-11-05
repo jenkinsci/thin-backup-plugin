@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2011  Matthias Steinkogler, Thomas Fürer
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -74,7 +74,7 @@ public class HudsonRestore {
     this.restoreFromDate = restoreFromDate;
     this.restoreNextBuildNumber = restoreNextBuildNumber;
     this.restorePlugins = restorePlugins;
-    this.availablePluginLocations = new HashMap<String, List<Plugin>>();
+    this.availablePluginLocations = new HashMap<>();
   }
 
   public void restore() {
@@ -160,33 +160,21 @@ public class HudsonRestore {
 
       final Collection<File> restore = FileUtils.listFiles(toRestore, nextBuildNumberFileFilter,
           TrueFileFilter.INSTANCE);
-      final Map<String, Integer> nextBuildNumbers = new HashMap<String, Integer>();
+      final Map<String, Integer> nextBuildNumbers = new HashMap<>();
       for (final File file : restore) {
-        BufferedReader reader = null;
-        try {
-          reader = new BufferedReader(new FileReader(file));
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
           nextBuildNumbers.put(file.getParentFile().getName(), Integer.parseInt(reader.readLine()));
-        } finally {
-          if (reader != null) {
-            reader.close();
-          }
         }
       }
 
       final Collection<File> current = FileUtils.listFiles(hudsonHome, nextBuildNumberFileFilter,
           TrueFileFilter.INSTANCE);
       for (final File file : current) {
-        BufferedReader reader = null;
-        try {
-          reader = new BufferedReader(new FileReader(file));
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
           final int currentBuildNumber = Integer.parseInt(reader.readLine());
           final Integer toRestoreNextBuildNumber = nextBuildNumbers.get(file.getParentFile().getName());
           if (currentBuildNumber < toRestoreNextBuildNumber) {
             restoreNextBuildNumber(file, toRestoreNextBuildNumber);
-          }
-        } finally {
-          if (reader != null) {
-            reader.close();
           }
         }
       }
@@ -214,7 +202,7 @@ public class HudsonRestore {
     PluginList pluginList = new PluginList(backupedPlugins);
     pluginList.load();
     Map<String, String> toRestorePlugins = pluginList.getPlugins();
-    List<Future<UpdateCenterJob>> pluginRestoreJobs = new ArrayList<Future<UpdateCenterJob>>(toRestorePlugins.size());
+    List<Future<UpdateCenterJob>> pluginRestoreJobs = new ArrayList<>(toRestorePlugins.size());
     PluginManager pluginManager = Hudson.getInstance().getPluginManager();
     for (Entry<String, String> entry : toRestorePlugins.entrySet()) {
       if (pluginManager.getPlugin(entry.getKey()) == null) { // if any version of this plugin is installed do nothing
@@ -243,14 +231,8 @@ public class HudsonRestore {
   private void restoreNextBuildNumber(File file, Integer toRestoreNextBuildNumber) throws IOException {
     file.delete();
     file.createNewFile();
-    Writer writer = null;
-    try {
-      writer = new FileWriter(file);
+    try (Writer writer = new FileWriter(file)) {
       writer.write(toRestoreNextBuildNumber);
-    } finally {
-      if (writer != null) {
-        writer.close();
-      }
     }
   }
 

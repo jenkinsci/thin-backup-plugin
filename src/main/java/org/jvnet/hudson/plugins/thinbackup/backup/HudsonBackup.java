@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2011  Matthias Steinkogler, Thomas Fürer
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -314,7 +314,7 @@ public class HudsonBackup {
   private List<File> findAllConfigurations(File dir) {
     Collection<File> listFiles = FileUtils.listFiles(dir, FileFilterUtils.nameFileFilter(CONFIG_XML), TrueFileFilter.INSTANCE);
 
-    List<File> confs = new ArrayList<File>();
+    List<File> confs = new ArrayList<>();
     for (File file : listFiles) {
       confs.add(file.getParentFile());
     }

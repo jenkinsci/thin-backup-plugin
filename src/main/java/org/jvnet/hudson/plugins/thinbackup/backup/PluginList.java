@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2011  Matthias Steinkogler, Thomas Fürer
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -33,7 +33,7 @@ public class PluginList implements Comparable<PluginList> {
 
   public PluginList(final File pluginsXml) {
     this.pluginsXml = pluginsXml;
-    plugins = new HashMap<String, String>();
+    plugins = new HashMap<>();
   }
 
   public Map<String, String> getPlugins() {

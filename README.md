@@ -1,4 +1,4 @@
 thin-backup-plugin
 ==================
 
-Backups all configurations and optionaly the artifacts (testresults, archives, ...) from a jenkins configuration.
+Backups all configurations and optionally the artifacts (test results, archives, ...) from a jenkins configuration.

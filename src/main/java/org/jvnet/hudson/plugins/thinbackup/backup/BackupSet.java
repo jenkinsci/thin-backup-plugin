@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2011  Matthias Steinkogler, Thomas Fürer
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -87,7 +87,7 @@ public class BackupSet implements Comparable<BackupSet> {
   private boolean initialize() {
     boolean success = false;
 
-    diffBackupsNames = new ArrayList<String>();
+    diffBackupsNames = new ArrayList<>();
 
     if (inZipFile) {
       success = initializeFromZipFile();
@@ -167,7 +167,7 @@ public class BackupSet implements Comparable<BackupSet> {
       success = true;
     }
     if (success && (diffBackups != null) && !diffBackups.isEmpty()) {
-      diffBackupsNames = new ArrayList<String>(diffBackups.size());
+      diffBackupsNames = new ArrayList<>(diffBackups.size());
       for (final File diffBackup : diffBackups) {
         final String tmpName = diffBackup.getName();
         if (!diffBackupsNames.contains(tmpName)) {
@@ -227,32 +227,32 @@ public class BackupSet implements Comparable<BackupSet> {
 
   @Override
   public String toString() {
-    final StringBuffer strBuf = new StringBuffer();
+    final StringBuilder sb = new StringBuilder();
 
-    strBuf.append("[FULL backup: ");
+    sb.append("[FULL backup: ");
     if (fullBackupName != null) {
-      strBuf.append(fullBackupName);
+      sb.append(fullBackupName);
     } else {
-      strBuf.append("NONE");
+      sb.append("NONE");
     }
-    strBuf.append("; DIFF backups: ");
+    sb.append("; DIFF backups: ");
     boolean hasDiffs = false;
     if (diffBackupsNames != null) {
       for (final String diffBackup : diffBackupsNames) {
-        strBuf.append(diffBackup);
-        strBuf.append(",");
+        sb.append(diffBackup);
+        sb.append(",");
       }
       if (diffBackupsNames.size() > 0) {
-        strBuf.deleteCharAt(strBuf.length() - 1);
+        sb.deleteCharAt(sb.length() - 1);
         hasDiffs = true;
       }
     }
     if (!hasDiffs) {
-      strBuf.append("NONE");
+      sb.append("NONE");
     }
-    strBuf.append("]");
+    sb.append("]");
 
-    return strBuf.toString();
+    return sb.toString();
   }
 
   /**

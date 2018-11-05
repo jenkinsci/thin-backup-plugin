@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2011  Matthias Steinkogler, Thomas Fürer
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -94,7 +94,7 @@ public class PluginRestoreUpdateCenter extends UpdateCenter {
   
   }
 
-  private Set<UpdateSite> knownUpdateSites = new HashSet<UpdateSite>();
+  private Set<UpdateSite> knownUpdateSites = new HashSet<>();
 
   synchronized Future<UpdateCenterJob> _addJob(UpdateCenterJob job) {
     if (knownUpdateSites.add(job.site))

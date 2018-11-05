@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2011  Matthias Steinkogler, Thomas Fürer
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -18,7 +18,7 @@ package org.jvnet.hudson.plugins.thinbackup.backup;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import hudson.Functions;
+
 import hudson.model.FreeStyleBuild;
 import hudson.model.ItemGroup;
 import hudson.model.TopLevelItem;
@@ -88,19 +88,19 @@ public class TestHudsonBackup {
     Assert.assertEquals(2, arrayList.size());
     Assert.assertFalse(arrayList.contains(HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME));
 
-    final File build = new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), TestHelper.CONCRET_BUILD_DIRECTORY_NAME);
+    final File build = new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), TestHelper.CONCRETE_BUILD_DIRECTORY_NAME);
     list = build.list();
     Assert.assertEquals(7, list.length);
 
     final File changelogHistory = new File(
-        new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), TestHelper.CONCRET_BUILD_DIRECTORY_NAME),
+        new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), TestHelper.CONCRETE_BUILD_DIRECTORY_NAME),
         HudsonBackup.CHANGELOG_HISTORY_PLUGIN_DIR_NAME);
     list = changelogHistory.list();
     Assert.assertEquals(2, list.length);
   }  
 
   @Test
-  public void testBackupWithExludes() throws Exception {
+  public void testBackupWithExcludes() throws Exception {
     final ThinBackupPluginImpl mockPlugin = TestHelper.createMockPlugin(jenkinsHome, backupDir);
     when(mockPlugin.getExcludedFilesRegex()).thenReturn("^.*\\.(log)$");
 
@@ -116,12 +116,12 @@ public class TestHudsonBackup {
     list = job.list();
     Assert.assertEquals(2, list.length);
 
-    final File build = new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), TestHelper.CONCRET_BUILD_DIRECTORY_NAME);
+    final File build = new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), TestHelper.CONCRETE_BUILD_DIRECTORY_NAME);
     list = build.list();
     Assert.assertEquals(6, list.length);
 
     final File changelogHistory = new File(
-        new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), TestHelper.CONCRET_BUILD_DIRECTORY_NAME),
+        new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), TestHelper.CONCRETE_BUILD_DIRECTORY_NAME),
         HudsonBackup.CHANGELOG_HISTORY_PLUGIN_DIR_NAME);
     list = changelogHistory.list();
     Assert.assertEquals(2, list.length);
@@ -201,12 +201,12 @@ public class TestHudsonBackup {
     Assert.assertEquals(3, arrayList.size());
     Assert.assertTrue(TestHelper.containsStringEndingWith(arrayList, HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME));
 
-    final File build = new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), TestHelper.CONCRET_BUILD_DIRECTORY_NAME);
+    final File build = new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), TestHelper.CONCRETE_BUILD_DIRECTORY_NAME);
     list = build.list();
     Assert.assertEquals(7, list.length);
 
     final File changelogHistory = new File(
-        new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), TestHelper.CONCRET_BUILD_DIRECTORY_NAME),
+        new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), TestHelper.CONCRETE_BUILD_DIRECTORY_NAME),
         HudsonBackup.CHANGELOG_HISTORY_PLUGIN_DIR_NAME);
     list = changelogHistory.list();
     Assert.assertEquals(2, list.length);
@@ -230,12 +230,12 @@ public class TestHudsonBackup {
     Assert.assertEquals(2, arrayList.size());
     Assert.assertFalse(arrayList.contains(HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME));
 
-    final File build = new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), TestHelper.CONCRET_BUILD_DIRECTORY_NAME);
+    final File build = new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), TestHelper.CONCRETE_BUILD_DIRECTORY_NAME);
     arrayList = Arrays.asList(build.list());
     Assert.assertEquals(8, arrayList.size());
 
     final File changelogHistory = new File(
-        new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), TestHelper.CONCRET_BUILD_DIRECTORY_NAME),
+        new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), TestHelper.CONCRETE_BUILD_DIRECTORY_NAME),
         HudsonBackup.CHANGELOG_HISTORY_PLUGIN_DIR_NAME);
     list = changelogHistory.list();
     Assert.assertEquals(2, list.length);
@@ -250,7 +250,7 @@ public class TestHudsonBackup {
     FreeStyleProject mockJob = mock(FreeStyleProject.class);
     when(mockHudson.getItem(TestHelper.TEST_JOB_NAME)).thenReturn(mockJob);
     FreeStyleBuild mockRun = mock(FreeStyleBuild.class);
-    when(mockJob.getBuilds()).thenReturn((RunList<FreeStyleBuild>)RunList.fromRuns(Collections.singleton(mockRun)));
+    when(mockJob.getBuilds()).thenReturn(RunList.fromRuns(Collections.singleton(mockRun)));
     when(mockRun.getRootDir()).thenReturn(buildDir);
 
     new HudsonBackup(mockPlugin, BackupType.FULL, new Date(), mockHudson).backup();
@@ -278,7 +278,7 @@ public class TestHudsonBackup {
     FreeStyleBuild mockRun = mock(FreeStyleBuild.class);
     // for some reason Mockito has issues mocking this interface and so is is used to return true to isKeepLog()
     when(mockRun.getWhyKeepLog()).thenReturn("x");
-    when(mockJob.getBuilds()).thenReturn((RunList<FreeStyleBuild>)RunList.fromRuns(Collections.singleton(mockRun)));
+    when(mockJob.getBuilds()).thenReturn(RunList.fromRuns(Collections.singleton(mockRun)));
     when(mockRun.getRootDir()).thenReturn(buildDir);
 
     new HudsonBackup(mockPlugin, BackupType.FULL, new Date(), mockHudson).backup();
@@ -294,7 +294,7 @@ public class TestHudsonBackup {
     Assert.assertEquals(2, arrayList.size());
     Assert.assertFalse(arrayList.contains(HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME));
 
-    final File build = new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), TestHelper.CONCRET_BUILD_DIRECTORY_NAME);
+    final File build = new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), TestHelper.CONCRETE_BUILD_DIRECTORY_NAME);
     list = build.list();
     Assert.assertEquals(7, list.length);
   }

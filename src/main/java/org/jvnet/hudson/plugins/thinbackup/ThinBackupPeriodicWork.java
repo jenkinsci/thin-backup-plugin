@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright (C) 2011  Matthias Steinkogler, Thomas Fürer
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,6 @@ import hudson.Extension;
 import hudson.model.TaskListener;
 import hudson.model.Hudson;
 import hudson.scheduler.CronTab;
-import hudson.util.TimeUnit2;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -29,8 +28,6 @@ import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.servlet.ServletException;
 
 import org.apache.commons.lang.StringUtils;
 import org.jvnet.hudson.plugins.thinbackup.backup.HudsonBackup;
@@ -100,7 +97,7 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
       if (!inQuietModeBeforeBackup)
         hudson.doCancelQuietDown();
       else
-        LOGGER.info("Backup process finsihed, but still in quiet mode as before. The quiet mode needs to be cancled manually, because it is not sure who is putting jenkins/hudson into quiet mode.");
+        LOGGER.info("Backup process finished, but still in quiet mode as before. The quiet mode needs to be canceled manually, because it is not clear who is putting jenkins/hudson into quiet mode.");
     }
   }
 
@@ -143,7 +140,7 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
       final long delay = nextExecution.getTimeInMillis() - currentTime;
 
       LOGGER.fine(MessageFormat.format("Current time: {0,date,medium} {0,time,long}. Next execution ({3}) in {2} seconds which is {1,date,medium} {1,time,long}",
-          new Date(currentTime), nextExecution.getTime(), TimeUnit2.MILLISECONDS.toSeconds(delay), backupType));
+          new Date(currentTime), nextExecution.getTime(), TimeUnit.MILLISECONDS.toSeconds(delay), backupType));
 
       if (delay < 0) {
         final String msg = "Delay is a negative number, which means the next execution is in the past! This happens for Hudson/Jenkins installations with version 1.395 or below. Please upgrade to fix this.";
