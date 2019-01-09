@@ -24,6 +24,7 @@ import hudson.model.Job;
 import hudson.model.Run;
 import hudson.util.RunList;
 
+import java.nio.file.Files;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -286,7 +287,30 @@ public class HudsonBackup {
                     getFileAgeDiffFilter(),
                     getExcludedFilesFilter())));
 
-        FileUtils.copyDirectory(hudsonHome, backupDirectory, filter);
+        FileUtils.copyDirectory(hudsonHome, backupDirectory, new IOFileFilter() {
+          @Override
+          public boolean accept(File file) {
+            if (Files.isSymbolicLink(file.toPath())) {
+              return false;
+            } else if (file.canRead()) {
+              return filter.accept(file);
+            } else {
+              return false;
+            }
+          }
+
+          @Override
+          public boolean accept(File dir, String name) {
+            File file = new File(dir, name);
+           if (Files.isSymbolicLink(file.toPath())) {
+             return false;
+           } else if (file.canRead()) {
+             return filter.accept(file);
+           } else {
+             return false;
+           }
+         }
+        });
     }
     else {
       LOGGER.info("No Additional File regex was provided: selecting no Additional Files to back up.");
