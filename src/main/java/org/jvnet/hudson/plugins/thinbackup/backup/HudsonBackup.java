@@ -24,10 +24,10 @@ import hudson.model.Job;
 import hudson.model.Run;
 import hudson.util.RunList;
 
-import java.nio.file.Files;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,6 +49,7 @@ import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl;
+import org.jvnet.hudson.plugins.thinbackup.utils.ExistsAndReadableFileFilter;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 
 public class HudsonBackup {
@@ -188,7 +189,7 @@ public class HudsonBackup {
         FileFilterUtils.suffixFileFilter(XML_FILE_EXTENSION),
         getFileAgeDiffFilter(),
         getExcludedFilesFilter());
-    FileUtils.copyDirectory(hudsonHome, backupDirectory, suffixFileFilter);
+    FileUtils.copyDirectory(hudsonHome, backupDirectory, ExistsAndReadableFileFilter.wrapperFilter(suffixFileFilter));
 
     LOGGER.fine("DONE backing up global configuration files.");
   }
@@ -287,30 +288,7 @@ public class HudsonBackup {
                     getFileAgeDiffFilter(),
                     getExcludedFilesFilter())));
 
-        FileUtils.copyDirectory(hudsonHome, backupDirectory, new IOFileFilter() {
-          @Override
-          public boolean accept(File file) {
-            if (Files.isSymbolicLink(file.toPath())) {
-              return false;
-            } else if (file.canRead()) {
-              return filter.accept(file);
-            } else {
-              return false;
-            }
-          }
-
-          @Override
-          public boolean accept(File dir, String name) {
-            File file = new File(dir, name);
-           if (Files.isSymbolicLink(file.toPath())) {
-             return false;
-           } else if (file.canRead()) {
-             return filter.accept(file);
-           } else {
-             return false;
-           }
-         }
-        });
+        FileUtils.copyDirectory(hudsonHome, backupDirectory, ExistsAndReadableFileFilter.wrapperFilter(filter));
     }
     else {
       LOGGER.info("No Additional File regex was provided: selecting no Additional Files to back up.");
@@ -363,7 +341,7 @@ public class HudsonBackup {
       getFileAgeDiffFilter(), 
       getExcludedFilesFilter());
     
-    FileUtils.copyDirectory(jobDirectory, jobBackupDirectory, filter);
+    FileUtils.copyDirectory(jobDirectory, jobBackupDirectory, ExistsAndReadableFileFilter.wrapperFilter(filter));
     backupNextBuildNumberFile(jobDirectory, jobBackupDirectory);
   }
 
@@ -425,7 +403,7 @@ public class HudsonBackup {
           FileFilterUtils.or(changelogFilter, fileFilter), 
           getExcludedFilesFilter(),
           FileFilterUtils.notFileFilter(FileFilterUtils.suffixFileFilter(ZIP_FILE_EXTENSION)));
-      FileUtils.copyDirectory(source, destination, filter);
+      FileUtils.copyDirectory(source, destination, ExistsAndReadableFileFilter.wrapperFilter(filter));
     } else if (FileUtils.isSymlink(source)) {
       // TODO: check if copy symlink needed here
     } else if (source.isFile()) {
@@ -440,7 +418,7 @@ public class HudsonBackup {
         final IOFileFilter filter = FileFilterUtils.or(
                 FileFilterUtils.directoryFileFilter(), 
                 FileFilterUtils.and(FileFileFilter.FILE, getFileAgeDiffFilter()));
-        FileUtils.copyDirectory(archiveSrcDir, new File(buildDestDir, "archive"), filter);
+        FileUtils.copyDirectory(archiveSrcDir, new File(buildDestDir, "archive"), ExistsAndReadableFileFilter.wrapperFilter(filter));
       }
     }
   }
@@ -459,7 +437,7 @@ public class HudsonBackup {
           getFileAgeDiffFilter(),
           getExcludedFilesFilter());
       filter = FileFilterUtils.or(filter, DirectoryFileFilter.DIRECTORY);
-      FileUtils.copyDirectory(srcDirectory, destDirectory, filter);
+      FileUtils.copyDirectory(srcDirectory, destDirectory, ExistsAndReadableFileFilter.wrapperFilter(filter));
       LOGGER.fine(String.format("DONE backing up %s.", folderName));
     }
   }
