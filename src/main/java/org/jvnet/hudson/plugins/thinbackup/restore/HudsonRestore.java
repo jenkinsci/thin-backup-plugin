@@ -213,7 +213,7 @@ public class HudsonRestore {
         LOGGER.info("Plugin '" + entry.getKey() + "' already installed. Please check manually.");
     }
 
-    boolean finished = false;
+    boolean finished = pluginRestoreJobs.isEmpty();
     while (!finished) {
       try {
         Thread.sleep(SLEEP_TIMEOUT);
