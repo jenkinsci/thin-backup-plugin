@@ -150,6 +150,33 @@ public class TestHelper {
     addBuildNumber(nextBuildnumber);
   }
   
+  public static void addSingleMultibranchResult(File job) throws IOException, InterruptedException  {
+    File configurations = new File(job, HudsonBackup.MULTIBRANCH_DIR_NAME);
+    configurations.mkdir();
+    File branch1 = new File(configurations, "master");
+    branch1.mkdir();
+    File branch2 = new File(configurations, "development");
+    branch2.mkdir();
+    
+    addNewBuildToJob(branch1);
+    addNewBuildToJob(branch2);
+    
+    new File(branch1, "config.xml").createNewFile();
+    File nextBuildnumber = new File(branch1, "nextBuildNumber");
+    nextBuildnumber.createNewFile();
+    addBuildNumber(nextBuildnumber);
+    
+    new File(branch2, "config.xml").createNewFile();
+    nextBuildnumber = new File(branch2, "nextBuildNumber");
+    nextBuildnumber.createNewFile();
+    addBuildNumber(nextBuildnumber);
+
+    File indexing = new File(job, HudsonBackup.INDEXING_DIR_NAME);
+    indexing.mkdir();
+    new File(indexing, "indexing.xml").createNewFile();
+    new File(indexing, "indexing.log").createNewFile();
+  }
+
   public static boolean containsStringEndingWith(final List<String> strings, final String pattern) {
     boolean contains = false;
 

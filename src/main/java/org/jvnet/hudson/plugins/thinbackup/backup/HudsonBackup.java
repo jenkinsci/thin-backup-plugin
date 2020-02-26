@@ -57,6 +57,8 @@ public class HudsonBackup {
   public static final String BUILDS_DIR_NAME = "builds";
   public static final String CONFIGURATIONS_DIR_NAME = "configurations";
   public static final String PROMOTIONS_DIR_NAME = "promotions";
+  public static final String MULTIBRANCH_DIR_NAME = "branches";
+  public static final String INDEXING_DIR_NAME = "indexing";
   public static final String JOBS_DIR_NAME = "jobs";
   public static final String USERS_DIR_NAME = "users";
   public static final String ARCHIVE_DIR_NAME = "archive";
@@ -249,6 +251,15 @@ public class HudsonBackup {
         backupBuildsFor(promotionDirectory, promotionBackupDirectory);
       }
     }
+    if (isMultibranchJob(jobDirectory)) {
+      FileUtils.copyDirectory(new File(jobDirectory, HudsonBackup.INDEXING_DIR_NAME), new File(jobBackupDirectory, HudsonBackup.INDEXING_DIR_NAME));
+      List<File> configurations = findAllConfigurations(new File(jobDirectory, HudsonBackup.MULTIBRANCH_DIR_NAME));
+      for (File configurationDirectory : configurations) {
+        File configurationBackupDirectory = createBackupDirectory(jobBackupDirectory, jobDirectory, configurationDirectory);
+        backupJobConfigFor(configurationDirectory, configurationBackupDirectory);
+        backupBuildsFor(configurationDirectory, configurationBackupDirectory);
+      }
+    }    
   }
 
   private void backupPluginArchives() throws IOException {
@@ -329,7 +340,11 @@ public class HudsonBackup {
   private boolean isPromotedJob(File jobDirectory) {
     return new File(jobDirectory, PROMOTIONS_DIR_NAME).isDirectory();
   }
-  
+
+  private boolean isMultibranchJob(File jobDirectory) {
+    return new File(jobDirectory, MULTIBRANCH_DIR_NAME).isDirectory();
+  }
+
   private void backupJobConfigFor(final File jobDirectory, final File jobBackupDirectory) throws IOException {
     final IOFileFilter filter = FileFilterUtils.and(
       FileFilterUtils.or(
