@@ -16,9 +16,13 @@
  */
 package org.jvnet.hudson.plugins.thinbackup;
 
+import hudson.Extension;
 import hudson.Plugin;
+import hudson.model.AbstractProject;
 import hudson.model.Hudson;
 import hudson.scheduler.CronTab;
+import hudson.tasks.BuildStepDescriptor;
+import hudson.tasks.Publisher;
 import hudson.util.FormValidation;
 
 import java.io.File;
@@ -27,9 +31,11 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.jvnet.hudson.plugins.thinbackup.utils.EnvironmentVariableNotDefinedException;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -371,6 +377,231 @@ public class ThinBackupPluginImpl extends Plugin {
     else
       return FormValidation
           .warning("This may or may not generate corrupt backups! Be aware that no data get changed during the backup process!");
+  }
+
+
+  @Extension
+  public static final class DescriptorImpl
+      extends BuildStepDescriptor<Publisher> {
+
+    public DescriptorImpl() {
+      this(true);
+    }
+
+    protected DescriptorImpl(boolean load) {
+      if (load) load();
+    }
+
+
+    private String fullBackupSchedule = "";
+    private String diffBackupSchedule = "";
+    private String backupPath = "";
+    private int nrMaxStoredFull = -1;
+    private String excludedFilesRegex = null;
+    private boolean waitForIdle = true;
+    private int forceQuietModeTimeout = Utils.FORCE_QUIETMODE_TIMEOUT_MINUTES;
+    private boolean cleanupDiff = false;
+    private boolean moveOldBackupsToZipFile = false;
+    private boolean backupBuildResults = true;
+    private boolean backupBuildArchive = false;
+    private boolean backupPluginArchives = false;
+    private boolean backupUserContents = false;
+    private boolean backupAdditionalFiles = false;
+    private String backupAdditionalFilesRegex = null;
+    private boolean backupNextBuildNumber = false;
+    private boolean backupBuildsToKeepOnly = false;
+
+
+    public String getFullBackupSchedule() {
+      return fullBackupSchedule;
+    }
+
+    @DataBoundSetter
+    public void setFullBackupSchedule(String fullBackupSchedule) {
+      this.fullBackupSchedule = fullBackupSchedule;
+    }
+
+    public String getDiffBackupSchedule() {
+      return diffBackupSchedule;
+    }
+
+    @DataBoundSetter
+    public void setDiffBackupSchedule(String diffBackupSchedule) {
+      this.diffBackupSchedule = diffBackupSchedule;
+    }
+
+    public String getBackupPath() {
+      return backupPath;
+    }
+
+    @DataBoundSetter
+    public void setBackupPath(String backupPath) {
+      this.backupPath = backupPath;
+    }
+
+    public int getNrMaxStoredFull() {
+      return nrMaxStoredFull;
+    }
+
+    @DataBoundSetter
+    public void setNrMaxStoredFull(int nrMaxStoredFull) {
+      this.nrMaxStoredFull = nrMaxStoredFull;
+    }
+
+    public String getExcludedFilesRegex() {
+      return excludedFilesRegex;
+    }
+
+    @DataBoundSetter
+    public void setExcludedFilesRegex(String excludedFilesRegex) {
+      this.excludedFilesRegex = excludedFilesRegex;
+    }
+
+    public boolean isWaitForIdle() {
+      return waitForIdle;
+    }
+
+    @DataBoundSetter
+    public void setWaitForIdle(boolean waitForIdle) {
+      this.waitForIdle = waitForIdle;
+    }
+
+    public int getForceQuietModeTimeout() {
+      return forceQuietModeTimeout;
+    }
+
+    @DataBoundSetter
+    public void setForceQuietModeTimeout(int forceQuietModeTimeout) {
+      this.forceQuietModeTimeout = forceQuietModeTimeout;
+    }
+
+    public boolean isCleanupDiff() {
+      return cleanupDiff;
+    }
+
+    @DataBoundSetter
+    public void setCleanupDiff(boolean cleanupDiff) {
+      this.cleanupDiff = cleanupDiff;
+    }
+
+    public boolean isMoveOldBackupsToZipFile() {
+      return moveOldBackupsToZipFile;
+    }
+
+    @DataBoundSetter
+    public void setMoveOldBackupsToZipFile(boolean moveOldBackupsToZipFile) {
+      this.moveOldBackupsToZipFile = moveOldBackupsToZipFile;
+    }
+
+    public boolean isBackupBuildResults() {
+      return backupBuildResults;
+    }
+
+    @DataBoundSetter
+    public void setBackupBuildResults(boolean backupBuildResults) {
+      this.backupBuildResults = backupBuildResults;
+    }
+
+    public boolean isBackupBuildArchive() {
+      return backupBuildArchive;
+    }
+
+    @DataBoundSetter
+    public void setBackupBuildArchive(boolean backupBuildArchive) {
+      this.backupBuildArchive = backupBuildArchive;
+    }
+
+    public boolean isBackupPluginArchives() {
+      return backupPluginArchives;
+    }
+
+    @DataBoundSetter
+    public void setBackupPluginArchives(boolean backupPluginArchives) {
+      this.backupPluginArchives = backupPluginArchives;
+    }
+
+    public boolean isBackupUserContents() {
+      return backupUserContents;
+    }
+
+    @DataBoundSetter
+    public void setBackupUserContents(boolean backupUserContents) {
+      this.backupUserContents = backupUserContents;
+    }
+
+    public boolean isBackupAdditionalFiles() {
+      return backupAdditionalFiles;
+    }
+
+    @DataBoundSetter
+    public void setBackupAdditionalFiles(boolean backupAdditionalFiles) {
+      this.backupAdditionalFiles = backupAdditionalFiles;
+    }
+
+    public String getBackupAdditionalFilesRegex() {
+      return backupAdditionalFilesRegex;
+    }
+
+    @DataBoundSetter
+    public void setBackupAdditionalFilesRegex(String backupAdditionalFilesRegex) {
+      this.backupAdditionalFilesRegex = backupAdditionalFilesRegex;
+    }
+
+    public boolean isBackupNextBuildNumber() {
+      return backupNextBuildNumber;
+    }
+
+    @DataBoundSetter
+    public void setBackupNextBuildNumber(boolean backupNextBuildNumber) {
+      this.backupNextBuildNumber = backupNextBuildNumber;
+    }
+
+    public boolean isBackupBuildsToKeepOnly() {
+      return backupBuildsToKeepOnly;
+    }
+
+    @DataBoundSetter
+    public void setBackupBuildsToKeepOnly(boolean backupBuildsToKeepOnly) {
+      this.backupBuildsToKeepOnly = backupBuildsToKeepOnly;
+    }
+
+    @SuppressWarnings("rawtypes")
+    @Override
+    public boolean isApplicable(Class<? extends AbstractProject> aClass) {
+      return true;
+    }
+
+    @Override
+    public String getDisplayName() {
+      return "Thin Backup Plugin";
+    }
+
+
+    @Override
+    public boolean configure(
+        StaplerRequest req,
+        JSONObject formData) throws FormException {
+      this.fullBackupSchedule = "";
+      this.diffBackupSchedule = "";
+      this.backupPath = "";
+      this.nrMaxStoredFull = -1;
+      this.excludedFilesRegex = null;
+      this.waitForIdle = true;
+      this.forceQuietModeTimeout = Utils.FORCE_QUIETMODE_TIMEOUT_MINUTES;
+      this.cleanupDiff = false;
+      this.moveOldBackupsToZipFile = false;
+      this.backupBuildResults = true;
+      this.backupBuildArchive = false;
+      this.backupPluginArchives = false;
+      this.backupUserContents = false;
+      this.backupAdditionalFiles = false;
+      this.backupAdditionalFilesRegex = null;
+      this.backupNextBuildNumber = false;
+      this.backupBuildsToKeepOnly = false;
+      req.bindJSON(this, formData);
+      save();
+      return true;
+    }
   }
 
 }
