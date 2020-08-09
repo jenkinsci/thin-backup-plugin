@@ -21,6 +21,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -78,7 +79,7 @@ public class BackupSet implements Comparable<BackupSet> {
 
     success = initialize();
 
-    if (!success) {
+    if (!success && LOGGER.isLoggable(Level.WARNING)) {
       LOGGER.warning(String
           .format("Could not initialize backup set from file/directory '%s' as it is not valid.", name));
     }
@@ -118,10 +119,8 @@ public class BackupSet implements Comparable<BackupSet> {
   private boolean initializeFromZipFile() {
     boolean success = true;
 
-    ZipFile zipFile = null;
-    try {
+    try (ZipFile zipFile = new ZipFile(backupSetzipFile)) {
       Utils.waitUntilFileCanBeRead(backupSetzipFile);
-      zipFile = new ZipFile(backupSetzipFile);
       final Enumeration<? extends ZipEntry> zipEntries = zipFile.entries();
       while (zipEntries.hasMoreElements() && success) {
         final ZipEntry entry = zipEntries.nextElement();
@@ -131,8 +130,10 @@ public class BackupSet implements Comparable<BackupSet> {
           if ((fullBackupName == null) || fullBackupName.equals(tmpName)) {
             fullBackupName = tmpName;
           } else {
-            LOGGER.warning(String.format("Backup set '%s' contains multiple full backups and is therefore not valid.",
-                zipFile.getName()));
+            if (LOGGER.isLoggable(Level.WARNING)) {
+              LOGGER.warning(String.format("Backup set '%s' contains multiple full backups and is therefore not valid.",
+                  zipFile.getName()));
+            }
             success = false;
           }
         } else if (tmpName.startsWith(BackupType.DIFF.toString()) &&
@@ -144,15 +145,6 @@ public class BackupSet implements Comparable<BackupSet> {
       LOGGER.log(Level.SEVERE,
           String.format("Cannot initialize BackupSet from ZIP file '%s'.", backupSetzipFile.getName()), e);
       success = false;
-    } finally {
-      try {
-        if (zipFile != null) {
-          zipFile.close();
-        }
-      } catch (final IOException e) {
-        LOGGER.log(Level.SEVERE, String.format("Cannot close ZIP file '%s'.", backupSetzipFile.getName()), e);
-        success = false;
-      }
     }
 
     return success;
@@ -242,7 +234,7 @@ public class BackupSet implements Comparable<BackupSet> {
         sb.append(diffBackup);
         sb.append(",");
       }
-      if (diffBackupsNames.size() > 0) {
+      if (!diffBackupsNames.isEmpty()) {
         sb.deleteCharAt(sb.length() - 1);
         hasDiffs = true;
       }
@@ -259,7 +251,7 @@ public class BackupSet implements Comparable<BackupSet> {
    * Unzips this backup set if it was initialized from a ZIP file. Does does NOT change <i>this</i>. Unzip location is
    * Utils.THINBACKUP_TMP_DIR. deleteUnzipDir() may be called if the unzipped BackupSet is no longer needed. Before
    * using the returned BackupSet, it should be checked if it is valid.
-   * 
+   *
    * @return a new BackupSet referencing the unzipped directories, or the current BackupSet if it was either not created
    *         from a ZIP file or is invalid. In case of an error an invalid BackupSet is returned.
    * @throws IOException - if an I/O error occurs.
@@ -281,7 +273,7 @@ public class BackupSet implements Comparable<BackupSet> {
    * NOT change <i>this</i>. deleteUnzipDir() may be called if the unzipped BackupSet is no longer needed. The directory
    * the BackupSet was unzipped to can be retrieved with getUnzipDir(). Before using the returned BackupSet, it should
    * be checked if it is valid.
-   * 
+   *
    * @param directory target directory
    * @return a new BackupSet referencing the unzipped directories, or the current BackupSet if it was either not created
    *         from a ZIP file or is invalid. In case of an error an invalid BackupSet is returned.
@@ -299,32 +291,32 @@ public class BackupSet implements Comparable<BackupSet> {
         unzipDir.mkdirs();
       }
 
-      final ZipFile zipFile = new ZipFile(backupSetzipFile);
-      final byte data[] = new byte[DirectoriesZipper.BUFFER_SIZE];
-      final Enumeration<? extends ZipEntry> zipEntries = zipFile.entries();
-      while (zipEntries.hasMoreElements()) {
-        final ZipEntry entry = zipEntries.nextElement();
+      try (ZipFile zipFile = new ZipFile(backupSetzipFile)) {
+        final byte[] data = new byte[DirectoriesZipper.BUFFER_SIZE];
+        final Enumeration<? extends ZipEntry> zipEntries = zipFile.entries();
+        while (zipEntries.hasMoreElements()) {
+          final ZipEntry entry = zipEntries.nextElement();
 
-        final String fullPathToEntry = entry.getName();
-        final String pathToEntry = fullPathToEntry.substring(0, fullPathToEntry.lastIndexOf(File.separator));
-        final File entryDir = new File(unzipDir, pathToEntry);
-        entryDir.mkdirs();
-        final String entryName = fullPathToEntry.substring(fullPathToEntry.lastIndexOf(File.separator) + 1);
+          final String fullPathToEntry = entry.getName();
+          final String pathToEntry = fullPathToEntry.substring(0, fullPathToEntry.lastIndexOf(File.separator));
+          final File entryDir = new File(unzipDir, pathToEntry);
+          entryDir.mkdirs();
+          final String entryName = fullPathToEntry.substring(fullPathToEntry.lastIndexOf(File.separator) + 1);
 
-        final BufferedInputStream is = new BufferedInputStream(zipFile.getInputStream(entry));
+          try (
+              final FileOutputStream fos = new FileOutputStream(
+                  new File(unzipDir + File.separator + pathToEntry, entryName));
+              final BufferedInputStream is = new BufferedInputStream(zipFile.getInputStream(entry));
+              final BufferedOutputStream dest = new BufferedOutputStream(fos, DirectoriesZipper.BUFFER_SIZE)) {
+            int count = 0;
+            while ((count = is.read(data)) != -1) {
+              dest.write(data, 0, count);
+            }
 
-        final FileOutputStream fos = new FileOutputStream(new File(unzipDir + File.separator + pathToEntry, entryName));
-        final BufferedOutputStream dest = new BufferedOutputStream(fos, DirectoriesZipper.BUFFER_SIZE);
-
-        int count = 0;
-        while ((count = is.read(data)) != -1) {
-          dest.write(data, 0, count);
+            dest.flush();
+          }
         }
-
-        dest.flush();
-        dest.close();
       }
-      zipFile.close();
 
       final File[] backups = unzipDir.listFiles();
       if (backups.length > 0) {
@@ -371,7 +363,9 @@ public class BackupSet implements Comparable<BackupSet> {
           LOGGER.log(Level.SEVERE, "Could not zip backup set.", ioe);
         } finally {
           try {
-            zipper.close();
+            if (zipper != null) {
+              zipper.close();
+            }
           } catch (final IOException ioe) {
             LOGGER.log(Level.SEVERE, "Could not zip backup set.", ioe);
           }
@@ -394,7 +388,7 @@ public class BackupSet implements Comparable<BackupSet> {
 
     final Date tmp = Utils.getDateFromBackupDirectoryName(fullBackupName);
     if (tmp != null) {
-      result = Utils.DIRECTORY_NAME_DATE_FORMAT.format(tmp);
+      result = new SimpleDateFormat(Utils.DIRECTORY_NAME_DATE_FORMAT).format(tmp);
     }
 
     return result;
@@ -403,10 +397,10 @@ public class BackupSet implements Comparable<BackupSet> {
   private String getFormattedLatestDiffBackupDate() {
     String result = "";
 
-    if ((diffBackupsNames != null) && (diffBackupsNames.size() > 0)) {
+    if ((diffBackupsNames != null) && (!diffBackupsNames.isEmpty())) {
       final Date tmp = Utils.getDateFromBackupDirectoryName(diffBackupsNames.get(diffBackupsNames.size() - 1));
       if (tmp != null) {
-        result = Utils.DIRECTORY_NAME_DATE_FORMAT.format(tmp);
+        result = new SimpleDateFormat(Utils.DIRECTORY_NAME_DATE_FORMAT).format(tmp);
       }
     }
 
@@ -415,7 +409,7 @@ public class BackupSet implements Comparable<BackupSet> {
 
   /**
    * Compares the backup sets by using the sets' associated full backups' backup date.
-   * 
+   *
    * @return -1 if this BackupSet's full backup date is before the other's, 0 if they are equal, 1 if is after the
    *         other's.
    */

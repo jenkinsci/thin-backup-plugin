@@ -16,17 +16,13 @@
  */
 package org.jvnet.hudson.plugins.thinbackup;
 
-import hudson.Extension;
-import hudson.model.ManagementLink;
-import hudson.model.TaskListener;
-import hudson.model.Hudson;
-import hudson.triggers.Trigger;
-
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import org.jvnet.hudson.plugins.thinbackup.restore.HudsonRestore;
@@ -35,14 +31,21 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
+import hudson.Extension;
+import hudson.model.ManagementLink;
+import hudson.model.TaskListener;
+import jenkins.model.Jenkins;
+import jenkins.util.Timer;
+
 /**
  * A backup solution for Hudson. Backs up configuration files from Hudson and its jobs.
- * 
+ *
  * Originally based on the Backup plugin by Vincent Sellier, Manufacture Fran�aise des Pneumatiques Michelin, Romain
  * Seguy, et.al. Subsequently heavily modified.
  */
 @Extension
 public class ThinBackupMgmtLink extends ManagementLink {
+  private static final String THIN_BACKUP_SUBPATH = "/thinBackup";
   private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
 
   @Override
@@ -68,7 +71,11 @@ public class ThinBackupMgmtLink extends ManagementLink {
   public void doBackupManual(final StaplerRequest res, final StaplerResponse rsp) throws IOException {
     LOGGER.info("Starting manual backup.");
 
-    Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+    final Jenkins jenkins = Jenkins.getInstance();
+    if (jenkins == null) {
+      return;
+    }
+    jenkins.checkPermission(Jenkins.ADMINISTER);
 
     final ThinBackupPeriodicWork manualBackupWorker = new ThinBackupPeriodicWork() {
       @Override
@@ -76,9 +83,9 @@ public class ThinBackupMgmtLink extends ManagementLink {
         backupNow(BackupType.FULL);
       }
     };
-    Trigger.timer.schedule(manualBackupWorker, 0);
+    Timer.get().schedule(manualBackupWorker, 0, TimeUnit.SECONDS);
 
-    rsp.sendRedirect(res.getContextPath() + "/thinBackup");
+    rsp.sendRedirect(res.getContextPath() + THIN_BACKUP_SUBPATH);
   }
 
   public void doRestore(final StaplerRequest res, final StaplerResponse rsp,
@@ -87,16 +94,19 @@ public class ThinBackupMgmtLink extends ManagementLink {
       @QueryParameter("restorePlugins") final String restorePlugins) throws IOException {
     LOGGER.info("Starting restore operation.");
 
-    Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+    final Jenkins jenkins = Jenkins.getInstance();
+    if (jenkins == null) {
+      return;
+    }
+    jenkins.checkPermission(Jenkins.ADMINISTER);
 
-    final Hudson hudson = Hudson.getInstance();
-    hudson.doQuietDown();
+    jenkins.doQuietDown();
     LOGGER.fine("Waiting until executors are idle to perform restore...");
     Utils.waitUntilIdle();
 
     try {
-      final File hudsonHome = hudson.getRootDir();
-      final Date restoreFromDate = Utils.DISPLAY_DATE_FORMAT.parse(restoreBackupFrom);
+      final File hudsonHome = jenkins.getRootDir();
+      final Date restoreFromDate = new SimpleDateFormat(Utils.DISPLAY_DATE_FORMAT).parse(restoreBackupFrom);
 
       final HudsonRestore hudsonRestore = new HudsonRestore(hudsonHome, ThinBackupPluginImpl.getInstance()
           .getExpandedBackupPath(), restoreFromDate, "on".equals(restoreNextBuildNumber), "on".equals(restorePlugins));
@@ -108,8 +118,8 @@ public class ThinBackupMgmtLink extends ManagementLink {
     } catch (final Exception ise) {
       LOGGER.severe("Could not restore. Aborting.");
     } finally {
-      hudson.doCancelQuietDown();
-      rsp.sendRedirect(res.getContextPath() + "/thinBackup");
+      jenkins.doCancelQuietDown();
+      rsp.sendRedirect(res.getContextPath() + THIN_BACKUP_SUBPATH);
     }
   }
 
@@ -131,7 +141,11 @@ public class ThinBackupMgmtLink extends ManagementLink {
       @QueryParameter("backupAdditionalFilesRegex") final String backupAdditionalFilesRegex,
       @QueryParameter("waitForIdle") final boolean waitForIdle,
       @QueryParameter("forceQuietModeTimeout") final String forceQuietModeTimeout) throws IOException {
-    Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+    Jenkins jenkins = Jenkins.getInstance();
+    if (jenkins == null) {
+      return;
+    }
+    jenkins.checkPermission(Jenkins.ADMINISTER);
 
     final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.getInstance();
     plugin.setBackupPath(backupPath);
@@ -153,7 +167,7 @@ public class ThinBackupMgmtLink extends ManagementLink {
     plugin.setForceQuietModeTimeout(Integer.parseInt(forceQuietModeTimeout));
     plugin.save();
     LOGGER.finest("Saving backup settings done.");
-    rsp.sendRedirect(res.getContextPath() + "/thinBackup");
+    rsp.sendRedirect(res.getContextPath() + THIN_BACKUP_SUBPATH);
   }
 
   public ThinBackupPluginImpl getConfiguration() {

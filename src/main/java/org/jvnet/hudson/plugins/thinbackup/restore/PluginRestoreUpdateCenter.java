@@ -16,14 +16,6 @@
  */
 package org.jvnet.hudson.plugins.thinbackup.restore;
 
-import hudson.PluginManager;
-import hudson.PluginWrapper;
-import hudson.model.Hudson;
-import hudson.model.UpdateCenter;
-import hudson.model.UpdateSite;
-import hudson.model.UpdateSite.Plugin;
-import hudson.security.ACL;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -35,70 +27,83 @@ import java.util.concurrent.Future;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.context.SecurityContextHolder;
 
+import hudson.PluginManager;
+import hudson.PluginWrapper;
+import hudson.model.UpdateCenter;
+import hudson.model.UpdateSite;
+import hudson.model.UpdateSite.Plugin;
+import hudson.security.ACL;
+import jenkins.model.Jenkins;
+
 public class PluginRestoreUpdateCenter extends UpdateCenter {
   public class PluginRestoreJob extends DownloadJob {
-  
+
     private Plugin plugin;
     private String version;
-  
+
     private final PluginManager pm;
-  
+
     public PluginRestoreJob(UpdateSite site, Authentication auth, Plugin plugin, String version) {
       super(site, auth);
       this.plugin = plugin;
       this.version = version;
-  
-      this.pm = Hudson.getInstance().getPluginManager();
+
+      Jenkins jenkins = Jenkins.getInstance();
+      if (jenkins == null) {
+        throw new RuntimeException("Setup the Jenkins environment failed.");
+      }
+      this.pm = jenkins.getPluginManager();
     }
-  
+
     @Override
     protected URL getURL() throws MalformedURLException {
       String latestVersion = plugin.version;
       String newUrl = plugin.url.replace(latestVersion, version);
       return new URL(newUrl);
     }
-  
+
     @Override
     protected File getDestination() {
       return new File(pm.rootDir, plugin.name + ".hpi");
     }
-  
+
     @Override
     public String getName() {
       return plugin.getDisplayName();
     }
-  
+
     @Override
     protected void onSuccess() {
       pm.pluginUploaded = true;
     }
-  
+
     @Override
     public String toString() {
       return super.toString() + "[plugin=" + plugin.title + "]";
     }
-  
+
     @Override
     protected void _run() throws IOException, InstallationStatus {
       super._run();
-  
+
       PluginWrapper pw = plugin.getInstalled();
-      if (pw != null && pw.isBundled())
+      if (pw != null && pw.isBundled()) {
         try {
           SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
           pw.doPin();
         } finally {
           SecurityContextHolder.clearContext();
         }
+      }
     }
-  
   }
 
   private Set<UpdateSite> knownUpdateSites = new HashSet<>();
 
-  synchronized Future<UpdateCenterJob> _addJob(UpdateCenterJob job) {
-    if (knownUpdateSites.add(job.site))
+  synchronized Future<UpdateCenterJob> addNewJob(UpdateCenterJob job) {
+    if (knownUpdateSites.add(job.site)) {
       new ConnectionCheckJob(job.site).submit();
+    }
     return job.submit();
   }
 }

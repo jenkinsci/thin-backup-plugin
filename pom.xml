@@ -1,10 +1,12 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>org.jenkins-ci.plugins</groupId>
-		<artifactId>plugin</artifactId>
-		<version>2.11</version>
-	</parent>
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>plugin</artifactId>
+        <version>3.43</version>
+    </parent>
 
 	<groupId>org.jvnet.hudson.plugins</groupId>
 	<artifactId>thinBackup</artifactId>
@@ -88,7 +90,6 @@
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
-			<version>1.9.5</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -101,13 +102,19 @@
 			<artifactId>commons-io</artifactId>
 			<version>2.4</version>
 		</dependency>
+		<dependency>
+			<groupId>org.codehaus.plexus</groupId>
+			<artifactId>plexus-utils</artifactId>
+			<version>3.3.0</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<jenkins.version>1.625.3</jenkins.version>
-		<java.level>7</java.level>
-		<jenkins-test-harness.version>2.13</jenkins-test-harness.version>
+		<jenkins.version>1.651.3</jenkins.version>
+		<java.level>8</java.level>
+<!-- 		<jenkins-test-harness.version>2.13</jenkins-test-harness.version> -->
 	</properties>
 
 	<build>
@@ -139,23 +146,23 @@
 							<goal>testCompile</goal>
 						</goals>
 						<configuration>
-							<source>1.7</source>
-							<target>1.7</target>
+							<source>1.8</source>
+							<target>1.8</target>
 						</configuration>
 					</execution>
 				</executions>
 				<configuration>
-					<source>1.7</source>
-					<target>1.7</target>
+					<source>1.8</source>
+					<target>1.8</target>
 				</configuration>
 			</plugin>
 
 			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>findbugs-maven-plugin</artifactId>
-				<version>3.0.4</version>
+				<groupId>com.github.spotbugs</groupId>
+				<artifactId>spotbugs-maven-plugin</artifactId>
 				<configuration>
-					<skip>true</skip>
+					<!--  due to legacy code I need to set the option to not fail the build -->
+					<failOnError>false</failOnError>
 				</configuration>
 			</plugin>
 		</plugins>

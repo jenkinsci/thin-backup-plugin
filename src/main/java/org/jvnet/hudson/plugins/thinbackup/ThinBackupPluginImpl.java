@@ -16,11 +16,6 @@
  */
 package org.jvnet.hudson.plugins.thinbackup;
 
-import hudson.Plugin;
-import hudson.model.Hudson;
-import hudson.scheduler.CronTab;
-import hudson.util.FormValidation;
-
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,6 +30,10 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import antlr.ANTLRException;
+import hudson.Plugin;
+import hudson.scheduler.CronTab;
+import hudson.util.FormValidation;
+import jenkins.model.Jenkins;
 
 public class ThinBackupPluginImpl extends Plugin {
 
@@ -60,7 +59,7 @@ public class ThinBackupPluginImpl extends Plugin {
   private boolean backupNextBuildNumber = false;
   private boolean backupBuildsToKeepOnly = false;
 
-  private static ThinBackupPluginImpl instance = null;
+  private static ThinBackupPluginImpl instance;
 
   public ThinBackupPluginImpl() {
     instance = this;
@@ -78,7 +77,11 @@ public class ThinBackupPluginImpl extends Plugin {
   }
 
   public File getHudsonHome() {
-    return Hudson.getInstance().getRootDir();
+    Jenkins jenkins = Jenkins.getInstance();
+    if (jenkins == null) {
+      return null;
+    }
+    return jenkins.getRootDir();
   }
 
   public void setFullBackupSchedule(final String fullBackupSchedule) {
@@ -111,9 +114,9 @@ public class ThinBackupPluginImpl extends Plugin {
 
   /**
    * Get the backup path as entered by the user. May contain traces of environment variables.
-   * 
+   *
    * If you need a path that can be used as is (env. vars expanded), please use @link{getExpandedBackupPath}.
-   * 
+   *
    * @return the backup path as stored in the settings page.
    */
   public String getBackupPath() {
@@ -224,7 +227,7 @@ public class ThinBackupPluginImpl extends Plugin {
   public String getExcludedFilesRegex() {
     return excludedFilesRegex;
   }
-  
+
   public void setBackupPluginArchives(final boolean backupPluginArchives) {
     this.backupPluginArchives = backupPluginArchives;
   }
@@ -232,7 +235,7 @@ public class ThinBackupPluginImpl extends Plugin {
   public boolean isBackupPluginArchives() {
     return backupPluginArchives;
   }
-	  
+
   public void setBackupAdditionalFiles(final boolean backupAdditionalFiles) {
     this.backupAdditionalFiles = backupAdditionalFiles;
   }
@@ -260,14 +263,16 @@ public class ThinBackupPluginImpl extends Plugin {
   public FormValidation doCheckForceQuietModeTimeout(final StaplerRequest res, final StaplerResponse rsp,
       @QueryParameter("value") final String timeout) {
     FormValidation validation = FormValidation.validateNonNegativeInteger(timeout);
-    if (!FormValidation.ok().equals(validation))
+    if (!FormValidation.ok().equals(validation)) {
       return validation;
-    
+    }
+
     int intTimeout = Integer.parseInt(timeout);
-    if (intTimeout > VERY_HIGH_TIMEOUT)
+    if (intTimeout > VERY_HIGH_TIMEOUT) {
       return FormValidation.warning("You choose a very long timeout. The value need to be in minutes.");
-    else
+    } else {
       return FormValidation.ok();
+    }
   }
 
   public FormValidation doCheckBackupPath(final StaplerRequest res, final StaplerResponse rsp,
@@ -284,7 +289,7 @@ public class ThinBackupPluginImpl extends Plugin {
       return FormValidation.error(evnd.getMessage());
     }
     if (!expandedPath.equals(path)) {
-      expandedPathMessage = String.format("The path will be expanded to '%s'.\n\n", expandedPath);
+      expandedPathMessage = String.format("The path will be expanded to '%s'.%n%n", expandedPath);
     }
 
     final File backupdir = new File(expandedPath);
@@ -366,11 +371,12 @@ public class ThinBackupPluginImpl extends Plugin {
 
   public FormValidation doCheckWaitForIdle(final StaplerRequest res, final StaplerResponse rsp,
       @QueryParameter("value") final String waitForIdle) {
-    if (Boolean.parseBoolean(waitForIdle))
+    if (Boolean.parseBoolean(waitForIdle)) {
       return FormValidation.ok();
-    else
+    } else {
       return FormValidation
           .warning("This may or may not generate corrupt backups! Be aware that no data get changed during the backup process!");
+    }
   }
 
 }

@@ -18,16 +18,20 @@ package org.jvnet.hudson.plugins.thinbackup.backup;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.commons.io.DirectoryWalker;
 
 public class DirectoryCleaner extends DirectoryWalker<Object> {
+  private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
 
   /**
    * Deletes all empty directories, including rootDir if it is empty at the end.
-   * 
+   *
    * @param rootDir  the directory to start from, not null
    * @throws IOException if an I/O Error occurs
    */
@@ -39,7 +43,11 @@ public class DirectoryCleaner extends DirectoryWalker<Object> {
   protected void handleDirectoryEnd(final File directory, final int depth,
       @SuppressWarnings("rawtypes") final Collection results) {
     if (directory.list().length == 0) {
-      directory.delete();
+      try {
+        Files.delete(directory.toPath());
+      } catch (IOException e) {
+        LOGGER.log(Level.WARNING, String.format("Cannot delete Backup directory: %s.", directory.getName()), e);
+      }
     }
   }
 

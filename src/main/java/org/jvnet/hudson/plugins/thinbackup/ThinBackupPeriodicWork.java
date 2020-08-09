@@ -16,11 +16,6 @@
  */
 package org.jvnet.hudson.plugins.thinbackup;
 
-import hudson.Extension;
-import hudson.model.TaskListener;
-import hudson.model.Hudson;
-import hudson.scheduler.CronTab;
-
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Calendar;
@@ -35,6 +30,10 @@ import org.jvnet.hudson.plugins.thinbackup.hudson.model.AsyncPeriodicWork;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 
 import antlr.ANTLRException;
+import hudson.Extension;
+import hudson.model.TaskListener;
+import hudson.scheduler.CronTab;
+import jenkins.model.Jenkins;
 
 @Extension
 public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
@@ -69,9 +68,12 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
   }
 
   protected void backupNow(final BackupType type) {
-    final Hudson hudson = Hudson.getInstance();
-    final boolean inQuietModeBeforeBackup = hudson.isQuietingDown();
-    
+    final Jenkins jenkins = Jenkins.getInstance();
+    if (jenkins == null) {
+      return;
+    }
+    final boolean inQuietModeBeforeBackup = jenkins.isQuietingDown();
+
     String backupPath = null;
     try {
       backupPath = plugin.getExpandedBackupPath();
@@ -80,9 +82,10 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
         if (plugin.isWaitForIdle()) {
           LOGGER.fine("Wait until executors are idle to perform backup.");
           Utils.waitUntilIdleAndSwitchToQuietMode(plugin.getForceQuietModeTimeout(), TimeUnit.MINUTES);
-        } else
+        } else {
           LOGGER.warning("Do not wait until jenkins/hudson is idle to perform backup. This could cause corrupt backups.");
-        
+        }
+
         new HudsonBackup(plugin, type).backup();
       } else {
         LOGGER.warning("ThinBackup is not configured yet: No backup path set.");
@@ -94,10 +97,11 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
               backupPath);
       LOGGER.log(Level.SEVERE, msg, e);
     } finally {
-      if (!inQuietModeBeforeBackup)
-        hudson.doCancelQuietDown();
-      else
+      if (!inQuietModeBeforeBackup) {
+        jenkins.doCancelQuietDown();
+      } else {
         LOGGER.info("Backup process finished, but still in quiet mode as before. The quiet mode needs to be canceled manually, because it is not clear who is putting jenkins/hudson into quiet mode.");
+      }
     }
   }
 
@@ -105,8 +109,8 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
     final long fullDelay = calculateDelay(currentTime, BackupType.FULL, fullCron);
     final long diffDelay = calculateDelay(currentTime, BackupType.DIFF, diffCron);
 
-    BackupType res = BackupType.NONE;
-    long delay = Long.MAX_VALUE;
+    BackupType res = null;
+    long delay;
     if ((fullDelay == -1) && (diffDelay == -1)) {
       return BackupType.NONE;
     } else if ((fullDelay != -1) && (diffDelay == -1)) {
@@ -139,8 +143,10 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
       final Calendar nextExecution = cronTab.ceil(currentTime);
       final long delay = nextExecution.getTimeInMillis() - currentTime;
 
-      LOGGER.fine(MessageFormat.format("Current time: {0,date,medium} {0,time,long}. Next execution ({3}) in {2} seconds which is {1,date,medium} {1,time,long}",
-          new Date(currentTime), nextExecution.getTime(), TimeUnit.MILLISECONDS.toSeconds(delay), backupType));
+      if (LOGGER.isLoggable(Level.FINE)) {
+        LOGGER.fine(MessageFormat.format("Current time: {0,date,medium} {0,time,long}. Next execution ({3}) in {2} seconds which is {1,date,medium} {1,time,long}",
+            new Date(currentTime), nextExecution.getTime(), TimeUnit.MILLISECONDS.toSeconds(delay), backupType));
+      }
 
       if (delay < 0) {
         final String msg = "Delay is a negative number, which means the next execution is in the past! This happens for Hudson/Jenkins installations with version 1.395 or below. Please upgrade to fix this.";
@@ -151,7 +157,7 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
       return delay;
     } catch (final ANTLRException e) {
       LOGGER.warning(MessageFormat.format(
-          "Cannot parse the specified ''Backup schedule for {0} backups''. Check cron notation.", backupType.toString()));
+          "Cannot parse the specified ''Backup schedule for {0} backups''. Check cron notation.", backupType));
       return -1;
     }
   }

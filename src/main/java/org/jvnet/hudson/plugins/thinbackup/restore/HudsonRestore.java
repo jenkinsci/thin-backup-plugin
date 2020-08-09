@@ -16,13 +16,6 @@
  */
 package org.jvnet.hudson.plugins.thinbackup.restore;
 
-import hudson.PluginManager;
-import hudson.model.Hudson;
-import hudson.model.UpdateCenter;
-import hudson.model.UpdateCenter.UpdateCenterJob;
-import hudson.model.UpdateSite;
-import hudson.model.UpdateSite.Plugin;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
@@ -31,6 +24,7 @@ import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.Writer;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -54,6 +48,13 @@ import org.jvnet.hudson.plugins.thinbackup.backup.BackupSet;
 import org.jvnet.hudson.plugins.thinbackup.backup.HudsonBackup;
 import org.jvnet.hudson.plugins.thinbackup.backup.PluginList;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
+
+import hudson.PluginManager;
+import hudson.model.UpdateCenter;
+import hudson.model.UpdateSite;
+import hudson.model.UpdateCenter.UpdateCenterJob;
+import hudson.model.UpdateSite.Plugin;
+import jenkins.model.Jenkins;
 
 public class HudsonRestore {
   private static final int SLEEP_TIMEOUT = 500;
@@ -104,13 +105,14 @@ public class HudsonRestore {
     boolean success = false;
 
     IOFileFilter suffixFilter = FileFilterUtils.and(
-        FileFilterUtils.suffixFileFilter(Utils.DIRECTORY_NAME_DATE_FORMAT.format(restoreFromDate)), 
+        FileFilterUtils
+            .suffixFileFilter(new SimpleDateFormat(Utils.DIRECTORY_NAME_DATE_FORMAT).format(restoreFromDate)),
         DirectoryFileFilter.DIRECTORY);
 
     final File[] candidates = new File(parentDirectory).listFiles((FileFilter) suffixFilter);
     if (candidates.length > 1) {
       LOGGER.severe(String.format("More than one backup with date '%s' found. This is not allowed. Aborting restore.",
-          Utils.DISPLAY_DATE_FORMAT.format(restoreFromDate)));
+          new SimpleDateFormat(Utils.DISPLAY_DATE_FORMAT).format(restoreFromDate)));
     } else if (candidates.length == 1) {
       final File toRestore = candidates[0];
       if (toRestore.getName().startsWith(BackupType.DIFF.toString())) {
@@ -122,7 +124,7 @@ public class HudsonRestore {
     } else {
       LOGGER.info(String.format(
           "No backup directories with date '%s' found. Will try to find a backup in ZIP files next...",
-          Utils.DISPLAY_DATE_FORMAT.format(restoreFromDate)));
+          new SimpleDateFormat(Utils.DISPLAY_DATE_FORMAT).format(restoreFromDate)));
     }
 
     return success;
@@ -184,8 +186,9 @@ public class HudsonRestore {
 
     FileUtils.copyDirectory(toRestore, this.hudsonHome, restoreNextBuildNumberFilter, true);
 
-    if (restorePlugins)
+    if (restorePlugins) {
       restorePlugins(toRestore);
+    }
   }
 
   private void restorePlugins(File toRestore) throws IOException {
@@ -203,14 +206,20 @@ public class HudsonRestore {
     pluginList.load();
     Map<String, String> toRestorePlugins = pluginList.getPlugins();
     List<Future<UpdateCenterJob>> pluginRestoreJobs = new ArrayList<>(toRestorePlugins.size());
-    PluginManager pluginManager = Hudson.getInstance().getPluginManager();
+    Jenkins jenkins = Jenkins.getInstance();
+    if (jenkins == null) {
+      return;
+    }
+    PluginManager pluginManager = jenkins.getPluginManager();
     for (Entry<String, String> entry : toRestorePlugins.entrySet()) {
       if (pluginManager.getPlugin(entry.getKey()) == null) { // if any version of this plugin is installed do nothing
         Future<UpdateCenterJob> monitor = installPlugin(entry.getKey(), entry.getValue());
-        if (monitor != null)
+        if (monitor != null) {
           pluginRestoreJobs.add(monitor);
-      } else
+        }
+      } else {
         LOGGER.info("Plugin '" + entry.getKey() + "' already installed. Please check manually.");
+      }
     }
 
     boolean finished = pluginRestoreJobs.isEmpty();
@@ -218,12 +227,14 @@ public class HudsonRestore {
       try {
         Thread.sleep(SLEEP_TIMEOUT);
       } catch (InterruptedException e) {
-        // nothing to do
+        LOGGER.log(Level.WARNING, "Interrupted!", e);
+        Thread.currentThread().interrupt();
       }
       for (Future<UpdateCenterJob> future : pluginRestoreJobs) {
         finished = future.isDone();
-        if (!finished)
+        if (!finished) {
           break;
+        }
       }
     }
   }
@@ -238,33 +249,40 @@ public class HudsonRestore {
 
   private Future<UpdateCenterJob> installPlugin(String pluginID, String version) {
     if (!version.contains("SNAPSHOT") && !"Hudson core".equals(pluginID) && !"Jenkins core".equals(pluginID)) {
-      UpdateCenter updateCenter = Hudson.getInstance().getUpdateCenter();
+      Jenkins jenkins = Jenkins.getInstance();
+      if (jenkins == null) {
+        return null;
+      }
+      UpdateCenter updateCenter = jenkins.getUpdateCenter();
 
       for (UpdateSite site : updateCenter.getSites()) {
         List<Plugin> availablePlugins;
-        if (this.availablePluginLocations.containsKey(site.getId()))
+        if (this.availablePluginLocations.containsKey(site.getId())) {
           availablePlugins = this.availablePluginLocations.get(site.getId());
-        else {
+        } else {
           availablePlugins = site.getAvailables();
           this.availablePluginLocations.put(site.getId(), availablePlugins);
         }
 
         for (Plugin plugin : availablePlugins) {
           if (plugin.name.equals(pluginID)) {
-            LOGGER.info("Restore plugin '" + pluginID + "'.");
+            LOGGER.log(Level.INFO, "Restore plugin ' {0} '.", pluginID);
             if (!plugin.version.equals(version)) {
-              Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
+              jenkins.checkPermission(Jenkins.ADMINISTER);
               PluginRestoreUpdateCenter pruc = new PluginRestoreUpdateCenter();
-              
-              return pruc._addJob(pruc.new PluginRestoreJob(site, Hudson.getAuthentication(), plugin, version));
-            } else
+
+              return pruc.addNewJob(pruc.new PluginRestoreJob(site, Jenkins.getAuthentication(), plugin, version));
+            } else {
               return plugin.deploy();
+            }
           }
         }
       }
     }
     LOGGER
-        .warning("Cannot find plugin '" + pluginID + "' with the version '" + version + "'. Please install manually!");
+        .log(Level.WARNING,
+            "Cannot find plugin ' {0} ' with the version ' {1} '. Please install manually!",
+            new Object[] { pluginID, version });
     return null;
   }
 }

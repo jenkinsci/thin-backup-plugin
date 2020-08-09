@@ -25,7 +25,9 @@ public class DirectoriesZipper extends DirectoryWalker<Object> implements Closea
   private final String rootPath;
 
   public DirectoriesZipper(final File zipFile) throws IOException {
-    zipFile.createNewFile();
+    if (!zipFile.createNewFile()) {
+      LOGGER.log(Level.WARNING, "{0} already exists. Previous backup will be overridden.", zipFile.getName());
+    }
     zipStream = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(zipFile)));
     this.rootPath = zipFile.getParent();
   }
@@ -41,10 +43,7 @@ public class DirectoriesZipper extends DirectoryWalker<Object> implements Closea
 
   @Override
   protected void handleFile(final File file, final int depth, final Collection<Object> results) {
-    try {
-      final FileInputStream fi = new FileInputStream(file);
-      final BufferedInputStream origin = new BufferedInputStream(fi);
-
+    try (FileInputStream fi = new FileInputStream(file); BufferedInputStream origin = new BufferedInputStream(fi)) {
       // make entry relative to the root directory
       String entryPath = file.getAbsolutePath();
       entryPath = entryPath.replace(rootPath + File.separator, "");
@@ -56,7 +55,6 @@ public class DirectoriesZipper extends DirectoryWalker<Object> implements Closea
       while ((count = origin.read(buffer)) != -1) {
         zipStream.write(buffer, 0, count);
       }
-      origin.close();
     } catch (final IOException ioe) {
       LOGGER.log(Level.SEVERE, "Could not create ZIP entry", ioe);
     }

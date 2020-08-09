@@ -16,9 +16,6 @@
  */
 package org.jvnet.hudson.plugins.thinbackup.backup;
 
-import hudson.XmlFile;
-import hudson.model.Hudson;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -27,9 +24,12 @@ import java.util.Map.Entry;
 
 import org.apache.commons.lang.StringUtils;
 
+import hudson.XmlFile;
+import jenkins.model.Jenkins;
+
 public class PluginList implements Comparable<PluginList> {
   private Map<String, String> plugins;
-  private transient final File pluginsXml;
+  private final File pluginsXml;
 
   public PluginList(final File pluginsXml) {
     this.pluginsXml = pluginsXml;
@@ -49,11 +49,11 @@ public class PluginList implements Comparable<PluginList> {
   }
 
   public void save() throws IOException {
-    new XmlFile(Hudson.XSTREAM, pluginsXml).write(this);
+    new XmlFile(Jenkins.XSTREAM, pluginsXml).write(this);
   }
 
   public void load() throws IOException {
-    final XmlFile xmlFile = new XmlFile(Hudson.XSTREAM, pluginsXml);
+    final XmlFile xmlFile = new XmlFile(Jenkins.XSTREAM, pluginsXml);
     if (xmlFile.exists()) {
       xmlFile.unmarshal(this);
     }

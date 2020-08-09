@@ -16,9 +16,6 @@
  */
 package org.jvnet.hudson.plugins.thinbackup.utils;
 
-import hudson.model.Computer;
-import hudson.model.Hudson;
-
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -43,6 +40,9 @@ import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 import org.jvnet.hudson.plugins.thinbackup.backup.BackupSet;
 import org.jvnet.hudson.plugins.thinbackup.backup.HudsonBackup;
 
+import hudson.model.Computer;
+import jenkins.model.Jenkins;
+
 public final class Utils {
   private static final int SLEEP_TIMEOUT = 500;
 
@@ -54,20 +54,23 @@ public final class Utils {
   private static final String START_ENV_VAR_TOKEN = "${";
   private static final String END_ENV_VAR_TOKEN = "}";
 
-  public static final SimpleDateFormat DISPLAY_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-  public static final SimpleDateFormat DIRECTORY_NAME_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HH-mm");
+  public static final String DISPLAY_DATE_FORMAT = "yyyy-MM-dd HH:mm";
+  public static final String DIRECTORY_NAME_DATE_FORMAT = "yyyy-MM-dd_HH-mm";
   public static final String THINBACKUP_TMP_DIR = System.getProperty("java.io.tmpdir") + File.separator
       + "thinBackupTmpDir";
   public static final int FORCE_QUIETMODE_TIMEOUT_MINUTES = 120;
 
   private Utils() {}
-  
+
   /**
    * Waits until all Hudson slaves are idle.
    */
   public static void waitUntilIdle() {
-    Hudson hudson = Hudson.getInstance();
-    final Computer computers[] = hudson.getComputers();
+    Jenkins jenkins = Jenkins.getInstance();
+    if (jenkins == null) {
+      return;
+    }
+    final Computer[] computers = jenkins.getComputers();
 
     boolean running;
     do {
@@ -83,6 +86,7 @@ public final class Utils {
         Thread.sleep(QUIETMODE_MONITORING_SLEEP);
       } catch (final InterruptedException e) {
         LOGGER.log(Level.WARNING, e.getMessage(), e);
+        Thread.currentThread().interrupt();
       }
     } while (running);
   }
@@ -90,7 +94,7 @@ public final class Utils {
   /**
    * Waits until all executors are idle and switch jenkins to quiet mode. If it takes to long that all executors are
    * idle because in the mean time other jobs are executed the timeout ensure that the quiet mode is forced.
-   * 
+   *
    * @param timeout
    *          specifies when a quiet mode is forced. 0 = no timeout.
    * @param unit
@@ -98,8 +102,11 @@ public final class Utils {
    * @throws IOException ?
    */
   public static void waitUntilIdleAndSwitchToQuietMode(int timeout, TimeUnit unit) throws IOException {
-    Hudson hudson = Hudson.getInstance();
-    final Computer computers[] = hudson.getComputers();
+    Jenkins jenkins = Jenkins.getInstance();
+    if (jenkins == null) {
+      return;
+    }
+    final Computer[] computers = jenkins.getComputers();
 
     boolean running;
     long starttime = System.currentTimeMillis();
@@ -116,11 +123,12 @@ public final class Utils {
         TimeUnit.MILLISECONDS.sleep(QUIETMODE_MONITORING_SLEEP);
       } catch (final InterruptedException e) {
         LOGGER.log(Level.WARNING, e.getMessage(), e);
+        Thread.currentThread().interrupt();
       }
 
-      if (!hudson.isQuietingDown() && starttime + unit.toMillis(timeout) < System.currentTimeMillis()) {
+      if (!jenkins.isQuietingDown() && starttime + unit.toMillis(timeout) < System.currentTimeMillis()) {
         LOGGER.info("Force quiet mode for jenkins now and wait until all executors are idle.");
-        hudson.doQuietDown();
+        jenkins.doQuietDown();
       }
     } while (running);
   }
@@ -145,7 +153,7 @@ public final class Utils {
       if (directoryName.startsWith(BackupType.FULL.toString()) || directoryName.startsWith(BackupType.DIFF.toString())) {
         dateOnly = directoryName.replaceFirst(DIRECTORY_NAME_DATE_EXTRACTION_REGEX, "");
         if (!dateOnly.isEmpty()) {
-          result = DIRECTORY_NAME_DATE_FORMAT.parse(dateOnly);
+          result = new SimpleDateFormat(DIRECTORY_NAME_DATE_FORMAT).parse(dateOnly);
         }
       }
     } catch (final NumberFormatException nfe) {
@@ -164,8 +172,8 @@ public final class Utils {
    * @throws ParseException if the beginning of the specified parameter cannot be parsed.
    */
   public static String convertToDirectoryNameDateFormat(final String displayFormattedDate) throws ParseException {
-    final Date displayDate = DISPLAY_DATE_FORMAT.parse(displayFormattedDate);
-    return DIRECTORY_NAME_DATE_FORMAT.format(displayDate);
+    final Date displayDate = new SimpleDateFormat(DISPLAY_DATE_FORMAT).parse(displayFormattedDate);
+    return new SimpleDateFormat(DIRECTORY_NAME_DATE_FORMAT).format(displayDate);
   }
 
   /**
@@ -176,9 +184,8 @@ public final class Utils {
    *         "&lt;BACKUP_TYPE&gt;-yyyy-MM-dd_HH-mm".
    */
   public static File getFormattedDirectory(final File parent, final BackupType backupType, final Date date) {
-    final File formattedDirectory = new File(parent, String.format("%s-%s", backupType,
-        DIRECTORY_NAME_DATE_FORMAT.format(date)));
-    return formattedDirectory;
+    return new File(parent, String.format("%s-%s", backupType,
+        new SimpleDateFormat(DIRECTORY_NAME_DATE_FORMAT).format(date)));
   }
 
   /**
@@ -188,7 +195,7 @@ public final class Utils {
    */
   public static List<File> getBackupTypeDirectories(final File parentDir, final BackupType backupType) {
     IOFileFilter prefixFilter = FileFilterUtils.and(
-        FileFilterUtils.prefixFileFilter(backupType.toString()), 
+        FileFilterUtils.prefixFileFilter(backupType.toString()),
         DirectoryFileFilter.DIRECTORY);
 
     final File[] existingDirs = parentDir.listFiles((FilenameFilter) prefixFilter);
@@ -286,7 +293,7 @@ public final class Utils {
       try {
         final Date tmp = getDateFromBackupDirectoryName(fullName);
         if (tmp != null) {
-          backupDates.add(DISPLAY_DATE_FORMAT.format(tmp));
+          backupDates.add(new SimpleDateFormat(DISPLAY_DATE_FORMAT).format(tmp));
         } else {
           throw new ParseException("", 0);
         }
@@ -300,7 +307,7 @@ public final class Utils {
         try {
           final Date tmp = getDateFromBackupDirectoryName(diffName);
           if (tmp != null) {
-            backupDates.add(DISPLAY_DATE_FORMAT.format(tmp));
+            backupDates.add(new SimpleDateFormat(DISPLAY_DATE_FORMAT).format(tmp));
           } else {
             throw new ParseException("", 0);
           }
@@ -376,7 +383,7 @@ public final class Utils {
   /**
    * Moves all backup sets (that are not already zipped) other than the one containing currentBackup to ZIP files
    * located in backupRoot.
-   * 
+   *
    * @param backupRoot root directory of all backups
    * @param currentBackup
    *          specified which backup should be omitted from being moved. If null, all backups are moved to ZIP files.
@@ -405,14 +412,14 @@ public final class Utils {
       }
     }
 
-    if (numberOfMovedBackupSets == numberOfZippedBackupSets) {
-      LOGGER.info(String.format("DONE moving %d backup set(s) to ZIP files.", numberOfMovedBackupSets));
-    } else {
-      LOGGER
-          .info(String
-              .format(
-                  "DONE zipping %d backup set(s). %d of those could be moved to ZIP files, the rest remain as files/directories as well.",
-                  numberOfZippedBackupSets, numberOfMovedBackupSets));
+    if (LOGGER.isLoggable(Level.INFO)) {
+      if (numberOfMovedBackupSets == numberOfZippedBackupSets) {
+        LOGGER.info(String.format("DONE moving %d backup set(s) to ZIP files.", numberOfMovedBackupSets));
+      } else {
+        LOGGER.info(String.format(
+            "DONE zipping %d backup set(s). %d of those could be moved to ZIP files, the rest remain as files/directories as well.",
+            numberOfZippedBackupSets, numberOfMovedBackupSets));
+      }
     }
   }
 
@@ -466,7 +473,8 @@ public final class Utils {
       try {
         Thread.sleep(SLEEP_TIMEOUT);
       } catch (InterruptedException e) {
-        // nothing to do
+        LOGGER.log(Level.WARNING, e.getMessage(), e);
+        Thread.currentThread().interrupt();
       }
     }
   }
