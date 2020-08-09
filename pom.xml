@@ -35,13 +35,13 @@
     along with this program.  If not, see http://www.gnu.org/licenses.</comments>
 		</license>
 	</licenses>
-	<!-- get every artifact through maven.glassfish.org, which proxies all the 
+	<!-- get every artifact through maven.glassfish.org, which proxies all the
 		artifacts that we need -->
 
 	<description>
-    Backs up the most important global and job specific configuration files. 
+    Backs up the most important global and job specific configuration files.
 	</description>
-	<url>https://wiki.jenkins-ci.org/display/JENKINS/thinBackup</url>
+	<url>https://github.com/jenkinsci/think-backup-plugin</url>
 
 	<developers>
 		<developer>
