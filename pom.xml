@@ -39,7 +39,7 @@
 	<description>
     Backs up the most important global and job specific configuration files.
 	</description>
-	<url>https://github.com/jenkinsci/think-backup-plugin</url>
+	<url>https://github.com/jenkinsci/thin-backup-plugin</url>
 
 	<developers>
 		<developer>
