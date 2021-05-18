@@ -14,12 +14,12 @@ This plugin simply backs up the global and job specific configurations (not the 
 
 The [Backup Plugin](https://github.com/jenkinsci/thin-backup-plugin) only does manual backups, and
 stores all data found in JENKINS\_HOME.  This is sometimes not practical because of time and disk
-space requirements, and the fact that it can only be manually triggered.  *thinkBackup*s can be
+space requirements, and the fact that it can only be manually triggered.  *ThinBackup*s can be
 scheduled and only backs up the most vital configuration info.
 
 ## Documentation
 
-This plugin adds another management link to "Manage Jenkins" called ThinkBackup which looks like
+This plugin adds another management link to "Manage Jenkins" called ThinBackup which looks like
 this:
 
 ![](http://wiki.jenkins-ci.org/download/attachments/49512461/ManagementLink.png)
