@@ -1,20 +1,15 @@
-# thin-backup-plugin
+# Thin Backup Plugin
 
 This plugin simply backs up the global and job specific configurations (not the archive or the workspace).
 
-| Plugin Information                                                                                |
-|---------------------------------------------------------------------------------------------------|
-| View ThinBackup [on the plugin site](https://plugins.jenkins.io/thinBackup) for more information.
-|
-
 **This plugin is up for adoption.** Want to help improve this plugin?
-[Click here to learn more](https://wiki.jenkins.io/display/JENKINS/Adopt+a+Plugin "Adopt a Plugin")!
+[Click here to learn more](https://www.jenkins.io/doc/developer/plugin-governance/adopt-a-plugin/)!
 
 ## Why another backup plugin
 
-The [Backup Plugin](https://github.com/jenkinsci/thin-backup-plugin) only does manual backups, and
+The [Backup Plugin](https://plugins.jenkins.io/backup/) only does manual backups and
 stores all data found in JENKINS\_HOME.  This is sometimes not practical because of time and disk
-space requirements, and the fact that it can only be manually triggered.  *ThinBackup*s can be
+space requirements and the fact that it can only be manually triggered.  *ThinBackup*s can be
 scheduled and only backs up the most vital configuration info.
 
 ## Documentation
@@ -22,11 +17,11 @@ scheduled and only backs up the most vital configuration info.
 This plugin adds another management link to "Manage Jenkins" called ThinBackup which looks like
 this:
 
-![](http://wiki.jenkins-ci.org/download/attachments/49512461/ManagementLink.png)
+![](images/ManagementLink.png)
 
 This new link provides the following actions:
 
-![](http://wiki.jenkins-ci.org/download/attachments/49512461/thinBackup.png)
+![](images/thinBackup.png)
 
 ### Backup Now
 
@@ -34,17 +29,17 @@ Triggers a manual full back up right now.
 
 ### Restore
 
-![](http://wiki.jenkins-ci.org/download/attachments/49512461/restore.PNG)
+![](images/restore.png)
 
 Select the data of the backup you would like to restore.  After the restore finishes you are
 redirected to the plugin main page.  To activate the restored settings you need to restart Jenkins.
 
 **Note**: The file **nextBuildNumber** will not be backed up or restored to prevent buildnumber
 collision by default.  The archive and the workspace will not be deleted or changed, but all backed
-up files will simply be overwritten with the restored v ersions (e.g., config.xml, thinBackup.xml
+up files will simply be overwritten with the restored versions (e.g., config.xml, thinBackup.xml
 -\> for more info simply look in a backup).
 
-![](http://wiki.jenkins-ci.org/download/attachments/49512461/backupStore.PNG).
+![](images/backupStore.png).
 
 #### Restore next build number file (if found in backup)
 
@@ -60,7 +55,7 @@ update server, because plugins will be downloaded from the update server to keep
 
 ### Settings
 
-![](https://wiki.jenkins.io/download/attachments/49512461/thinBackupSettings.PNG?version=2&modificationDate=1311601261000&api=v2)
+![](/images/thinBackupSettings.png)
 
 #### Backup directory
 
@@ -75,7 +70,7 @@ all files even if there were no changes.
 #### Backup schedule for differential backups
 
 Specify schedule when a differential backup is triggered.  Cron notation is used.  A differential
-backup stores only modified data sicne the last full backup.  If there are no changes detected, no
+backup stores only modified data since the last full backup.  If there are no changes detected, no
 diff backup will be created.
 
 **Note**: You do not need to specify a differential backup schedule if you only need full backups.
@@ -149,7 +144,7 @@ Because many of you are asking why Jenkins is going to shutdown when a backup is
 decided to explain my ideas behind the backup process.
 
 First of all, **Jenkins will not be shutdown at any time**.  Second, I use the built-in quiet mode
-(Jenkins is going to shutdown) to ensure a safe environment duiring the backup process and cancel
+(Jenkins is going to shutdown) to ensure a safe environment during the backup process and cancel
 the quiet mode afterwards.  This could be misleading, **but there is no point where Jenkins will be
 shutdown**.
 
@@ -168,7 +163,7 @@ Here is an example of how it works:
   - In the case of "Wait until Jenkins is idle to perform a backup" is disabled, then the backup
     will be done immediately.
 - The backup starts when no job is running.
-- Once the backup is finished the quiet mode will be canceled.  Manually cancelling the quiet mode
+- Once the backup is finished the quiet mode will be canceled.  Manually canceling the quiet mode
   will force a new quiet period.
 
 ## Feature requests or bug reports
