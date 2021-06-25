@@ -346,7 +346,8 @@ public class HudsonBackup {
   }
 
   private boolean isMultibranchJob(File jobDirectory) {
-    return new File(jobDirectory, MULTIBRANCH_DIR_NAME).isDirectory();
+    return (new File(jobDirectory, MULTIBRANCH_DIR_NAME).isDirectory() &&
+            new File(jobDirectory, INDEXING_DIR_NAME).isDirectory());
   }
 
   private void backupJobConfigFor(final File jobDirectory, final File jobBackupDirectory) throws IOException {
