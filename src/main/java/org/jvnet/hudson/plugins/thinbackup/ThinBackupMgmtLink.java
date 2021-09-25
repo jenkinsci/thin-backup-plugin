@@ -16,6 +16,18 @@
  */
 package org.jvnet.hudson.plugins.thinbackup;
 
+import com.cloudbees.workflow.util.ServeJson;
+import hudson.Extension;
+import hudson.model.ManagementLink;
+import hudson.model.TaskListener;
+import jenkins.model.Jenkins;
+import jenkins.util.Timer;
+import org.jvnet.hudson.plugins.thinbackup.restore.HudsonRestore;
+import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
@@ -24,18 +36,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
-
-import org.jvnet.hudson.plugins.thinbackup.restore.HudsonRestore;
-import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-
-import hudson.Extension;
-import hudson.model.ManagementLink;
-import hudson.model.TaskListener;
-import jenkins.model.Jenkins;
-import jenkins.util.Timer;
 
 /**
  * A backup solution for Hudson. Backs up configuration files from Hudson and its jobs.
@@ -179,4 +179,8 @@ public class ThinBackupMgmtLink extends ManagementLink {
     return Utils.getBackupsAsDates(new File(plugin.getExpandedBackupPath()));
   }
 
+  @ServeJson
+  public List<String> doAvailableBackups(){
+    return getAvailableBackups();
+  }
 }
