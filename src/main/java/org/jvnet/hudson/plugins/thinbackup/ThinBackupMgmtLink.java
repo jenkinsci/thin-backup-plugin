@@ -39,8 +39,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 
-
-
 /**
  * A backup solution for Hudson. Backs up configuration files from Hudson and its jobs.
  *
@@ -187,9 +185,10 @@ public class ThinBackupMgmtLink extends ManagementLink {
 
 
   @ServeJson
-  public List<String> doAvailableBackups(){
+  public List<String> doAvailableBackups() {
     return getAvailableBackups();
-
+  }
+  
   /**
    * Name of the category for this management link. Exists so that plugins with core dependency pre-dating the version
    * when this was introduced can define a category.
