@@ -72,6 +72,25 @@ public class TestHelper {
     
     return testJob;
   }
+  
+  /**
+   * When deleting multibranch jobs / folders or removing them we saw leftover directories in the Jenkins
+   * filesystem. They do not contain a config.xml nor any other file. We simulate a structure like that here:
+   * <pre>JENKINS_HOME/jobs/jobName
+   * '- jobs</pre>
+   * @param jenkinsHome
+   * @param jobName
+   * @return
+   * @throws IOException
+   */
+  public static File createMaliciousMultiJob(File jenkinsHome, String jobName) throws IOException {
+	    final File emptyJobDir = new File(new File(jenkinsHome, HudsonBackup.JOBS_DIR_NAME), "empty");
+	    emptyJobDir.mkdirs();
+	    final File jobsDirectory = new File(emptyJobDir, HudsonBackup.JOBS_DIR_NAME);
+	    jobsDirectory.mkdir();
+	    
+	    return emptyJobDir;
+  }
 
   private static File createJobsFolderWithConfiguration(File jenkinsHome, String jobName) throws IOException, FileNotFoundException {
     final File testJob = new File(new File(jenkinsHome, HudsonBackup.JOBS_DIR_NAME), jobName);

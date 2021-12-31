@@ -61,6 +61,7 @@ public class TestHudsonBackup {
 
     jenkinsHome = TestHelper.createBasicFolderStructure(base);
     File jobDir = TestHelper.createJob(jenkinsHome, TestHelper.TEST_JOB_NAME);
+    TestHelper.createMaliciousMultiJob(jenkinsHome, "emptyJob");
     buildDir = TestHelper.addNewBuildToJob(jobDir);
   }
   

@@ -224,7 +224,10 @@ public class HudsonBackup {
             File folderBackupDirectory = new File(jobsBackupDirectory, jobName);
             File folderJobsBackupDirectory = new File(folderBackupDirectory, JOBS_DIR_NAME);
             folderJobsBackupDirectory.mkdirs();
-            FileUtils.copyFile(new File(jobDirectory, CONFIG_XML), new File(folderBackupDirectory, CONFIG_XML));
+            File expectedConfigXml = new File(jobDirectory, CONFIG_XML);
+            if (expectedConfigXml.exists() && expectedConfigXml.isFile()) {
+              FileUtils.copyFile(new File(jobDirectory, CONFIG_XML), new File(folderBackupDirectory, CONFIG_XML));
+            }
             backupJobsDirectory(childJobsFolder, folderJobsBackupDirectory);
           } else {
             backupJob(jobDirectory, jobsBackupDirectory, jobName);
