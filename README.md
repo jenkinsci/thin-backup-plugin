@@ -14,7 +14,7 @@ scheduled and only backs up the most vital configuration info.
 
 ## Documentation
 
-This plugin adds another management link to "Manage Jenkins" called ThinBackup which looks like
+This plugin adds another management link to "Manage Jenkins" in the Tools section in newer Jenkins versions, called ThinBackup which looks like
 this:
 
 ![](images/ManagementLink.png)
