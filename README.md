@@ -2,9 +2,6 @@
 
 This plugin simply backs up the global and job specific configurations (not the archive or the workspace).
 
-**This plugin is up for adoption.** Want to help improve this plugin?
-[Click here to learn more](https://www.jenkins.io/doc/developer/plugin-governance/adopt-a-plugin/)!
-
 ## Why another backup plugin
 
 The [Backup Plugin](https://plugins.jenkins.io/backup/) only does manual backups and
