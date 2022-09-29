@@ -3,7 +3,7 @@
 	<parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>3.43</version>
+        <version>4.48</version>
     </parent>
 
 	<groupId>org.jvnet.hudson.plugins</groupId>
@@ -111,7 +111,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<jenkins.version>1.651.3</jenkins.version>
-		<java.level>8</java.level>
+		<java.level>11</java.level>
 <!-- 		<jenkins-test-harness.version>2.13</jenkins-test-harness.version> -->
 	</properties>
 
@@ -144,14 +144,14 @@
 							<goal>testCompile</goal>
 						</goals>
 						<configuration>
-							<source>1.8</source>
-							<target>1.8</target>
+							<source>11</source>
+							<target>11</target>
 						</configuration>
 					</execution>
 				</executions>
 				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
+					<source>11</source>
+					<target>11</target>
 				</configuration>
 			</plugin>
 
