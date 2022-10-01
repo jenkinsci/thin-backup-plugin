@@ -193,13 +193,22 @@ public class HudsonRestore {
 
   private void restorePlugins(File toRestore) throws IOException {
     File[] list = toRestore.listFiles((FilenameFilter) FileFilterUtils.nameFileFilter("installedPlugins.xml"));
-
+    if (list == null) {
+      LOGGER
+           .severe("Cannot restore plugins because null is returned for files to restore.");
+      return;
+    }
     if (list.length != 1) {
       LOGGER
-          .severe("Cannot restore plugins because no or mulitble files with the name 'installedPlugins.xml' are in the backup.");
+          .severe("Cannot restore plugins because no or multiple files with the name 'installedPlugins.xml' are in the backup.");
       return;
     }
 
+    if (list[0] == null) {
+      LOGGER
+              .severe("Cannot restore plugins because backuped plugin is null.");
+      return;
+    }
     File backupedPlugins = list[0];
 
     PluginList pluginList = new PluginList(backupedPlugins);
