@@ -143,14 +143,16 @@ public class HudsonRestore {
         FileFileFilter.FILE);
 
     final File[] candidates = new File(backupPath).listFiles((FileFilter) zippedBackupSetsFilter);
-    for (final File candidate : candidates) {
-      final BackupSet backupSet = new BackupSet(candidate);
-      if (backupSet.isValid() && backupSet.containsBackupForDate(restoreFromDate)) {
-        final BackupSet unzippedBackup = backupSet.unzip();
-        if (unzippedBackup.isValid()) {
-          success = restoreFromDirectories(backupSet.getUnzipDir().getAbsolutePath());
+    if (candidates != null) {
+      for (final File candidate : candidates) {
+        final BackupSet backupSet = new BackupSet(candidate);
+        if (backupSet.isValid() && backupSet.containsBackupForDate(restoreFromDate)) {
+          final BackupSet unzippedBackup = backupSet.unzip();
+          if (unzippedBackup.isValid()) {
+            success = restoreFromDirectories(backupSet.getUnzipDir().getAbsolutePath());
+          }
+          backupSet.deleteUnzipDir();
         }
-        backupSet.deleteUnzipDir();
       }
     }
 
