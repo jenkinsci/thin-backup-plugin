@@ -371,21 +371,22 @@ public class HudsonBackup {
   private void backupBuildsFor(final File jobDirectory, final File jobBackupDirectory) throws IOException {
     if (plugin.isBackupBuildResults()) {
       final File buildsDir = new File(jobDirectory, BUILDS_DIR_NAME);
-      if (buildsDir.exists() && buildsDir.isDirectory()) {
-        final Collection<String> builds = Arrays.asList(buildsDir.list());
+      if (buildsDir.list() != null && buildsDir.exists() && buildsDir.isDirectory()) {
+        final String[] builds = buildsDir.list();
         TopLevelItem job = hudson.getItem(jobDirectory.getName());
-        for (final String build : builds) {
-          final File source = new File(buildsDir, build);
-          if ((!plugin.isBackupBuildsToKeepOnly() || isBuildToKeep(job, source))) {
-            final File destDir = new File(new File(jobBackupDirectory, BUILDS_DIR_NAME), build);
-            if (!isSymLinkFile(source)) {
-              backupBuildFiles(source, destDir);
-              backupBuildArchive(source, destDir);
-            } else {
-              // TODO: add copy symlink
+        if (builds != null)
+          for (final String build : builds) {
+            final File source = new File(buildsDir, build);
+            if ((!plugin.isBackupBuildsToKeepOnly() || isBuildToKeep(job, source))) {
+              final File destDir = new File(new File(jobBackupDirectory, BUILDS_DIR_NAME), build);
+              if (!isSymLinkFile(source)) {
+                backupBuildFiles(source, destDir);
+                backupBuildArchive(source, destDir);
+              } else {
+                // TODO: add copy symlink
+              }
             }
           }
-        }
       }
     }
   }
