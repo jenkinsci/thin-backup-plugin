@@ -110,6 +110,10 @@ public class HudsonRestore {
         DirectoryFileFilter.DIRECTORY);
 
     final File[] candidates = new File(parentDirectory).listFiles((FileFilter) suffixFilter);
+    if (candidates == null) {
+      return false;
+    }
+
     if (candidates.length > 1) {
       LOGGER.severe(String.format("More than one backup with date '%s' found. This is not allowed. Aborting restore.",
           new SimpleDateFormat(Utils.DISPLAY_DATE_FORMAT).format(restoreFromDate)));
