@@ -44,7 +44,7 @@ public class PluginRestoreUpdateCenter extends UpdateCenter {
     private final PluginManager pm;
 
     public PluginRestoreJob(UpdateSite site, Authentication auth, Plugin plugin, String version) {
-      super(site, auth);
+      super(site, (org.springframework.security.core.Authentication) auth);
       this.plugin = plugin;
       this.version = version;
 
