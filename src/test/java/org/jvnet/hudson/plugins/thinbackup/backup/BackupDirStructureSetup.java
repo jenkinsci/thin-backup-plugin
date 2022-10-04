@@ -1,16 +1,19 @@
 package org.jvnet.hudson.plugins.thinbackup.backup;
 
-import static org.jvnet.hudson.plugins.thinbackup.utils.Utils.getFormattedDirectory;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
+import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 
 import java.io.File;
 import java.util.Calendar;
 
-import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
+import static org.jvnet.hudson.plugins.thinbackup.utils.Utils.getFormattedDirectory;
 
 public class BackupDirStructureSetup {
+
+  @Rule
+  public TemporaryFolder tmpFolder = new TemporaryFolder(new File(System.getProperty("java.io.tmpdir")));
 
   protected File backupDir;
 
@@ -30,9 +33,7 @@ public class BackupDirStructureSetup {
 
   @Before
   public void setup() throws Exception {
-    final File tempDir = new File(System.getProperty("java.io.tmpdir"));
-    backupDir = new File(tempDir, "BackupDirForHudsonBackupTest");
-    backupDir.mkdir();
+    backupDir = tmpFolder.getRoot();
 
     final Calendar cal = Calendar.getInstance();
     cal.set(2011, 0, 1, 0, 0);
@@ -79,10 +80,4 @@ public class BackupDirStructureSetup {
     diff41.mkdir();
     diff41.setLastModified(cal.getTimeInMillis());
   }
-
-  @After
-  public void tearDown() throws Exception {
-    FileUtils.deleteDirectory(backupDir);
-  }
-
 }
