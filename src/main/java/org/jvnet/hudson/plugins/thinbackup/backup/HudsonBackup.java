@@ -374,7 +374,7 @@ public class HudsonBackup {
       if (buildsDir.list() != null && buildsDir.exists() && buildsDir.isDirectory()) {
         final String[] builds = buildsDir.list();
         TopLevelItem job = hudson.getItem(jobDirectory.getName());
-        if (builds != null)
+        if (builds != null) {
           for (final String build : builds) {
             final File source = new File(buildsDir, build);
             if ((!plugin.isBackupBuildsToKeepOnly() || isBuildToKeep(job, source))) {
@@ -387,6 +387,7 @@ public class HudsonBackup {
               }
             }
           }
+        }
       }
     }
   }
