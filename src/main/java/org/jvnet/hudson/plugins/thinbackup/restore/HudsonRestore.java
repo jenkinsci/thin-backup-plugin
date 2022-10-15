@@ -110,6 +110,10 @@ public class HudsonRestore {
         DirectoryFileFilter.DIRECTORY);
 
     final File[] candidates = new File(parentDirectory).listFiles((FileFilter) suffixFilter);
+    if (candidates == null) {
+      return false;
+    }
+
     if (candidates.length > 1) {
       LOGGER.severe(String.format("More than one backup with date '%s' found. This is not allowed. Aborting restore.",
           new SimpleDateFormat(Utils.DISPLAY_DATE_FORMAT).format(restoreFromDate)));
@@ -139,14 +143,16 @@ public class HudsonRestore {
         FileFileFilter.FILE);
 
     final File[] candidates = new File(backupPath).listFiles((FileFilter) zippedBackupSetsFilter);
-    for (final File candidate : candidates) {
-      final BackupSet backupSet = new BackupSet(candidate);
-      if (backupSet.isValid() && backupSet.containsBackupForDate(restoreFromDate)) {
-        final BackupSet unzippedBackup = backupSet.unzip();
-        if (unzippedBackup.isValid()) {
-          success = restoreFromDirectories(backupSet.getUnzipDir().getAbsolutePath());
+    if (candidates != null) {
+      for (final File candidate : candidates) {
+        final BackupSet backupSet = new BackupSet(candidate);
+        if (backupSet.isValid() && backupSet.containsBackupForDate(restoreFromDate)) {
+          final BackupSet unzippedBackup = backupSet.unzip();
+          if (unzippedBackup.isValid()) {
+            success = restoreFromDirectories(backupSet.getUnzipDir().getAbsolutePath());
+          }
+          backupSet.deleteUnzipDir();
         }
-        backupSet.deleteUnzipDir();
       }
     }
 
@@ -193,13 +199,19 @@ public class HudsonRestore {
 
   private void restorePlugins(File toRestore) throws IOException {
     File[] list = toRestore.listFiles((FilenameFilter) FileFilterUtils.nameFileFilter("installedPlugins.xml"));
-
+    if (list == null) {
+      LOGGER.severe("Cannot restore plugins because null is returned for files to restore.");
+      return;
+    }
     if (list.length != 1) {
-      LOGGER
-          .severe("Cannot restore plugins because no or mulitble files with the name 'installedPlugins.xml' are in the backup.");
+      LOGGER.severe("Cannot restore plugins because no or multiple files with the name 'installedPlugins.xml' are in the backup.");
       return;
     }
 
+    if (list[0] == null) {
+      LOGGER.severe("Cannot restore plugins because backuped plugin is null.");
+      return;
+    }
     File backupedPlugins = list[0];
 
     PluginList pluginList = new PluginList(backupedPlugins);

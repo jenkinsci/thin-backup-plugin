@@ -319,7 +319,7 @@ public class BackupSet implements Comparable<BackupSet> {
       }
 
       final File[] backups = unzipDir.listFiles();
-      if (backups.length > 0) {
+      if (backups != null && backups.length > 0) {
         result = new BackupSet(backups[0]);
       } else {
         // in case of an error (i.e. nothing was unzipped) return an invalid BackupSet

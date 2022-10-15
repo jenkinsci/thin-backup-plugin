@@ -42,7 +42,7 @@ public class DirectoryCleaner extends DirectoryWalker<Object> {
   @Override
   protected void handleDirectoryEnd(final File directory, final int depth,
       @SuppressWarnings("rawtypes") final Collection results) {
-    if (directory.list().length == 0) {
+    if (directory != null && directory.list() != null && directory.list().length == 0) {
       try {
         Files.delete(directory.toPath());
       } catch (IOException e) {
