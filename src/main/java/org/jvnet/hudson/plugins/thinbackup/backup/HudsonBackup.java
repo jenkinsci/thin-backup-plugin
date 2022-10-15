@@ -371,10 +371,10 @@ public class HudsonBackup {
   private void backupBuildsFor(final File jobDirectory, final File jobBackupDirectory) throws IOException {
     if (plugin.isBackupBuildResults()) {
       final File buildsDir = new File(jobDirectory, BUILDS_DIR_NAME);
-      if (buildsDir.exists() && buildsDir.isDirectory()) {
-        final Collection<String> builds = Arrays.asList(buildsDir.list());
+      if (buildsDir.list() != null && buildsDir.exists() && buildsDir.isDirectory()) {
+        final String[] builds = buildsDir.list();
+        TopLevelItem job = hudson.getItem(jobDirectory.getName());
         if (builds != null) {
-          TopLevelItem job = hudson.getItem(jobDirectory.getName());
           for (final String build : builds) {
             final File source = new File(buildsDir, build);
             if ((!plugin.isBackupBuildsToKeepOnly() || isBuildToKeep(job, source))) {
