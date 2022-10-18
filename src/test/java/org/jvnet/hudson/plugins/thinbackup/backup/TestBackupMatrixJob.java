@@ -27,7 +27,8 @@ public class TestBackupMatrixJob {
 
   @Before
   public void setup() throws IOException, InterruptedException {
-    backupDir = TestHelper.createBackupFolder(tmpFolder.getRoot());
+    backupDir = TestHelper.createBackupFolder(tmpFolder.newFolder("thin-backup"));
+
 
     jenkinsHome = TestHelper.createBasicFolderStructure(tmpFolder.getRoot());
     File jobDir = TestHelper.createJob(jenkinsHome, TestHelper.TEST_JOB_NAME);
