@@ -33,7 +33,7 @@ public class BackupDirStructureSetup {
 
   @Before
   public void setup() throws Exception {
-    backupDir = tmpFolder.getRoot();
+    backupDir = tmpFolder.newFolder("thin-backup");
 
     final Calendar cal = Calendar.getInstance();
     cal.set(2011, 0, 1, 0, 0);
