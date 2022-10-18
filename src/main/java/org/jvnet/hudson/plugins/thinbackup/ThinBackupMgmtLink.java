@@ -55,7 +55,7 @@ public class ThinBackupMgmtLink extends ManagementLink {
 
   @Override
   public String getIconFileName() {
-    return "package.png";
+    return "symbol-archive-outline plugin-ionicons-api";
   }
 
   @Override

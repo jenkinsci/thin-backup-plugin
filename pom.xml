@@ -105,11 +105,16 @@
 			<version>3.4.2</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>io.jenkins.plugins</groupId>
+			<artifactId>ionicons-api</artifactId>
+			<version>31.v4757b_6987003</version>
+		</dependency>
 	</dependencies>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<jenkins.version>2.361.2</jenkins.version>
+		<jenkins.version>2.346.1</jenkins.version>
 		<!-- 		<jenkins-test-harness.version>2.13</jenkins-test-harness.version> -->
 	</properties>
 
