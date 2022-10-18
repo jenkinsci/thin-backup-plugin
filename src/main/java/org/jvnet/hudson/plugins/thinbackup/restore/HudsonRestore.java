@@ -283,7 +283,7 @@ public class HudsonRestore {
               jenkins.checkPermission(Jenkins.ADMINISTER);
               PluginRestoreUpdateCenter pruc = new PluginRestoreUpdateCenter();
 
-              return pruc.addNewJob(pruc.new PluginRestoreJob(site, Jenkins.getAuthentication(), plugin, version));
+              return pruc.addNewJob(pruc.new PluginRestoreJob(site, Jenkins.getAuthentication2(), plugin, version));
             } else {
               return plugin.deploy();
             }
