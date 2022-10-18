@@ -30,7 +30,7 @@ public class TestBackupMatrixJob {
     backupDir = TestHelper.createBackupFolder(tmpFolder.newFolder("thin-backup"));
 
 
-    jenkinsHome = TestHelper.createBasicFolderStructure(tmpFolder.getRoot());
+    jenkinsHome = TestHelper.createBasicFolderStructure(tmpFolder.newFolder("jenkins"));
     File jobDir = TestHelper.createJob(jenkinsHome, TestHelper.TEST_JOB_NAME);
     TestHelper.addNewBuildToJob(jobDir);
     
