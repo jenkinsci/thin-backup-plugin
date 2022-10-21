@@ -120,7 +120,6 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
 					<forkCount>1</forkCount>
-					<workingDirectory>${java.io.tmpdir}</workingDirectory>
 				</configuration>
 			</plugin>
 

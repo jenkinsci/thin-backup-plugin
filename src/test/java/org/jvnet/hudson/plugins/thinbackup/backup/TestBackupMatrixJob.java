@@ -20,16 +20,14 @@ import static org.mockito.Mockito.when;
 public class TestBackupMatrixJob {
 
   @Rule
-  public TemporaryFolder tmpFolder = new TemporaryFolder(new File(System.getProperty("java.io.tmpdir")));
+  public TemporaryFolder tmpFolder = new TemporaryFolder();
 
   private File backupDir;
   private File jenkinsHome;
 
   @Before
-  public void setup() throws IOException, InterruptedException {
+  public void setUp() throws IOException, InterruptedException {
     backupDir = TestHelper.createBackupFolder(tmpFolder.newFolder("thin-backup"));
-
-
     jenkinsHome = TestHelper.createBasicFolderStructure(tmpFolder.newFolder("jenkins"));
     File jobDir = TestHelper.createJob(jenkinsHome, TestHelper.TEST_JOB_NAME);
     TestHelper.addNewBuildToJob(jobDir);
