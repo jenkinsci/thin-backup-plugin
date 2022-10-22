@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.jvnet.hudson.plugins.thinbackup.restore.HudsonRestore;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 import org.kohsuke.stapler.QueryParameter;
@@ -182,13 +183,13 @@ public class ThinBackupMgmtLink extends ManagementLink {
   /**
    * Name of the category for this management link. Exists so that plugins with core dependency pre-dating the version
    * when this was introduced can define a category.
-   *
-   * TODO when the core version is &gt;2.226 change this to override {@code getCategory()} instead
+   * <p>
    *
    * @return name of the desired category, one of the enum values of Category, e.g. {@code STATUS}.
    * @since 2.226
    */
-  public String getCategoryName() {
-    return "TOOLS";
+  @NonNull
+  public Category getCategory() {
+    return Category.TOOLS;
   }
 }
