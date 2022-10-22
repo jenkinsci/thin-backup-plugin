@@ -77,7 +77,7 @@ public class TestUtils extends BackupDirStructureSetup {
   public void testGetDateFromValidBackupDir() {
     final Calendar cal = Calendar.getInstance();
     cal.clear();
-    cal.set(2011, 1, 13, 10, 48);
+    cal.set(2011, Calendar.FEBRUARY, 13, 10, 48);
     final Date expected = cal.getTime();
 
     String displayDate = "FULL-2011-02-13_10-48";
@@ -125,7 +125,7 @@ public class TestUtils extends BackupDirStructureSetup {
     Assert.assertEquals(full1, fullBackup);
 
     fullBackup = Utils.getReferencedFullBackup(diff41);
-    Assert.assertEquals(null, fullBackup);
+    Assert.assertNull(fullBackup);
   }
 
   @Test
@@ -170,7 +170,7 @@ public class TestUtils extends BackupDirStructureSetup {
     path = "1${NO_VALUE_DEFINED}";
     try {
       Utils.internalExpandEnvironmentVariables(path, map);
-      Assert.assertFalse("Expected an exception.", true);
+      Assert.fail("Expected an exception.");
     } catch (final EnvironmentVariableNotDefinedException evnde) {
       // if an exception is caught, everything is AOK.
     }

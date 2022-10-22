@@ -47,7 +47,7 @@ public class TestThinBackupPeriodicWork {
   @Ignore("Test is ignored as it testing for a known issue in J/H <= 1.395")
   public void testGetWeekendScheduledBackup() {
     final Calendar cal = Calendar.getInstance();
-    cal.set(2011, 0, 16, 0, 0, 0);
+    cal.set(2011, Calendar.JANUARY, 16, 0, 0, 0);
     final long testTime = cal.getTimeInMillis();
     final String fullCron = "0 23 * * 0";
     final String diffCron = "0 23 * * 1-5";
@@ -58,14 +58,14 @@ public class TestThinBackupPeriodicWork {
   @Ignore("Test is ignored as it testing for a known issue in J/H <= 1.395")
   public void testHudsonCeil() throws ANTLRException {
     final Calendar cal = Calendar.getInstance();
-    cal.set(2011, 0, 16, 0, 0, 0); // Sunday, Jan 16th 2011, 00:00
+    cal.set(2011, Calendar.JANUARY, 16, 0, 0, 0); // Sunday, Jan 16th 2011, 00:00
     final String cronStr = "0 23 * * 1-5"; // execute on weekdays @23:00
 
     final CronTab cron = new CronTab(cronStr);
     final Calendar next = cron.ceil(cal);
 
     final Calendar expectedDate = Calendar.getInstance();
-    expectedDate.set(2011, 0, 17, 23, 0, 0); // Expected next: Monday, Jan 17th 2011, 23:00
+    expectedDate.set(2011, Calendar.JANUARY, 17, 23, 0, 0); // Expected next: Monday, Jan 17th 2011, 23:00
     Assert.assertEquals(expectedDate.get(Calendar.HOUR), next.get(Calendar.HOUR));
     Assert.assertEquals(expectedDate.get(Calendar.MINUTE), next.get(Calendar.MINUTE));
     Assert.assertEquals(expectedDate.get(Calendar.YEAR), next.get(Calendar.YEAR));
