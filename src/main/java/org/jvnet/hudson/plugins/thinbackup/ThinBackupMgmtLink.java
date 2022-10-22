@@ -71,7 +71,7 @@ public class ThinBackupMgmtLink extends ManagementLink {
   public void doBackupManual(final StaplerRequest res, final StaplerResponse rsp) throws IOException {
     LOGGER.info("Starting manual backup.");
 
-    final Jenkins jenkins = Jenkins.getInstance();
+    final Jenkins jenkins = Jenkins.getInstanceOrNull();
     if (jenkins == null) {
       return;
     }
@@ -94,7 +94,7 @@ public class ThinBackupMgmtLink extends ManagementLink {
       @QueryParameter("restorePlugins") final String restorePlugins) throws IOException {
     LOGGER.info("Starting restore operation.");
 
-    final Jenkins jenkins = Jenkins.getInstance();
+    final Jenkins jenkins = Jenkins.getInstanceOrNull();
     if (jenkins == null) {
       return;
     }
@@ -141,7 +141,7 @@ public class ThinBackupMgmtLink extends ManagementLink {
       @QueryParameter("backupAdditionalFilesRegex") final String backupAdditionalFilesRegex,
       @QueryParameter("waitForIdle") final boolean waitForIdle,
       @QueryParameter("forceQuietModeTimeout") final String forceQuietModeTimeout) throws IOException {
-    Jenkins jenkins = Jenkins.getInstance();
+    Jenkins jenkins = Jenkins.getInstanceOrNull();
     if (jenkins == null) {
       return;
     }

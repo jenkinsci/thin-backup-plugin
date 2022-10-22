@@ -68,7 +68,7 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
   }
 
   protected void backupNow(final BackupType type) {
-    final Jenkins jenkins = Jenkins.getInstance();
+    final Jenkins jenkins = Jenkins.getInstanceOrNull();
     if (jenkins == null) {
       return;
     }

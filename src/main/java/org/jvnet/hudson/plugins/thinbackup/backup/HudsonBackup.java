@@ -89,7 +89,7 @@ public class HudsonBackup {
   private ItemGroup<TopLevelItem> hudson;
 
   public HudsonBackup(final ThinBackupPluginImpl plugin, final BackupType backupType) {
-    this(plugin, backupType, new Date(), Jenkins.getInstance());
+    this(plugin, backupType, new Date(), Jenkins.get());
   }
 
   // package visible constructor for unit testing purposes only.
