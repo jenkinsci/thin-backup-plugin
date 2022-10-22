@@ -13,6 +13,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.file.Files;
 import java.util.List;
 
 import org.jvnet.hudson.plugins.thinbackup.backup.HudsonBackup;
@@ -54,7 +55,7 @@ public class TestHelper {
     
     final File config = new File(folderDir, "config.xml");
     config.createNewFile();
-    final BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(config));
+    final BufferedOutputStream out = new BufferedOutputStream(Files.newOutputStream(config.toPath()));
     out.write(CONFIG_XML_CONTENTS.getBytes());
     out.close();
     
@@ -78,7 +79,7 @@ public class TestHelper {
     testJob.mkdirs();
     final File config = new File(testJob, "config.xml");
     config.createNewFile();
-    final BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(config));
+    final BufferedOutputStream out = new BufferedOutputStream(Files.newOutputStream(config.toPath()));
     out.write(CONFIG_XML_CONTENTS.getBytes());
     out.close();
     return testJob;
@@ -221,7 +222,7 @@ public class TestHelper {
     testNode.mkdirs();
     final File config = new File(testNode, "config.xml");
     config.createNewFile();
-    final BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(config));
+    final BufferedOutputStream out = new BufferedOutputStream(Files.newOutputStream(config.toPath()));
     out.write(CONFIG_XML_CONTENTS.getBytes());
     out.close();
     return testNode;

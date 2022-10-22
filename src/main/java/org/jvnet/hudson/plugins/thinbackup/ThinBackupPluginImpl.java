@@ -77,7 +77,7 @@ public class ThinBackupPluginImpl extends Plugin {
   }
 
   public File getHudsonHome() {
-    Jenkins jenkins = Jenkins.getInstance();
+    Jenkins jenkins = Jenkins.getInstanceOrNull();
     if (jenkins == null) {
       return null;
     }

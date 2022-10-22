@@ -218,7 +218,7 @@ public class HudsonRestore {
     pluginList.load();
     Map<String, String> toRestorePlugins = pluginList.getPlugins();
     List<Future<UpdateCenterJob>> pluginRestoreJobs = new ArrayList<>(toRestorePlugins.size());
-    Jenkins jenkins = Jenkins.getInstance();
+    Jenkins jenkins = Jenkins.getInstanceOrNull();
     if (jenkins == null) {
       return;
     }
@@ -261,7 +261,7 @@ public class HudsonRestore {
 
   private Future<UpdateCenterJob> installPlugin(String pluginID, String version) {
     if (!version.contains("SNAPSHOT") && !"Hudson core".equals(pluginID) && !"Jenkins core".equals(pluginID)) {
-      Jenkins jenkins = Jenkins.getInstance();
+      Jenkins jenkins = Jenkins.getInstanceOrNull();
       if (jenkins == null) {
         return null;
       }

@@ -56,6 +56,11 @@
 			<organizationUrl>www.borland.com</organizationUrl>
 			<timezone>CET</timezone>
 		</developer>
+		<developer>
+			<id>StefanSpieker</id>
+			<name>Stefan Spieker</name>
+			<timezone>CET</timezone>
+		</developer>
 	</developers>
 
 	<scm>
@@ -98,12 +103,7 @@
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.codehaus.plexus</groupId>
-			<artifactId>plexus-utils</artifactId>
-			<version>3.4.2</version>
-			<scope>test</scope>
+			<version>2.11.0</version>
 		</dependency>
 		<dependency>
 			<groupId>io.jenkins.plugins</groupId>
@@ -125,14 +125,6 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
 					<forkCount>1</forkCount>
-				</configuration>
-			</plugin>
-
-			<plugin>
-				<groupId>org.jenkins-ci.tools</groupId>
-				<artifactId>maven-hpi-plugin</artifactId>
-				<configuration>
-					<pluginFirstClassLoader>true</pluginFirstClassLoader>
 				</configuration>
 			</plugin>
 

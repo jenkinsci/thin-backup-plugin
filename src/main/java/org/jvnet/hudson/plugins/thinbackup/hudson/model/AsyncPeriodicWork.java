@@ -81,7 +81,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
    * @return log file
    */
   protected File getLogFile() {
-    Jenkins jenkins = Jenkins.getInstance();
+    Jenkins jenkins = Jenkins.getInstanceOrNull();
     if (jenkins != null) {
       return new File(jenkins.getRootDir(), name + ".log");
     } else {

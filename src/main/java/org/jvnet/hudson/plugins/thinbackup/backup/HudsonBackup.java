@@ -89,7 +89,7 @@ public class HudsonBackup {
   private ItemGroup<TopLevelItem> hudson;
 
   public HudsonBackup(final ThinBackupPluginImpl plugin, final BackupType backupType) {
-    this(plugin, backupType, new Date(), Jenkins.getInstance());
+    this(plugin, backupType, new Date(), Jenkins.get());
   }
 
   // package visible constructor for unit testing purposes only.
@@ -480,9 +480,9 @@ public class HudsonBackup {
   private PluginList getInstalledPlugins() {
     final File pluginVersionList = new File(backupDirectory, INSTALLED_PLUGINS_XML);
     final PluginList newPluginList = new PluginList(pluginVersionList);
-    final Jenkins jenkins = Jenkins.getInstance();
+    final Jenkins jenkins = Jenkins.getInstanceOrNull();
     if (jenkins != null) {
-      newPluginList.add("Hudson core", Jenkins.getVersion().toString());
+      newPluginList.add("Hudson core", Jenkins.VERSION);
     }
 
     final List<PluginWrapper> installedPlugins;
