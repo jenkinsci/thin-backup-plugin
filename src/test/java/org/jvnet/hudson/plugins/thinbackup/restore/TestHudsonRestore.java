@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
-import org.codehaus.plexus.util.FileUtils;
+import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;

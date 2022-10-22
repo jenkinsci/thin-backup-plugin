@@ -36,7 +36,7 @@ public class FileCollector extends DirectoryWalker<String> {
   }
 
   @Override
-  @SuppressWarnings({ "rawtypes", "unchecked" })
+  @SuppressWarnings({"unchecked" })
   protected void handleFile(final File file, final int depth, final Collection results) {
     results.add(file.getAbsolutePath());
   }

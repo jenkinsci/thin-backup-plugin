@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -94,7 +95,7 @@ public class TestBackupZipping {
 
     Assert.assertEquals(20, configXml.length());
     final byte[] data = new byte[20];
-    final BufferedInputStream bis = new BufferedInputStream(new FileInputStream(configXml));
+    final BufferedInputStream bis = new BufferedInputStream(Files.newInputStream(configXml.toPath()));
     bis.read(data);
     bis.close();
     final String configXmlContents = new String(data);
