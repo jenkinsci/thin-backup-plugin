@@ -9,7 +9,7 @@
 	<groupId>org.jvnet.hudson.plugins</groupId>
 	<artifactId>thinBackup</artifactId>
 	<name>ThinBackup</name>
-	<version>1.12</version>
+	<version>1.13-SNAPSHOT</version>
 	<packaging>hpi</packaging>
 
 	<licenses>
