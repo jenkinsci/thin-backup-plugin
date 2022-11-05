@@ -141,6 +141,7 @@ public class ThinBackupMgmtLink extends ManagementLink {
       @QueryParameter("backupAdditionalFiles") final boolean backupAdditionalFiles,
       @QueryParameter("backupAdditionalFilesRegex") final String backupAdditionalFilesRegex,
       @QueryParameter("waitForIdle") final boolean waitForIdle,
+      @QueryParameter("backupConfigHistory") final boolean backupConfigHistory,
       @QueryParameter("forceQuietModeTimeout") final String forceQuietModeTimeout) throws IOException {
     Jenkins jenkins = Jenkins.getInstanceOrNull();
     if (jenkins == null) {
@@ -160,6 +161,7 @@ public class ThinBackupMgmtLink extends ManagementLink {
     plugin.setBackupBuildArchive(backupBuildArchive);
     plugin.setBackupBuildsToKeepOnly(backupBuildsToKeepOnly);
     plugin.setBackupUserContents(backupUserContents);
+    plugin.setBackupConfigHistory(backupConfigHistory);
     plugin.setBackupNextBuildNumber(backupNextBuildNumber);
     plugin.setBackupPluginArchives(backupPluginArchives);
     plugin.setBackupAdditionalFiles(backupAdditionalFiles);
