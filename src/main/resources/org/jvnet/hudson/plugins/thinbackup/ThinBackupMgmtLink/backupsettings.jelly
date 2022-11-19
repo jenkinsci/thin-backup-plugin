@@ -97,6 +97,12 @@
                         name="backupPluginArchives" >
                     </f:optionalBlock>
 
+                    <f:optionalBlock title="Backup 'config-history' folder"
+                        help="/plugin/thinBackup/help/help-backupConfigHistory.html"
+                        checked="${it.configuration.backupConfigHistory}"
+                        name="backupConfigHistory" >
+                    </f:optionalBlock>
+
                     <f:optionalBlock title="Backup additional files"
                         help="/plugin/thinBackup/help/help-backupAdditionalFiles.html"
                         checked="${it.configuration.backupAdditionalFiles}"
