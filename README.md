@@ -107,6 +107,12 @@ so think carefully about it.  Once you decide to backup build results, also get 
 backing up your build archives.  Once again, be careful with this option because it could be very
 **time consuming** and probably needs **a ton of disk space**!
 
+#### Backup next build number file
+If this option is enabled, the file `nextBuildNumber` will also be backed up.
+
+#### Backup 'config-history' folder
+If this option is enabled, the directory `config-history` will also be backed up. The plugin which creates this folder is the [Job Configuration History Plugin](https://plugins.jenkins.io/jobConfigHistory/). 
+
 #### Backup 'userContents'
 
 Jenkins provides a URL where you can put common data (e.g., static HTML, Tools, etc.).  You can
@@ -169,4 +175,4 @@ Please let us know if you have another option or feature for this plugin by ente
 write us an email.
 
 Before submitting a feature request or bug report, you can check if it has already been submitted by
-searching issues in JIRA categorized under the thin-backup-plugin component.
+searching issues in JIRA categorized under the thin-backup-plugin component or directly on the [plugin site](https://plugins.jenkins.io/jobConfigHistory/#issues)
