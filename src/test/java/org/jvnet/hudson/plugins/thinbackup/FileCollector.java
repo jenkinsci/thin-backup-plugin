@@ -1,7 +1,6 @@
 package org.jvnet.hudson.plugins.thinbackup;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -12,14 +11,10 @@ import org.apache.commons.io.DirectoryWalker;
 public class FileCollector extends DirectoryWalker<String> {
 
 	public FileCollector() {
-		super(new FileFilter() {
-
-			@Override
-			public boolean accept(File pathname) {
-				String name = pathname.getName();
-				return !(name.equals("lastSuccessful") || name.equals("lastStable"));
-			}
-		}, -1);
+		super(pathname -> {
+            String name = pathname.getName();
+            return !(name.equals("lastSuccessful") || name.equals("lastStable"));
+        }, -1);
 	}
 
 	/**

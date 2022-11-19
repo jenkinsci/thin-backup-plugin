@@ -449,7 +449,7 @@ public final class Utils {
                     envVar, path);
             throw new EnvironmentVariableNotDefinedException(message);
           }
-          newPath.append(tmpPath.substring(0, startIdx));
+          newPath.append(tmpPath, 0, startIdx);
           newPath.append(envVarValue);
           tmpPath = tmpPath.substring(endIdx + END_ENV_VAR_TOKEN.length());
         } else {

@@ -2,7 +2,6 @@ package org.jvnet.hudson.plugins.thinbackup.backup;
 
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Enumeration;
