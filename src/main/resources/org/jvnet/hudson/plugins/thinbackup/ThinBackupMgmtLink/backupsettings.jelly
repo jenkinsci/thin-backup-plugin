@@ -26,8 +26,8 @@
             </h1>
 
             <f:form method="post" action="saveSettings">
-                 <f:section title="Backup settings">
-                    <f:entry title="Backup directory" field="backupPath"
+                 <f:section title="${%backup_settings}">
+                    <f:entry title="${%backup_path}" field="backupPath"
                         help="/plugin/thinBackup/help/help-backupPath.html">
                         <f:textbox value="${it.configuration.backupPath}" name="backupPath"
                             checkUrl="'${rootURL}/plugin/thinBackup/checkBackupPath?value='+escape(this.value)"/>
@@ -113,12 +113,12 @@
                         </f:entry>
                     </f:optionalBlock>
                     
-                    <f:optionalBlock title="Clean up differential backups"
+                    <f:optionalBlock title="${%clean_differential}"
                         help="/plugin/thinBackup/help/help-cleanupDiff.html"
                         checked="${it.configuration.cleanupDiff}"
                         name="cleanupDiff" />
                     
-                    <f:optionalBlock title="Move old backups to ZIP files"
+                    <f:optionalBlock title="${%move}"
                         help="/plugin/thinBackup/help/help-moveOldBackupsToZipFile.html"
                         checked="${it.configuration.moveOldBackupsToZipFile}"
                         name="moveOldBackupsToZipFile" />
@@ -126,7 +126,7 @@
                 
                 <f:section>
   		              <f:entry>
-    		                <f:submit value="Save"/>
+    		                <f:submit value="${%save}"/>
   		              </f:entry>
                 </f:section>
             </f:form>
