@@ -27,25 +27,24 @@
 
       <div class="jenkins-buttons-row jenkins-!-padding-3">
         <a href="backupManual" style="text-decoration: none;">
-          <button class="jenkins-button" tooltip="Click to start the backup now.">
+          <button class="jenkins-button" tooltip="${%backup_manual_tooltip}">
             <l:icon src="symbol-cloud-download-outline plugin-ionicons-api"/>
-            Backup now
+            ${%backup_now}
           </button>
         </a>
 
         <a href="restoreOptions" style="text-decoration: none;">
-          <button class="jenkins-button" tooltip="Click to start the restore
-        now.">
+          <button class="jenkins-button" tooltip="${%restore_options_tooltip}">
             <l:icon src="symbol-cloud-upload-outline plugin-ionicons-api"/>
-            Restore
+            ${%restore}
           </button>
         </a>
 
         <a href="backupsettings" style="text-decoration: none;">
           <button class="jenkins-button"
-            tooltip="Click to open plugin settings.">
+            tooltip="${%backup_settings_tooltip}">
             <l:icon src="symbol-cog-outline plugin-ionicons-api"/>
-            Settings
+            ${%settings}
           </button>
         </a>
       </div>
