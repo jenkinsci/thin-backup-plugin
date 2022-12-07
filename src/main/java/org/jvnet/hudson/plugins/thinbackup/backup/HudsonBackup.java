@@ -199,7 +199,7 @@ public class HudsonBackup {
   private void backupGlobalXmls() throws IOException {
     LOGGER.fine("Backing up global configuration files...");
 
-    IOFileFilter suffixFileFilter = FileFilterUtils.and(FileFileFilter.FILE,
+    IOFileFilter suffixFileFilter = FileFilterUtils.and(FileFileFilter.INSTANCE,
         FileFilterUtils.suffixFileFilter(XML_FILE_EXTENSION), getFileAgeDiffFilter(), getExcludedFilesFilter());
     FileUtils.copyDirectory(hudsonHome, backupDirectory, ExistsAndReadableFileFilter.wrapperFilter(suffixFileFilter));
 
@@ -292,7 +292,7 @@ public class HudsonBackup {
         FileFilterUtils.suffixFileFilter(JPI_FILE_EXTENSION + DISABLED_EXTENSION),
         FileFilterUtils.suffixFileFilter(HPI_FILE_EXTENSION + DISABLED_EXTENSION));
 
-    final IOFileFilter filter = FileFilterUtils.and(FileFileFilter.FILE,
+    final IOFileFilter filter = FileFilterUtils.and(FileFileFilter.INSTANCE,
         FileFilterUtils.or(pluginArchivesFilter, disabledPluginMarkersFilter));
 
     backupRootFolder(PLUGINS_DIR_NAME, filter);
@@ -420,7 +420,7 @@ public class HudsonBackup {
     if (source.isDirectory()) {
       final IOFileFilter changelogFilter = FileFilterUtils.and(DirectoryFileFilter.DIRECTORY,
           FileFilterUtils.nameFileFilter(CHANGELOG_HISTORY_PLUGIN_DIR_NAME));
-      final IOFileFilter fileFilter = FileFilterUtils.and(FileFileFilter.FILE, getFileAgeDiffFilter());
+      final IOFileFilter fileFilter = FileFilterUtils.and(FileFileFilter.INSTANCE, getFileAgeDiffFilter());
 
       IOFileFilter filter = FileFilterUtils.and(FileFilterUtils.or(changelogFilter, fileFilter),
           getExcludedFilesFilter(),
@@ -438,7 +438,7 @@ public class HudsonBackup {
       final File archiveSrcDir = new File(buildSrcDir, ARCHIVE_DIR_NAME);
       if (archiveSrcDir.isDirectory()) {
         final IOFileFilter filter = FileFilterUtils.or(FileFilterUtils.directoryFileFilter(),
-            FileFilterUtils.and(FileFileFilter.FILE, getFileAgeDiffFilter()));
+            FileFilterUtils.and(FileFileFilter.INSTANCE, getFileAgeDiffFilter()));
         FileUtils.copyDirectory(archiveSrcDir, new File(buildDestDir, ARCHIVE_DIR_NAME),
             ExistsAndReadableFileFilter.wrapperFilter(filter));
       }

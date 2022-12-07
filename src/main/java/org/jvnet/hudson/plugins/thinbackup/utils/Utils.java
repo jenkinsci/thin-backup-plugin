@@ -214,7 +214,7 @@ public final class Utils {
     IOFileFilter zipFileFilter = FileFilterUtils.and(
         FileFilterUtils.prefixFileFilter(BackupSet.BACKUPSET_ZIPFILE_PREFIX),
         FileFilterUtils.suffixFileFilter(HudsonBackup.ZIP_FILE_EXTENSION),
-        FileFileFilter.FILE);
+        FileFileFilter.INSTANCE);
 
     final File[] existingZips = parentDir.listFiles((FilenameFilter) zipFileFilter);
     if (existingZips == null) {

@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.logging.Level;
@@ -28,7 +29,7 @@ public class DirectoriesZipper extends DirectoryWalker<Object> implements Closea
     if (!zipFile.createNewFile()) {
       LOGGER.log(Level.WARNING, "{0} already exists. Previous backup will be overridden.", zipFile.getName());
     }
-    zipStream = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(zipFile)));
+    zipStream = new ZipOutputStream(new BufferedOutputStream(Files.newOutputStream(zipFile.toPath())));
     this.rootPath = zipFile.getParent();
   }
 
