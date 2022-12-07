@@ -40,8 +40,7 @@ public class DirectoryCleaner extends DirectoryWalker<Object> {
   }
 
   @Override
-  protected void handleDirectoryEnd(final File directory, final int depth,
-      @SuppressWarnings("rawtypes") final Collection results) {
+  protected void handleDirectoryEnd(final File directory, final int depth, final Collection results) {
     if (directory != null && directory.list() != null) {
       final String[] list = directory.list();
       if (list != null && list.length == 0) {

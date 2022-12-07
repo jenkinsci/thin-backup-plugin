@@ -140,7 +140,7 @@ public class HudsonRestore {
     IOFileFilter zippedBackupSetsFilter = FileFilterUtils.and(
         FileFilterUtils.prefixFileFilter(BackupSet.BACKUPSET_ZIPFILE_PREFIX),
         FileFilterUtils.suffixFileFilter(HudsonBackup.ZIP_FILE_EXTENSION),
-        FileFileFilter.FILE);
+        FileFileFilter.INSTANCE);
 
     final File[] candidates = new File(backupPath).listFiles((FileFilter) zippedBackupSetsFilter);
     if (candidates != null) {
