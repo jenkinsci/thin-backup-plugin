@@ -31,6 +31,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.FileFileFilter;
@@ -215,8 +216,9 @@ public class HudsonBackup {
     LOGGER.fine("DONE backing up job specific configuration files.");
   }
 
-  private void backupJobsDirectory(final File jobsDirectory, final File jobsBackupDirectory) throws IOException {
-    Collection<String> jobNames = Arrays.asList(jobsDirectory.list());
+  private void backupJobsDirectory(@NonNull final File jobsDirectory, final File jobsBackupDirectory) throws IOException {
+    final String[] list = jobsDirectory.list();
+    Collection<String> jobNames = Arrays.asList(list != null ? list : new String[0]);
     LOGGER.log(Level.INFO, "Found {0} jobs to back up.", jobNames.size());
     LOGGER.log(Level.FINE, "\t{0}", jobNames);
 
