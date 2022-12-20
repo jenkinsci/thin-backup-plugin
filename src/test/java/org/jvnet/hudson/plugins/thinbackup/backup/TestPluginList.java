@@ -20,10 +20,11 @@ import java.io.File;
 import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TestPluginList {
 
@@ -31,14 +32,14 @@ public class TestPluginList {
   private File pluginsXml;
   private File pluginsXml2;
 
-  @Before
+  @BeforeEach
   public void setup() throws IOException {
     pluginsXml = File.createTempFile("pluginList", ".xml");
     pluginList = new PluginList(pluginsXml);
     pluginList.add("default", "0.1");
   }
 
-  @After
+  @AfterEach
   public void teardown() {
     FileUtils.deleteQuietly(pluginsXml);
     FileUtils.deleteQuietly(pluginsXml2);
@@ -46,9 +47,9 @@ public class TestPluginList {
 
   @Test
   public void testAdd() throws Exception {
-    Assert.assertEquals(1, pluginList.getPlugins().size());
+    assertEquals(1, pluginList.getPlugins().size());
     pluginList.add("plugin", "0.1");
-    Assert.assertEquals(2, pluginList.getPlugins().size());
+    assertEquals(2, pluginList.getPlugins().size());
   }
 
   @Test
@@ -57,8 +58,8 @@ public class TestPluginList {
     final PluginList pluginList2 = new PluginList(pluginsXml2);
     pluginList2.add("default", "0.1");
 
-    Assert.assertEquals(0, pluginList.compareTo(pluginList2));
-    Assert.assertEquals(0, pluginList2.compareTo(pluginList));
+    assertEquals(0, pluginList.compareTo(pluginList2));
+    assertEquals(0, pluginList2.compareTo(pluginList));
   }
 
   @Test
@@ -66,13 +67,13 @@ public class TestPluginList {
     pluginsXml2 = File.createTempFile("pluginList2", ".xml");
     final PluginList pluginList2 = new PluginList(pluginsXml2);
 
-    Assert.assertEquals(-1, pluginList.compareTo(pluginList2));
-    Assert.assertEquals(-1, pluginList2.compareTo(pluginList));
+    assertEquals(-1, pluginList.compareTo(pluginList2));
+    assertEquals(-1, pluginList2.compareTo(pluginList));
 
     pluginList2.add("default", "0.2");
 
-    Assert.assertEquals(-1, pluginList.compareTo(pluginList2));
-    Assert.assertEquals(-1, pluginList2.compareTo(pluginList));
+    assertEquals(-1, pluginList.compareTo(pluginList2));
+    assertEquals(-1, pluginList2.compareTo(pluginList));
   }
 
   @Test
@@ -82,8 +83,8 @@ public class TestPluginList {
 
     pluginList2.add("hudson", "0.2");
 
-    Assert.assertEquals(-1, pluginList.compareTo(pluginList2));
-    Assert.assertEquals(-1, pluginList2.compareTo(pluginList));
+    assertEquals(-1, pluginList.compareTo(pluginList2));
+    assertEquals(-1, pluginList2.compareTo(pluginList));
   }
 
 }

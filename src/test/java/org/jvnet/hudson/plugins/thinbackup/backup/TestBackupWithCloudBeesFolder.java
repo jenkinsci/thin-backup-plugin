@@ -10,9 +10,9 @@ import java.util.Date;
 
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.Matchers;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.plugins.thinbackup.TestHelper;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl;
@@ -24,7 +24,7 @@ public class TestBackupWithCloudBeesFolder {
   private File jenkinsHome;
   private File cloudBeesFolder;
 
-  @Before
+  @BeforeEach
   public void setup() throws IOException, InterruptedException {
     File base = new File(System.getProperty("java.io.tmpdir"));
     backupDir = TestHelper.createBackupFolder(base);
@@ -36,7 +36,7 @@ public class TestBackupWithCloudBeesFolder {
     
   }
   
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     FileUtils.deleteDirectory(jenkinsHome);
     FileUtils.deleteDirectory(backupDir);
