@@ -16,6 +16,9 @@
  */
 package org.jvnet.hudson.plugins.thinbackup.backup;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasItem;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -200,7 +203,7 @@ public class TestHudsonBackup {
     final File job = new File(new File(backup, HudsonBackup.JOBS_DIR_NAME), TestHelper.TEST_JOB_NAME);
     final List<String> arrayList = Arrays.asList(job.list());
     Assert.assertEquals(3, arrayList.size());
-    Assert.assertTrue(TestHelper.containsStringEndingWith(arrayList, HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME));
+    assertThat(arrayList, hasItem(containsString(HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME)));
 
     final File build = new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), TestHelper.CONCRETE_BUILD_DIRECTORY_NAME);
     list = build.list();

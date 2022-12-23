@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.file.Files;
-import java.util.List;
 
 import org.jvnet.hudson.plugins.thinbackup.backup.HudsonBackup;
 
@@ -196,19 +195,6 @@ public class TestHelper {
     new File(indexing, "indexing.log").createNewFile();
   }
 
-  public static boolean containsStringEndingWith(final List<String> strings, final String pattern) {
-    boolean contains = false;
-
-    for (final String string : strings) {
-      if (string.endsWith(pattern)) {
-        contains = true;
-        break;
-      }
-    }
-
-    return contains;
-  }
-  
   private static void addBuildNumber(final File nextBuildNumberFile) {
     try (Writer w = new FileWriter(nextBuildNumberFile)) {
       w.write("1234");
