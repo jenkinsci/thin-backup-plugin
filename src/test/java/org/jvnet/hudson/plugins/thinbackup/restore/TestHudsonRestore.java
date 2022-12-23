@@ -1,5 +1,9 @@
 package org.jvnet.hudson.plugins.thinbackup.restore;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -145,8 +149,8 @@ public class TestHudsonRestore {
     final int nrRestored = restoredFiles.size();
     Assert.assertEquals(originalFiles.size(), nrRestored + 3); // + 3 because original has more files that were not
                                                                // backed up on purpose (next build number, secret.key, workspace/neverBackupme.txt)
-    Assert.assertFalse(TestHelper.containsStringEndingWith(restoredFiles, HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME));
-    Assert.assertFalse(TestHelper.containsStringEndingWith(restoredFiles, "secret.key"));
+    assertThat(restoredFiles, not(hasItem(containsString(HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME))));
+    assertThat(restoredFiles, not(hasItem(containsString("secret.key"))));
   }
 
   @Test
@@ -176,8 +180,8 @@ public class TestHudsonRestore {
     final int nrRestored = restoredFiles.size();
     Assert.assertEquals(originalFiles.size(), nrRestored + 2); // + 2 because original has more files that were not
                                                                // backed up on purpose (secret.key, workspace/neverBackupme.txt)
-    Assert.assertTrue(TestHelper.containsStringEndingWith(restoredFiles, HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME));
-    Assert.assertFalse(TestHelper.containsStringEndingWith(restoredFiles, "secret.key"));
+    assertThat(restoredFiles, hasItem(containsString(HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME)));
+    assertThat(restoredFiles, not(hasItem(containsString("secret.key"))));
   }
 
   @Test
@@ -207,8 +211,8 @@ public class TestHudsonRestore {
     final int nrRestored = restoredFiles.size();
     Assert.assertEquals(originalFiles.size(), nrRestored + 3); // + 3 because original has more files that were not
                                                                // backed up on purpose (next build number, secret.key, workspace/neverBackupme.txt)
-    Assert.assertFalse(TestHelper.containsStringEndingWith(restoredFiles, HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME));
-    Assert.assertFalse(TestHelper.containsStringEndingWith(restoredFiles, "secret.key"));
+    assertThat(restoredFiles, not(hasItem(containsString(HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME))));
+    assertThat(restoredFiles, not(hasItem(containsString("secret.key"))));
   }
 
   @Test
@@ -245,8 +249,8 @@ public class TestHudsonRestore {
     final int nrRestored = restoredFiles.size();
     Assert.assertEquals(originalFiles.size(), nrRestored + 2); // + 3 because original has more files that were not
                                                                // backed up on purpose (secret.key, workspace/neverBackupme.txt)
-    Assert.assertTrue(TestHelper.containsStringEndingWith(restoredFiles, HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME));
-    Assert.assertFalse(TestHelper.containsStringEndingWith(restoredFiles, "secret.key"));
+    assertThat(restoredFiles, hasItem(containsString(HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME)));
+    assertThat(restoredFiles, not(hasItem(containsString("secret.key"))));
   }
 
 }

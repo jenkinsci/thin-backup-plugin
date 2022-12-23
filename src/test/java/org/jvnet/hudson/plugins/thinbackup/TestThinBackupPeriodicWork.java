@@ -16,23 +16,20 @@
  */
 package org.jvnet.hudson.plugins.thinbackup;
 
-import org.junit.Before;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TestThinBackupPeriodicWork {
 
-  private ThinBackupPeriodicWork thinBackupPeriodicWork;
-
-  @Before
-  public void setup() {
-    thinBackupPeriodicWork = new ThinBackupPeriodicWork();
-  }
-
   @Test
   public void testGetNextScheduledBackup() {
+    ThinBackupPeriodicWork thinBackupPeriodicWork = new ThinBackupPeriodicWork();
     final long currentTime = System.currentTimeMillis();
     final String fullCron = "* * * * *";
     final String diffCron = "* * * * *";
-    thinBackupPeriodicWork.getNextScheduledBackupType(currentTime, fullCron, diffCron);
+    final ThinBackupPeriodicWork.BackupType backupType = thinBackupPeriodicWork.getNextScheduledBackupType(currentTime, fullCron, diffCron);
+    assertEquals(ThinBackupPeriodicWork.BackupType.FULL, backupType);
   }
 }
