@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.FileFileFilter;
 import org.apache.commons.io.filefilter.FileFilterUtils;
@@ -261,6 +262,7 @@ public final class Utils {
    * @param fullBackup fill backup
    * @return a list of all diff backups which reference the given full backup.
    */
+  @NonNull
   public static List<File> getReferencingDiffBackups(final File fullBackup) {
     final List<File> diffBackups = new ArrayList<>();
     if (fullBackup.getName().startsWith(BackupType.DIFF.toString())) {
