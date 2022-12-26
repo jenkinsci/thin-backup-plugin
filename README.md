@@ -7,7 +7,7 @@ This plugin simply backs up the global and job specific configurations (not the 
 The [Backup Plugin](https://plugins.jenkins.io/backup/) only does manual backups and
 stores all data found in JENKINS\_HOME.  This is sometimes not practical because of time and disk
 space requirements and the fact that it can only be manually triggered.  *ThinBackup*s can be
-scheduled and only backs up the most vital configuration info.
+scheduled and only backs up the most vital configuration info. Furthermore the Backup Plugin is unmaintained for quite a while.
 
 ## Documentation
 
