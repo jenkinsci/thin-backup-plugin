@@ -1,5 +1,8 @@
 package org.jvnet.hudson.plugins.thinbackup.backup;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import hudson.model.ItemGroup;
@@ -9,10 +12,9 @@ import java.io.IOException;
 import java.util.Date;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.plugins.thinbackup.TestHelper;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl;
@@ -23,7 +25,7 @@ public class TestBackupMultibranchJob {
   private File backupDir;
   private File jenkinsHome;
 
-  @Before
+  @BeforeEach
   public void setup() throws IOException, InterruptedException {
     File base = new File(System.getProperty("java.io.tmpdir"));
     backupDir = TestHelper.createBackupFolder(base);
@@ -35,7 +37,7 @@ public class TestBackupMultibranchJob {
     TestHelper.addSingleMultibranchResult(jobDir);
   }
   
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     FileUtils.deleteDirectory(jenkinsHome);
     FileUtils.deleteDirectory(backupDir);
@@ -67,22 +69,24 @@ public class TestBackupMultibranchJob {
     new HudsonBackup(mockPlugin, BackupType.FULL, new Date(), mock(ItemGroup.class)).backup();
     
     String[] list = backupDir.list();
-    Assert.assertEquals(1, list.length);
+    assertNotNull(list);
+    assertEquals(1, list.length);
     final File backup = new File(backupDir, list[0]);
     list = backup.list();
-    Assert.assertEquals(6, list.length);
+    assertNotNull(list);
+    assertEquals(6, list.length);
     
     File jobBackup = new File(backup, "jobs/"+TestHelper.TEST_JOB_NAME);
     
-    Assert.assertTrue(new File(jobBackup, HudsonBackup.MULTIBRANCH_DIR_NAME).exists());
-    Assert.assertTrue(new File(jobBackup, HudsonBackup.MULTIBRANCH_DIR_NAME+"/master").exists());
-    Assert.assertTrue(new File(jobBackup, HudsonBackup.MULTIBRANCH_DIR_NAME+"/development").exists());
-    Assert.assertTrue(new File(jobBackup, HudsonBackup.MULTIBRANCH_DIR_NAME+"/master/"+HudsonBackup.BUILDS_DIR_NAME+"/"+TestHelper.CONCRETE_BUILD_DIRECTORY_NAME +"/build.xml").exists());
-    Assert.assertTrue(new File(jobBackup, HudsonBackup.MULTIBRANCH_DIR_NAME+"/development/"+HudsonBackup.BUILDS_DIR_NAME+"/"+TestHelper.CONCRETE_BUILD_DIRECTORY_NAME +"/build.xml").exists());
+    assertTrue(new File(jobBackup, HudsonBackup.MULTIBRANCH_DIR_NAME).exists());
+    assertTrue(new File(jobBackup, HudsonBackup.MULTIBRANCH_DIR_NAME+"/master").exists());
+    assertTrue(new File(jobBackup, HudsonBackup.MULTIBRANCH_DIR_NAME+"/development").exists());
+    assertTrue(new File(jobBackup, HudsonBackup.MULTIBRANCH_DIR_NAME+"/master/"+HudsonBackup.BUILDS_DIR_NAME+"/"+TestHelper.CONCRETE_BUILD_DIRECTORY_NAME +"/build.xml").exists());
+    assertTrue(new File(jobBackup, HudsonBackup.MULTIBRANCH_DIR_NAME+"/development/"+HudsonBackup.BUILDS_DIR_NAME+"/"+TestHelper.CONCRETE_BUILD_DIRECTORY_NAME +"/build.xml").exists());
 
-    Assert.assertTrue(new File(jobBackup, HudsonBackup.INDEXING_DIR_NAME).exists());
-    Assert.assertTrue(new File(jobBackup, HudsonBackup.INDEXING_DIR_NAME+"/indexing.xml").exists());
-    Assert.assertTrue(new File(jobBackup, HudsonBackup.INDEXING_DIR_NAME+"/indexing.log").exists());
+    assertTrue(new File(jobBackup, HudsonBackup.INDEXING_DIR_NAME).exists());
+    assertTrue(new File(jobBackup, HudsonBackup.INDEXING_DIR_NAME+"/indexing.xml").exists());
+    assertTrue(new File(jobBackup, HudsonBackup.INDEXING_DIR_NAME+"/indexing.log").exists());
 
   }
 
