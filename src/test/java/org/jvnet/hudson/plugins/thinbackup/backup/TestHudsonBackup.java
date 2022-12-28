@@ -354,7 +354,8 @@ public class TestHudsonBackup {
       throw new RuntimeException(e);
     }
     final ThinBackupPluginImpl mockPlugin = TestHelper.createMockPlugin(jenkinsHome, backupDir);
-    Assert.assertEquals(72, filesAndFolders.size());
+
+    Assert.assertEquals(filesAndFolders.toString(),72, filesAndFolders.size());
     HudsonBackup backup = new HudsonBackup(mockPlugin, BackupType.FULL, new Date(), mockHudson);
     backup.removeEmptyDirs(jenkinsHome);
     try (Stream<Path> walk = Files.walk(jenkinsHome.toPath())) {
@@ -364,7 +365,7 @@ public class TestHudsonBackup {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-    Assert.assertEquals(25, filesAndFolders.size());
+    Assert.assertEquals(filesAndFolders.toString(),25, filesAndFolders.size());
   }
   
   @Test
