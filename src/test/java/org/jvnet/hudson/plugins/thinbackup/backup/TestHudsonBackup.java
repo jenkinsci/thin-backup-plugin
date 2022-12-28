@@ -347,7 +347,8 @@ public class TestHudsonBackup {
 
     List<String> filesAndFolders;
     try (Stream<Path> walk = Files.walk(jenkinsHome.toPath())) {
-      filesAndFolders = walk
+      // exclude symbolic links, we ignore these in this test
+      filesAndFolders = walk.filter(file -> !Files.isSymbolicLink(file))
               .map(Path::toString)
               .collect(Collectors.toList());
     } catch (IOException e) {
@@ -359,7 +360,8 @@ public class TestHudsonBackup {
     HudsonBackup backup = new HudsonBackup(mockPlugin, BackupType.FULL, new Date(), mockHudson);
     backup.removeEmptyDirs(jenkinsHome);
     try (Stream<Path> walk = Files.walk(jenkinsHome.toPath())) {
-      filesAndFolders = walk
+      // exclude symbolic links, we ignore these in this test
+      filesAndFolders = walk.filter(file -> !Files.isSymbolicLink(file))
               .map(Path::toString)
               .collect(Collectors.toList());
     } catch (IOException e) {
