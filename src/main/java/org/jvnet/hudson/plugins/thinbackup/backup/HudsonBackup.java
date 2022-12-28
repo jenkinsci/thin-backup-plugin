@@ -19,17 +19,22 @@ package org.jvnet.hudson.plugins.thinbackup.backup;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.stream.Stream;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import org.apache.commons.io.FileUtils;
@@ -188,12 +193,35 @@ public class HudsonBackup {
       backupAdditionalFiles();
     }
 
-    (new DirectoryCleaner()).removeEmptyDirectories(backupDirectory);
+    removeEmptyDirs(backupDirectory);
 
     if (backupType == BackupType.FULL) {
       cleanupDiffs();
       moveOldBackupsToZipFile(backupDirectory);
       removeSuperfluousBackupSets();
+    }
+  }
+
+  /**
+   * Deletes all empty directories, including rootDir if it is empty at the end.
+   *
+   * @param rootDir  the directory to start from, not null
+   * @throws IOException if an I/O Error occurs
+   */
+  public void removeEmptyDirs(final File rootDir) throws IOException {
+    // remove empty dirs
+    try (Stream<Path> walk = Files.walk(rootDir.toPath())) {
+      walk.sorted(Comparator.reverseOrder())
+          .map(Path::toFile)
+          .filter(File::isDirectory)
+          .filter(file -> Objects.requireNonNull(file.list()).length == 0)
+          .forEach(file1 -> {
+            try {
+              Files.delete(file1.toPath());
+            } catch (IOException e) {
+              LOGGER.log(Level.WARNING, String.format("Cannot delete Backup directory: %s.", file1.getName()), e);
+            }
+          });
     }
   }
 
