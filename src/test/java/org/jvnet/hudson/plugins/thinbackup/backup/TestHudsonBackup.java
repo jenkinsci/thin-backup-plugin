@@ -31,11 +31,15 @@ import hudson.util.RunList;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
@@ -326,6 +330,41 @@ public class TestHudsonBackup {
     list = build.list();
     Assert.assertNotNull(list);
     Assert.assertEquals(7, list.length);
+  }
+  
+  @Test
+  public void testRemovingEmptyDirs() throws IOException {
+    TestHelper.createBackupFolder(jenkinsHome);
+    // create a couple of empty dirs
+    for (int i = 0; i < 10; i++) {
+      File folder = new File(jenkinsHome, "empty" + i);
+      folder.mkdirs();
+      for (int j = 0; j < 3; j++) {
+        File folder2 = new File(folder, "child" + j);
+        folder2.mkdirs();
+      }
+    }
+
+    List<String> filesAndFolders;
+    try (Stream<Path> walk = Files.walk(jenkinsHome.toPath())) {
+      filesAndFolders = walk
+              .map(Path::toString)
+              .collect(Collectors.toList());
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    final ThinBackupPluginImpl mockPlugin = TestHelper.createMockPlugin(jenkinsHome, backupDir);
+    Assert.assertEquals(72, filesAndFolders.size());
+    HudsonBackup backup = new HudsonBackup(mockPlugin, BackupType.FULL, new Date(), mockHudson);
+    backup.removeEmptyDirs(jenkinsHome);
+    try (Stream<Path> walk = Files.walk(jenkinsHome.toPath())) {
+      filesAndFolders = walk
+              .map(Path::toString)
+              .collect(Collectors.toList());
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    Assert.assertEquals(25, filesAndFolders.size());
   }
   
   @Test
