@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.FileFileFilter;
 import org.apache.commons.io.filefilter.FileFilterUtils;
@@ -66,7 +67,7 @@ public final class Utils {
    * Waits until all Hudson slaves are idle.
    */
   public static void waitUntilIdle() {
-    Jenkins jenkins = Jenkins.getInstance();
+    Jenkins jenkins = Jenkins.getInstanceOrNull();
     if (jenkins == null) {
       return;
     }
@@ -102,7 +103,7 @@ public final class Utils {
    * @throws IOException ?
    */
   public static void waitUntilIdleAndSwitchToQuietMode(int timeout, TimeUnit unit) throws IOException {
-    Jenkins jenkins = Jenkins.getInstance();
+    Jenkins jenkins = Jenkins.getInstanceOrNull();
     if (jenkins == null) {
       return;
     }
@@ -214,7 +215,7 @@ public final class Utils {
     IOFileFilter zipFileFilter = FileFilterUtils.and(
         FileFilterUtils.prefixFileFilter(BackupSet.BACKUPSET_ZIPFILE_PREFIX),
         FileFilterUtils.suffixFileFilter(HudsonBackup.ZIP_FILE_EXTENSION),
-        FileFileFilter.FILE);
+        FileFileFilter.INSTANCE);
 
     final File[] existingZips = parentDir.listFiles((FilenameFilter) zipFileFilter);
     if (existingZips == null) {
@@ -261,6 +262,7 @@ public final class Utils {
    * @param fullBackup fill backup
    * @return a list of all diff backups which reference the given full backup.
    */
+  @NonNull
   public static List<File> getReferencingDiffBackups(final File fullBackup) {
     final List<File> diffBackups = new ArrayList<>();
     if (fullBackup.getName().startsWith(BackupType.DIFF.toString())) {
@@ -449,7 +451,7 @@ public final class Utils {
                     envVar, path);
             throw new EnvironmentVariableNotDefinedException(message);
           }
-          newPath.append(tmpPath.substring(0, startIdx));
+          newPath.append(tmpPath, 0, startIdx);
           newPath.append(envVarValue);
           tmpPath = tmpPath.substring(endIdx + END_ENV_VAR_TOKEN.length());
         } else {

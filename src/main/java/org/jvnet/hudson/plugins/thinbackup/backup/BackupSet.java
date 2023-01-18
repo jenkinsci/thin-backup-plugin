@@ -158,7 +158,7 @@ public class BackupSet implements Comparable<BackupSet> {
       diffBackups = Utils.getReferencingDiffBackups(fullBackup);
       success = true;
     }
-    if (success && (diffBackups != null) && !diffBackups.isEmpty()) {
+    if (success && !diffBackups.isEmpty()) {
       diffBackupsNames = new ArrayList<>(diffBackups.size());
       for (final File diffBackup : diffBackups) {
         final String tmpName = diffBackup.getName();
@@ -319,7 +319,7 @@ public class BackupSet implements Comparable<BackupSet> {
       }
 
       final File[] backups = unzipDir.listFiles();
-      if (backups.length > 0) {
+      if (backups != null && backups.length > 0) {
         result = new BackupSet(backups[0]);
       } else {
         // in case of an error (i.e. nothing was unzipped) return an invalid BackupSet
@@ -467,7 +467,7 @@ public class BackupSet implements Comparable<BackupSet> {
     if (diffBackupsNames != null) {
       for (final String diffBackupName : diffBackupsNames) {
         tmp = Utils.getDateFromBackupDirectoryName(diffBackupName);
-        inDiffs = (tmp != null) && date.equals(tmp);
+        inDiffs = date.equals(tmp);
         if (inDiffs) {
           break;
         }
@@ -475,7 +475,7 @@ public class BackupSet implements Comparable<BackupSet> {
     }
 
     tmp = Utils.getDateFromBackupDirectoryName(fullBackupName);
-    return (inDiffs || ((tmp != null) && date.equals(tmp)));
+    return (inDiffs || (date.equals(tmp)));
   }
 
   /**

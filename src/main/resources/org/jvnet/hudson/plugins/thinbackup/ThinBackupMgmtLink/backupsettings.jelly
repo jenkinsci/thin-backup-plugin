@@ -22,98 +22,103 @@
         <st:include it="${app}" page="sidepanel.jelly"/>
         <l:main-panel>
             <h1>
-                <img src="${imagesURL}/48x48/${it.iconFileName}" alt=""/>
-                thinBackup Configuration
+                ${%thin_backup_configuration}
             </h1>
 
             <f:form method="post" action="saveSettings">
-                 <f:section title="Backup settings">
-                    <f:entry title="Backup directory" field="backupPath"
+                 <f:section title="${%backup_settings}">
+                    <f:entry title="${%backup_path}" field="backupPath"
                         help="/plugin/thinBackup/help/help-backupPath.html">
                         <f:textbox value="${it.configuration.backupPath}" name="backupPath"
                             checkUrl="'${rootURL}/plugin/thinBackup/checkBackupPath?value='+escape(this.value)"/>
                     </f:entry>
                     
-                    <f:entry title="Backup schedule for full backups" field="fullBackupSchedule"
+                    <f:entry title="${%full_backup_schedule}" field="fullBackupSchedule"
                         help="/plugin/thinBackup/help/help-fullBackupSchedule.html">
                         <f:textbox value="${it.configuration.fullBackupSchedule}" name="fullBackupSchedule"
                             checkUrl="'${rootURL}/plugin/thinBackup/checkBackupSchedule?value='+escape(this.value)"/>
                     </f:entry>
                     
-                    <f:entry title="Backup schedule for differential backups" field="diffBackupSchedule"
+                    <f:entry title="${%diff_backup_schedule}" field="diffBackupSchedule"
                         help="/plugin/thinBackup/help/help-diffBackupSchedule.html">
                         <f:textbox value="${it.configuration.diffBackupSchedule}" name="diffBackupSchedule"
                             checkUrl="'${rootURL}/plugin/thinBackup/checkBackupSchedule?value='+escape(this.value)"/>
                     </f:entry>
                     
-                    <f:entry title="Max number of backup sets" field="nrMaxStoredFull"
+                    <f:entry title="${%max_backup_full}" field="nrMaxStoredFull"
                         help="/plugin/thinBackup/help/help-nrMaxStoredFull.html">
                         <f:textbox value="${it.configuration.nrMaxStoredFull}" name="nrMaxStoredFull" />
                     </f:entry>
                     
-                    <f:entry title="Files excluded from backup (regular expression)" field="excludedFilesRegex"
+                    <f:entry title="${%exclude_files_regex}" field="excludedFilesRegex"
                         help="/plugin/thinBackup/help/help-excludedFilesRegex.html">
                         <f:textbox value="${it.configuration.excludedFilesRegex}" name="excludedFilesRegex"
                             checkUrl="'${rootURL}/plugin/thinBackup/checkExcludedFilesRegex?value='+escape(this.value)"/>
                     </f:entry>
                     
-                    <f:optionalBlock title="Wait until Jenkins/Hudson is idle to perform a backup"
+                    <f:optionalBlock title="${%wait_for_idle}"
                         help="/plugin/thinBackup/help/help-waitForIdle.html"
                         checked="${it.configuration.waitForIdle}"
                         name="waitForIdle" checkUrl="'${rootURL}/plugin/thinBackup/checkWaitForIdle?value='+escape(this.value)">
-                        <f:entry title="Force Jenkins to quiet mode after specified minutes" field="forceQuietModeTimeout"
+                        <f:entry title="${%force_quite_minutes}" field="forceQuietModeTimeout"
 	                        help="/plugin/thinBackup/help/help-forceQuietModeTimeout.html">
 	                        <f:textbox value="${it.configuration.forceQuietModeTimeout}" name="forceQuietModeTimeout"
 	                            checkUrl="'${rootURL}/plugin/thinBackup/checkForceQuietModeTimeout?value='+escape(this.value)"/>
                         </f:entry>
                     </f:optionalBlock>
 
-                    <f:optionalBlock title="Backup build results"
+                    <f:optionalBlock title="${%backup_results}"
                         help="/plugin/thinBackup/help/help-backupBuildResults.html"
                         checked="${it.configuration.backupBuildResults}"
                         name="backupBuildResults" >
-                        <f:optionalBlock title="Backup build archive"
+                        <f:optionalBlock title="${%backup_build_archive}"
                             help="/plugin/thinBackup/help/help-backupBuildArchive.html"
                             checked="${it.configuration.backupBuildArchive}"
                             name="backupBuildArchive" />
-                        <f:optionalBlock title="Backup only builds marked to keep"
+                        <f:optionalBlock title="${%backup_build_keep}"
                             help="/plugin/thinBackup/help/help-backupBuildToKeepOnly.html"
                             checked="${it.configuration.backupBuildsToKeepOnly}"
                             name="backupBuildsToKeepOnly" />
                     </f:optionalBlock>
                     
-                    <f:optionalBlock title="Backup 'userContent' folder"
+                    <f:optionalBlock title="${%backup_user_content}"
                         help="/plugin/thinBackup/help/help-backupUserContent.html"
                         checked="${it.configuration.backupUserContents}"
                         name="backupUserContents" />
 
-                    <f:optionalBlock title="Backup next build number file"
+                    <f:optionalBlock title="${%backup_build_number}"
                         help="/plugin/thinBackup/help/help-backupNextBuildNumber.html"
                         checked="${it.configuration.backupNextBuildNumber}"
                         name="backupNextBuildNumber" />
 
-                    <f:optionalBlock title="Backup plugins archives"
+                    <f:optionalBlock title="${%backup_plugin_archive}"
                         help="/plugin/thinBackup/help/help-backupPlugins.html"
                         checked="${it.configuration.backupPluginArchives}"
                         name="backupPluginArchives" >
                     </f:optionalBlock>
 
-                    <f:optionalBlock title="Backup additional files"
+                    <f:optionalBlock title="${%backup_config_history}"
+                        help="/plugin/thinBackup/help/help-backupConfigHistory.html"
+                        checked="${it.configuration.backupConfigHistory}"
+                        name="backupConfigHistory" >
+                    </f:optionalBlock>
+
+                    <f:optionalBlock title="${%backup_additional_files}"
                         help="/plugin/thinBackup/help/help-backupAdditionalFiles.html"
                         checked="${it.configuration.backupAdditionalFiles}"
                         name="backupAdditionalFiles">
-                        <f:entry title="Files included in backup (regular expression)" field="backupAdditionalFilesRegex">
+                        <f:entry title="${%backup_additional_files_regex}" field="backupAdditionalFilesRegex">
                             <f:textbox value="${it.configuration.backupAdditionalFilesRegex}" name="backupAdditionalFilesRegex"
                                 checkUrl="'${rootURL}/plugin/thinBackup/checkExcludedFilesRegex?value='+escape(this.value)"/>
                         </f:entry>
                     </f:optionalBlock>
                     
-                    <f:optionalBlock title="Clean up differential backups"
+                    <f:optionalBlock title="${%clean_differential}"
                         help="/plugin/thinBackup/help/help-cleanupDiff.html"
                         checked="${it.configuration.cleanupDiff}"
                         name="cleanupDiff" />
                     
-                    <f:optionalBlock title="Move old backups to ZIP files"
+                    <f:optionalBlock title="${%move}"
                         help="/plugin/thinBackup/help/help-moveOldBackupsToZipFile.html"
                         checked="${it.configuration.moveOldBackupsToZipFile}"
                         name="moveOldBackupsToZipFile" />
@@ -121,7 +126,7 @@
                 
                 <f:section>
   		              <f:entry>
-    		                <f:submit value="Save"/>
+    		                <f:submit value="${%save}"/>
   		              </f:entry>
                 </f:section>
             </f:form>

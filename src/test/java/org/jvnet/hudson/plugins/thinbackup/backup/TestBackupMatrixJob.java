@@ -1,45 +1,38 @@
 package org.jvnet.hudson.plugins.thinbackup.backup;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import hudson.model.ItemGroup;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.jvnet.hudson.plugins.thinbackup.TestHelper;
+import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
+import org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 
-import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.jvnet.hudson.plugins.thinbackup.TestHelper;
-import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
-import org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl;
-import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class TestBackupMatrixJob {
-  
+
+  @Rule
+  public TemporaryFolder tmpFolder = new TemporaryFolder();
+
   private File backupDir;
   private File jenkinsHome;
 
   @Before
-  public void setup() throws IOException, InterruptedException {
-    File base = new File(System.getProperty("java.io.tmpdir"));
-    backupDir = TestHelper.createBackupFolder(base);
-
-    jenkinsHome = TestHelper.createBasicFolderStructure(base);
+  public void setUp() throws IOException, InterruptedException {
+    backupDir = TestHelper.createBackupFolder(tmpFolder.newFolder("thin-backup"));
+    jenkinsHome = TestHelper.createBasicFolderStructure(tmpFolder.newFolder("jenkins"));
     File jobDir = TestHelper.createJob(jenkinsHome, TestHelper.TEST_JOB_NAME);
     TestHelper.addNewBuildToJob(jobDir);
     
     TestHelper.addSingleConfigurationResult(jobDir);
-  }
-  
-  @After
-  public void tearDown() throws Exception {
-    FileUtils.deleteDirectory(jenkinsHome);
-    FileUtils.deleteDirectory(backupDir);
-    FileUtils.deleteDirectory(new File(Utils.THINBACKUP_TMP_DIR));
   }
   
   private ThinBackupPluginImpl createMockPlugin() {

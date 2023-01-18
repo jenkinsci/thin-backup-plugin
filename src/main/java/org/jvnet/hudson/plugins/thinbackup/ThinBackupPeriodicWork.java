@@ -24,9 +24,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import hudson.model.AsyncPeriodicWork;
 import org.apache.commons.lang.StringUtils;
 import org.jvnet.hudson.plugins.thinbackup.backup.HudsonBackup;
-import org.jvnet.hudson.plugins.thinbackup.hudson.model.AsyncPeriodicWork;
+
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 
 import antlr.ANTLRException;
@@ -68,7 +69,7 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
   }
 
   protected void backupNow(final BackupType type) {
-    final Jenkins jenkins = Jenkins.getInstance();
+    final Jenkins jenkins = Jenkins.getInstanceOrNull();
     if (jenkins == null) {
       return;
     }
@@ -83,7 +84,7 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
           LOGGER.fine("Wait until executors are idle to perform backup.");
           Utils.waitUntilIdleAndSwitchToQuietMode(plugin.getForceQuietModeTimeout(), TimeUnit.MINUTES);
         } else {
-          LOGGER.warning("Do not wait until jenkins/hudson is idle to perform backup. This could cause corrupt backups.");
+          LOGGER.warning("Do not wait until Jenkins is idle to perform backup. This could cause corrupt backups.");
         }
 
         new HudsonBackup(plugin, type).backup();
@@ -93,14 +94,14 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
     } catch (final IOException e) {
       final String msg = MessageFormat
           .format(
-              "Cannot perform a backup. Please be sure jenkins/hudson has write privileges in the configured backup path ''{0}''.",
+              "Cannot perform a backup. Please be sure Jenkins has write privileges in the configured backup path ''{0}''.",
               backupPath);
       LOGGER.log(Level.SEVERE, msg, e);
     } finally {
       if (!inQuietModeBeforeBackup) {
         jenkins.doCancelQuietDown();
       } else {
-        LOGGER.info("Backup process finished, but still in quiet mode as before. The quiet mode needs to be canceled manually, because it is not clear who is putting jenkins/hudson into quiet mode.");
+        LOGGER.info("Backup process finished, but still in quiet mode as before. The quiet mode needs to be canceled manually, because it is not clear who is putting Jenkins into quiet mode.");
       }
     }
   }

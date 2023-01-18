@@ -2,19 +2,16 @@
 
 This plugin simply backs up the global and job specific configurations (not the archive or the workspace).
 
-**This plugin is up for adoption.** Want to help improve this plugin?
-[Click here to learn more](https://www.jenkins.io/doc/developer/plugin-governance/adopt-a-plugin/)!
-
 ## Why another backup plugin
 
 The [Backup Plugin](https://plugins.jenkins.io/backup/) only does manual backups and
 stores all data found in JENKINS\_HOME.  This is sometimes not practical because of time and disk
 space requirements and the fact that it can only be manually triggered.  *ThinBackup*s can be
-scheduled and only backs up the most vital configuration info.
+scheduled and only backs up the most vital configuration info. Furthermore the Backup Plugin is unmaintained for quite a while.
 
 ## Documentation
 
-This plugin adds another management link to "Manage Jenkins" called ThinBackup which looks like
+This plugin adds another management link to "Manage Jenkins" in the Tools section in newer Jenkins versions, called ThinBackup which looks like
 this:
 
 ![](images/ManagementLink.png)
@@ -110,6 +107,12 @@ so think carefully about it.  Once you decide to backup build results, also get 
 backing up your build archives.  Once again, be careful with this option because it could be very
 **time consuming** and probably needs **a ton of disk space**!
 
+#### Backup next build number file
+If this option is enabled, the file `nextBuildNumber` will also be backed up.
+
+#### Backup 'config-history' folder
+If this option is enabled, the directory `config-history` will also be backed up. The plugin which creates this folder is the [Job Configuration History Plugin](https://plugins.jenkins.io/jobConfigHistory/). 
+
 #### Backup 'userContents'
 
 Jenkins provides a URL where you can put common data (e.g., static HTML, Tools, etc.).  You can
@@ -172,4 +175,4 @@ Please let us know if you have another option or feature for this plugin by ente
 write us an email.
 
 Before submitting a feature request or bug report, you can check if it has already been submitted by
-searching issues in JIRA categorized under the thin-backup-plugin component.
+searching issues in JIRA categorized under the thin-backup-plugin component or directly on the [plugin site](https://plugins.jenkins.io/jobConfigHistory/#issues)

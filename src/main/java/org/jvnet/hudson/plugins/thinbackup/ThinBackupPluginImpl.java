@@ -54,6 +54,8 @@ public class ThinBackupPluginImpl extends Plugin {
   private boolean backupBuildArchive = false;
   private boolean backupPluginArchives = false;
   private boolean backupUserContents = false;
+
+  private boolean backupConfigHistory = false;
   private boolean backupAdditionalFiles = false;
   private String backupAdditionalFilesRegex = null;
   private boolean backupNextBuildNumber = false;
@@ -77,7 +79,7 @@ public class ThinBackupPluginImpl extends Plugin {
   }
 
   public File getHudsonHome() {
-    Jenkins jenkins = Jenkins.getInstance();
+    Jenkins jenkins = Jenkins.getInstanceOrNull();
     if (jenkins == null) {
       return null;
     }
@@ -379,4 +381,11 @@ public class ThinBackupPluginImpl extends Plugin {
     }
   }
 
+  public boolean isBackupConfigHistory() {
+    return backupConfigHistory;
+  }
+
+  public void setBackupConfigHistory(boolean backupConfigHistory) {
+    this.backupConfigHistory = backupConfigHistory;
+  }
 }

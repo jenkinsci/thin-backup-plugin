@@ -17,36 +17,38 @@
  -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
-         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-    <l:layout permission="${app.ADMINISTER}" norefresh="true">
-        <st:include it="${app}" page="sidepanel.jelly"/>
-        <l:main-panel>
-            <h1>
-                <img src="${imagesURL}/48x48/${it.iconFileName}" alt=""/>
-                ${it.displayName}
-            </h1>
-            
-            <div style="margin-left : 2em;">
-            <br />
-            <lu style="list-style-type:none;">
-                <li>
-                    <h2><A href="backupManual">
-                    <img src="${rootURL}/plugin/thinBackup/images/backup.png" alt=""/>
-                    Backup Now</A></h2>
-                </li>
-                <li>
-                    <h2><A href="restoreOptions">
-                    <img src="${rootURL}/plugin/thinBackup/images/restore.png" alt=""/>
-                    Restore</A></h2>
-                </li>
-                <li>
-                    <h2><A href="backupsettings">
-                    <img src="${rootURL}/plugin/thinBackup/images/settings.png" alt=""/>
-                    Settings</A></h2>
-                </li>
-            </lu>
-            </div>
-            
-        </l:main-panel>
-    </l:layout>
+  xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <l:layout permission="${app.ADMINISTER}" norefresh="true">
+    <st:include it="${app}" page="sidepanel.jelly"/>
+    <l:main-panel>
+      <h1>
+        ${it.displayName}
+      </h1>
+
+      <div class="jenkins-buttons-row jenkins-!-padding-3">
+        <a href="backupManual" style="text-decoration: none;">
+          <button class="jenkins-button" tooltip="${%backup_manual_tooltip}">
+            <l:icon src="symbol-cloud-download-outline plugin-ionicons-api"/>
+            ${%backup_now}
+          </button>
+        </a>
+
+        <a href="restoreOptions" style="text-decoration: none;">
+          <button class="jenkins-button" tooltip="${%restore_options_tooltip}">
+            <l:icon src="symbol-cloud-upload-outline plugin-ionicons-api"/>
+            ${%restore}
+          </button>
+        </a>
+
+        <a href="backupsettings" style="text-decoration: none;">
+          <button class="jenkins-button"
+            tooltip="${%backup_settings_tooltip}">
+            <l:icon src="symbol-cog-outline plugin-ionicons-api"/>
+            ${%settings}
+          </button>
+        </a>
+      </div>
+
+    </l:main-panel>
+  </l:layout>
 </j:jelly>

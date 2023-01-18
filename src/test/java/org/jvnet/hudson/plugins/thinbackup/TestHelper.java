@@ -8,12 +8,11 @@ import hudson.util.StreamTaskListener;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.List;
+import java.nio.file.Files;
 
 import org.jvnet.hudson.plugins.thinbackup.backup.HudsonBackup;
 
@@ -54,7 +53,7 @@ public class TestHelper {
     
     final File config = new File(folderDir, "config.xml");
     config.createNewFile();
-    final BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(config));
+    final BufferedOutputStream out = new BufferedOutputStream(Files.newOutputStream(config.toPath()));
     out.write(CONFIG_XML_CONTENTS.getBytes());
     out.close();
     
@@ -72,13 +71,32 @@ public class TestHelper {
     
     return testJob;
   }
+  
+  /**
+   * When deleting multibranch jobs / folders or removing them we saw leftover directories in the Jenkins
+   * filesystem. They do not contain a config.xml nor any other file. We simulate a structure like that here:
+   * <pre>JENKINS_HOME/jobs/jobName
+   * '- jobs</pre>
+   * @param jenkinsHome
+   * @param jobName
+   * @return
+   * @throws IOException
+   */
+  public static File createMaliciousMultiJob(File jenkinsHome, String jobName) throws IOException {
+	    final File emptyJobDir = new File(new File(jenkinsHome, HudsonBackup.JOBS_DIR_NAME), "empty");
+	    emptyJobDir.mkdirs();
+	    final File jobsDirectory = new File(emptyJobDir, HudsonBackup.JOBS_DIR_NAME);
+	    jobsDirectory.mkdir();
+	    
+	    return emptyJobDir;
+  }
 
   private static File createJobsFolderWithConfiguration(File jenkinsHome, String jobName) throws IOException, FileNotFoundException {
     final File testJob = new File(new File(jenkinsHome, HudsonBackup.JOBS_DIR_NAME), jobName);
     testJob.mkdirs();
     final File config = new File(testJob, "config.xml");
     config.createNewFile();
-    final BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(config));
+    final BufferedOutputStream out = new BufferedOutputStream(Files.newOutputStream(config.toPath()));
     out.write(CONFIG_XML_CONTENTS.getBytes());
     out.close();
     return testJob;
@@ -177,19 +195,6 @@ public class TestHelper {
     new File(indexing, "indexing.log").createNewFile();
   }
 
-  public static boolean containsStringEndingWith(final List<String> strings, final String pattern) {
-    boolean contains = false;
-
-    for (final String string : strings) {
-      if (string.endsWith(pattern)) {
-        contains = true;
-        break;
-      }
-    }
-
-    return contains;
-  }
-  
   private static void addBuildNumber(final File nextBuildNumberFile) {
     try (Writer w = new FileWriter(nextBuildNumberFile)) {
       w.write("1234");
@@ -221,7 +226,7 @@ public class TestHelper {
     testNode.mkdirs();
     final File config = new File(testNode, "config.xml");
     config.createNewFile();
-    final BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(config));
+    final BufferedOutputStream out = new BufferedOutputStream(Files.newOutputStream(config.toPath()));
     out.write(CONFIG_XML_CONTENTS.getBytes());
     out.close();
     return testNode;

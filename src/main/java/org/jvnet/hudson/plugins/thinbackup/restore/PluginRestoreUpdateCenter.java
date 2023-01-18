@@ -24,8 +24,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Future;
 
-import org.acegisecurity.Authentication;
-import org.acegisecurity.context.SecurityContextHolder;
 
 import hudson.PluginManager;
 import hudson.PluginWrapper;
@@ -34,6 +32,8 @@ import hudson.model.UpdateSite;
 import hudson.model.UpdateSite.Plugin;
 import hudson.security.ACL;
 import jenkins.model.Jenkins;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 public class PluginRestoreUpdateCenter extends UpdateCenter {
   public class PluginRestoreJob extends DownloadJob {
@@ -48,7 +48,7 @@ public class PluginRestoreUpdateCenter extends UpdateCenter {
       this.plugin = plugin;
       this.version = version;
 
-      Jenkins jenkins = Jenkins.getInstance();
+      Jenkins jenkins = Jenkins.getInstanceOrNull();
       if (jenkins == null) {
         throw new RuntimeException("Setup the Jenkins environment failed.");
       }
@@ -89,7 +89,7 @@ public class PluginRestoreUpdateCenter extends UpdateCenter {
       PluginWrapper pw = plugin.getInstalled();
       if (pw != null && pw.isBundled()) {
         try {
-          SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM);
+          SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM2);
           pw.doPin();
         } finally {
           SecurityContextHolder.clearContext();

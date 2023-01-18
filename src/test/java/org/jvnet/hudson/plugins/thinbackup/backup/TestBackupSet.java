@@ -102,7 +102,7 @@ public class TestBackupSet extends BackupDirStructureSetup {
 
     final File tempDir = new File(System.getProperty("java.io.tmpdir"));
     backupDir = new File(tempDir, "BackupDirForHudsonBackupTest");
-    final File testFile = new File(backupDir, "tempFile.nxt");
+    final File testFile = tmpFolder.newFile("tempFile.nxt");
     testFile.createNewFile();
     Assert.assertFalse(backupSet1.containsDirectory(testFile));
     Assert.assertFalse(backupSet1.containsDirectory(new File(testFile.getAbsolutePath())));

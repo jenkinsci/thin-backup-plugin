@@ -1,7 +1,7 @@
 <!--
   The MIT License
  
-  Copyright (c) 2011, Borland (a Micro Focus Company), Matthias Steinkogler, Thomas Fuerer
+  Copyright (c) 2022, Stefan Spieker
  
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -24,12 +24,6 @@
 
 <div>
   <p>
-    Specifies the execution schedule in a cron notation when a differential backup should be done. Look at <a href="https://en.wikipedia.org/wiki/Cron">Wikipedia</a> for more information.
-  </p>
-  <p>
-    A differential backup stores only complete files whose modification is done after the last full backup. 
-  </p>
-  <p>
-    <strong>NOTE:</strong><br/> For a differential backup at least one full backup is needed. If no full backup is available it will be done instead of the first differential backup.
+    If this option is enabled, the directory <em>config-history</em> will also be backed up.
   </p>
 </div>

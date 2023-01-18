@@ -1,19 +1,26 @@
 package org.jvnet.hudson.plugins.thinbackup.restore;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import org.codehaus.plexus.util.FileUtils;
+import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.jvnet.hudson.plugins.thinbackup.FileCollector;
 import org.jvnet.hudson.plugins.thinbackup.TestHelper;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl;
 import org.jvnet.hudson.plugins.thinbackup.backup.BackupSet;
@@ -25,7 +32,7 @@ public class TestHudsonRestore {
 
   private File backupDir;
   private File jenkinsHome;
-  private List<String> originalFiles;
+  private List<Path> originalFiles;
 
   @Before
   public void setup() throws IOException, InterruptedException {
@@ -35,10 +42,11 @@ public class TestHudsonRestore {
     jenkinsHome = TestHelper.createBasicFolderStructure(base);
     File jobDir = TestHelper.createJob(jenkinsHome, TestHelper.TEST_JOB_NAME);
     TestHelper.addNewBuildToJob(jobDir);
-    
-    final FileCollector fc = new FileCollector();
-    originalFiles = fc.getFilesAsString(jenkinsHome);
-    
+
+    try (Stream<Path> walk = Files.walk(jenkinsHome.toPath())) {
+      originalFiles = walk.filter(Files::isRegularFile)
+              .collect(Collectors.toList());
+    }
   }
   
   @After
@@ -104,8 +112,11 @@ public class TestHudsonRestore {
         Utils.getDateFromBackupDirectory(tmpBackupDir), false, false);
     restore.restore();
 
-    final FileCollector fc = new FileCollector();
-    final List<String> restoredFiles = fc.getFilesAsString(jenkinsHome);
+    final List<Path> restoredFiles;
+    try (Stream<Path> walk = Files.walk(jenkinsHome.toPath())) {
+      restoredFiles = walk.filter(Files::isRegularFile)
+              .collect(Collectors.toList());
+    }
     final int nrRestored = restoredFiles.size();
     Assert.assertEquals(originalFiles.size(), nrRestored + 3); // + 3 because original has more files that were not
                                                                // backed up on purpose (next build number, secret.key, workspace/neverBackupme.txt)
@@ -140,13 +151,19 @@ public class TestHudsonRestore {
     final HudsonRestore restore = new HudsonRestore(jenkinsHome, backupDir.getAbsolutePath(), backupDate, false, false);
     restore.restore();
 
-    final FileCollector fc = new FileCollector();
-    final List<String> restoredFiles = fc.getFilesAsString(jenkinsHome);
+
+    final List<String> restoredFiles;
+    try (Stream<Path> walk = Files.walk(jenkinsHome.toPath())) {
+      restoredFiles = walk.filter(Files::isRegularFile)
+              .map(Path::toString)
+              .collect(Collectors.toList());
+    }
+
     final int nrRestored = restoredFiles.size();
     Assert.assertEquals(originalFiles.size(), nrRestored + 3); // + 3 because original has more files that were not
                                                                // backed up on purpose (next build number, secret.key, workspace/neverBackupme.txt)
-    Assert.assertFalse(TestHelper.containsStringEndingWith(restoredFiles, HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME));
-    Assert.assertFalse(TestHelper.containsStringEndingWith(restoredFiles, "secret.key"));
+    assertThat(restoredFiles, not(hasItem(containsString(HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME))));
+    assertThat(restoredFiles, not(hasItem(containsString("secret.key"))));
   }
 
   @Test
@@ -171,13 +188,17 @@ public class TestHudsonRestore {
         Utils.getDateFromBackupDirectory(tmpBackupDir), true, false);
     restore.restore();
 
-    final FileCollector fc = new FileCollector();
-    final List<String> restoredFiles = fc.getFilesAsString(jenkinsHome);
+    final List<String> restoredFiles;
+    try (Stream<Path> walk = Files.walk(jenkinsHome.toPath())) {
+      restoredFiles = walk.filter(Files::isRegularFile)
+              .map(Path::toString)
+              .collect(Collectors.toList());
+    }
     final int nrRestored = restoredFiles.size();
     Assert.assertEquals(originalFiles.size(), nrRestored + 2); // + 2 because original has more files that were not
                                                                // backed up on purpose (secret.key, workspace/neverBackupme.txt)
-    Assert.assertTrue(TestHelper.containsStringEndingWith(restoredFiles, HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME));
-    Assert.assertFalse(TestHelper.containsStringEndingWith(restoredFiles, "secret.key"));
+    assertThat(restoredFiles, hasItem(containsString(HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME)));
+    assertThat(restoredFiles, not(hasItem(containsString("secret.key"))));
   }
 
   @Test
@@ -202,13 +223,17 @@ public class TestHudsonRestore {
         Utils.getDateFromBackupDirectory(tmpBackupDir), false, false);
     restore.restore();
 
-    final FileCollector fc = new FileCollector();
-    final List<String> restoredFiles = fc.getFilesAsString(jenkinsHome);
+    final List<String> restoredFiles;
+    try (Stream<Path> walk = Files.walk(jenkinsHome.toPath())) {
+      restoredFiles = walk.filter(Files::isRegularFile)
+              .map(Path::toString)
+              .collect(Collectors.toList());
+    }
     final int nrRestored = restoredFiles.size();
     Assert.assertEquals(originalFiles.size(), nrRestored + 3); // + 3 because original has more files that were not
                                                                // backed up on purpose (next build number, secret.key, workspace/neverBackupme.txt)
-    Assert.assertFalse(TestHelper.containsStringEndingWith(restoredFiles, HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME));
-    Assert.assertFalse(TestHelper.containsStringEndingWith(restoredFiles, "secret.key"));
+    assertThat(restoredFiles, not(hasItem(containsString(HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME))));
+    assertThat(restoredFiles, not(hasItem(containsString("secret.key"))));
   }
 
   @Test
@@ -240,13 +265,17 @@ public class TestHudsonRestore {
     final HudsonRestore restore = new HudsonRestore(jenkinsHome, backupDir.getAbsolutePath(), backupDate, true, false);
     restore.restore();
 
-    final FileCollector fc = new FileCollector();
-    final List<String> restoredFiles = fc.getFilesAsString(jenkinsHome);
+    final List<String> restoredFiles;
+    try (Stream<Path> walk = Files.walk(jenkinsHome.toPath())) {
+      restoredFiles = walk.filter(Files::isRegularFile)
+              .map(Path::toString)
+              .collect(Collectors.toList());
+    }
     final int nrRestored = restoredFiles.size();
     Assert.assertEquals(originalFiles.size(), nrRestored + 2); // + 3 because original has more files that were not
                                                                // backed up on purpose (secret.key, workspace/neverBackupme.txt)
-    Assert.assertTrue(TestHelper.containsStringEndingWith(restoredFiles, HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME));
-    Assert.assertFalse(TestHelper.containsStringEndingWith(restoredFiles, "secret.key"));
+    assertThat(restoredFiles, hasItem(containsString(HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME)));
+    assertThat(restoredFiles, not(hasItem(containsString("secret.key"))));
   }
 
 }

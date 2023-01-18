@@ -22,14 +22,13 @@
         <st:include it="${app}" page="sidepanel.jelly"/>
         <l:main-panel>
             <h1>
-                <img src="${imagesURL}/48x48/${it.iconFileName}" alt=""/>
-                Restore Configuration
+                ${%restore_configuration}
             </h1>
 
             
             <f:form method="post" action="restore">
-              <f:section title="Restore options">
-                <f:entry title="restore backup from" help="/plugin/thinBackup/help/help-restore.html">
+              <f:section title="${%restore_options}">
+                <f:entry title="${%restore_backup_from}" help="/plugin/thinBackup/help/help-restore.html">
                   <j:set var="allBackups" value="${it.availableBackups}"/>
                   <select name="restoreBackupFrom" >
                       <j:forEach var="backup" items="${allBackups}">
@@ -38,11 +37,11 @@
                   </select>
                 </f:entry>
 
-                <f:optionalBlock title="Restore next build number file (if found in backup)"
+                <f:optionalBlock title="${%restore_next_build_number}"
                     help="/plugin/thinBackup/help/help-restoreNextBuildNumber.html"
                     name="restoreNextBuildNumber" />
                 
-                <f:optionalBlock title="Restore plugins"
+                <f:optionalBlock title="${%restore_plugins}"
                     help="/plugin/thinBackup/help/help-restorePlugins.html"
                     name="restorePlugins" />
                  

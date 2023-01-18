@@ -19,18 +19,24 @@ package org.jvnet.hudson.plugins.thinbackup.backup;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.stream.Stream;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.FileFileFilter;
@@ -63,6 +69,7 @@ public class HudsonBackup {
   public static final String JOBS_DIR_NAME = "jobs";
   public static final String USERS_DIR_NAME = "users";
   public static final String ARCHIVE_DIR_NAME = "archive";
+  public static final String CONFIG_HISTORY_DIR_NAME = "config-history";
   public static final String USERSCONTENTS_DIR_NAME = "userContent";
   public static final String NEXT_BUILD_NUMBER_FILE_NAME = "nextBuildNumber";
   public static final String PLUGINS_DIR_NAME = "plugins";
@@ -89,7 +96,7 @@ public class HudsonBackup {
   private ItemGroup<TopLevelItem> hudson;
 
   public HudsonBackup(final ThinBackupPluginImpl plugin, final BackupType backupType) {
-    this(plugin, backupType, new Date(), Jenkins.getInstance());
+    this(plugin, backupType, new Date(), Jenkins.get());
   }
 
   // package visible constructor for unit testing purposes only.
@@ -173,6 +180,10 @@ public class HudsonBackup {
       backupRootFolder(USERSCONTENTS_DIR_NAME);
     }
 
+    if (plugin.isBackupConfigHistory()) {
+      backupRootFolder(CONFIG_HISTORY_DIR_NAME);
+    }
+
     if (plugin.isBackupPluginArchives()) {
       backupPluginArchives();
     }
@@ -182,7 +193,7 @@ public class HudsonBackup {
       backupAdditionalFiles();
     }
 
-    (new DirectoryCleaner()).removeEmptyDirectories(backupDirectory);
+    removeEmptyDirs(backupDirectory);
 
     if (backupType == BackupType.FULL) {
       cleanupDiffs();
@@ -191,10 +202,33 @@ public class HudsonBackup {
     }
   }
 
+  /**
+   * Deletes all empty directories, including rootDir if it is empty at the end.
+   *
+   * @param rootDir  the directory to start from, not null
+   * @throws IOException if an I/O Error occurs
+   */
+  public void removeEmptyDirs(final File rootDir) throws IOException {
+    // remove empty dirs
+    try (Stream<Path> walk = Files.walk(rootDir.toPath())) {
+      walk.sorted(Comparator.reverseOrder())
+          .map(Path::toFile)
+          .filter(File::isDirectory)
+          .filter(file -> Objects.requireNonNull(file.list()).length == 0)
+          .forEach(file1 -> {
+            try {
+              Files.delete(file1.toPath());
+            } catch (IOException e) {
+              LOGGER.log(Level.WARNING, String.format("Cannot delete Backup directory: %s.", file1.getName()), e);
+            }
+          });
+    }
+  }
+
   private void backupGlobalXmls() throws IOException {
     LOGGER.fine("Backing up global configuration files...");
 
-    IOFileFilter suffixFileFilter = FileFilterUtils.and(FileFileFilter.FILE,
+    IOFileFilter suffixFileFilter = FileFilterUtils.and(FileFileFilter.INSTANCE,
         FileFilterUtils.suffixFileFilter(XML_FILE_EXTENSION), getFileAgeDiffFilter(), getExcludedFilesFilter());
     FileUtils.copyDirectory(hudsonHome, backupDirectory, ExistsAndReadableFileFilter.wrapperFilter(suffixFileFilter));
 
@@ -210,8 +244,9 @@ public class HudsonBackup {
     LOGGER.fine("DONE backing up job specific configuration files.");
   }
 
-  private void backupJobsDirectory(final File jobsDirectory, final File jobsBackupDirectory) throws IOException {
-    Collection<String> jobNames = Arrays.asList(jobsDirectory.list());
+  private void backupJobsDirectory(@NonNull final File jobsDirectory, final File jobsBackupDirectory) throws IOException {
+    final String[] list = jobsDirectory.list();
+    Collection<String> jobNames = Arrays.asList(list != null ? list : new String[0]);
     LOGGER.log(Level.INFO, "Found {0} jobs to back up.", jobNames.size());
     LOGGER.log(Level.FINE, "\t{0}", jobNames);
 
@@ -224,7 +259,10 @@ public class HudsonBackup {
             File folderBackupDirectory = new File(jobsBackupDirectory, jobName);
             File folderJobsBackupDirectory = new File(folderBackupDirectory, JOBS_DIR_NAME);
             folderJobsBackupDirectory.mkdirs();
-            FileUtils.copyFile(new File(jobDirectory, CONFIG_XML), new File(folderBackupDirectory, CONFIG_XML));
+            File expectedConfigXml = new File(jobDirectory, CONFIG_XML);
+            if (expectedConfigXml.exists() && expectedConfigXml.isFile()) {
+              FileUtils.copyFile(new File(jobDirectory, CONFIG_XML), new File(folderBackupDirectory, CONFIG_XML));
+            }
             backupJobsDirectory(childJobsFolder, folderJobsBackupDirectory);
           } else {
             backupJob(jobDirectory, jobsBackupDirectory, jobName);
@@ -284,7 +322,7 @@ public class HudsonBackup {
         FileFilterUtils.suffixFileFilter(JPI_FILE_EXTENSION + DISABLED_EXTENSION),
         FileFilterUtils.suffixFileFilter(HPI_FILE_EXTENSION + DISABLED_EXTENSION));
 
-    final IOFileFilter filter = FileFilterUtils.and(FileFileFilter.FILE,
+    final IOFileFilter filter = FileFilterUtils.and(FileFileFilter.INSTANCE,
         FileFilterUtils.or(pluginArchivesFilter, disabledPluginMarkersFilter));
 
     backupRootFolder(PLUGINS_DIR_NAME, filter);
@@ -371,10 +409,10 @@ public class HudsonBackup {
   private void backupBuildsFor(final File jobDirectory, final File jobBackupDirectory) throws IOException {
     if (plugin.isBackupBuildResults()) {
       final File buildsDir = new File(jobDirectory, BUILDS_DIR_NAME);
-      if (buildsDir.exists() && buildsDir.isDirectory()) {
-        final Collection<String> builds = Arrays.asList(buildsDir.list());
+      if (buildsDir.list() != null && buildsDir.exists() && buildsDir.isDirectory()) {
+        final String[] builds = buildsDir.list();
+        TopLevelItem job = hudson.getItem(jobDirectory.getName());
         if (builds != null) {
-          TopLevelItem job = hudson.getItem(jobDirectory.getName());
           for (final String build : builds) {
             final File source = new File(buildsDir, build);
             if ((!plugin.isBackupBuildsToKeepOnly() || isBuildToKeep(job, source))) {
@@ -412,7 +450,7 @@ public class HudsonBackup {
     if (source.isDirectory()) {
       final IOFileFilter changelogFilter = FileFilterUtils.and(DirectoryFileFilter.DIRECTORY,
           FileFilterUtils.nameFileFilter(CHANGELOG_HISTORY_PLUGIN_DIR_NAME));
-      final IOFileFilter fileFilter = FileFilterUtils.and(FileFileFilter.FILE, getFileAgeDiffFilter());
+      final IOFileFilter fileFilter = FileFilterUtils.and(FileFileFilter.INSTANCE, getFileAgeDiffFilter());
 
       IOFileFilter filter = FileFilterUtils.and(FileFilterUtils.or(changelogFilter, fileFilter),
           getExcludedFilesFilter(),
@@ -430,7 +468,7 @@ public class HudsonBackup {
       final File archiveSrcDir = new File(buildSrcDir, ARCHIVE_DIR_NAME);
       if (archiveSrcDir.isDirectory()) {
         final IOFileFilter filter = FileFilterUtils.or(FileFilterUtils.directoryFileFilter(),
-            FileFilterUtils.and(FileFileFilter.FILE, getFileAgeDiffFilter()));
+            FileFilterUtils.and(FileFileFilter.INSTANCE, getFileAgeDiffFilter()));
         FileUtils.copyDirectory(archiveSrcDir, new File(buildDestDir, ARCHIVE_DIR_NAME),
             ExistsAndReadableFileFilter.wrapperFilter(filter));
       }
@@ -480,9 +518,9 @@ public class HudsonBackup {
   private PluginList getInstalledPlugins() {
     final File pluginVersionList = new File(backupDirectory, INSTALLED_PLUGINS_XML);
     final PluginList newPluginList = new PluginList(pluginVersionList);
-    final Jenkins jenkins = Jenkins.getInstance();
+    final Jenkins jenkins = Jenkins.getInstanceOrNull();
     if (jenkins != null) {
-      newPluginList.add("Hudson core", Jenkins.getVersion().toString());
+      newPluginList.add("Hudson core", Jenkins.VERSION);
     }
 
     final List<PluginWrapper> installedPlugins;
