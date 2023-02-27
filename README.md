@@ -175,4 +175,4 @@ Please let us know if you have another option or feature for this plugin by ente
 write us an email.
 
 Before submitting a feature request or bug report, you can check if it has already been submitted by
-searching issues in JIRA categorized under the thin-backup-plugin component or directly on the [plugin site](https://plugins.jenkins.io/jobConfigHistory/#issues)
+searching issues in JIRA categorized under the thin-backup-plugin component or directly on the [plugin site](https://plugins.jenkins.io/thinBackup/#issues)
