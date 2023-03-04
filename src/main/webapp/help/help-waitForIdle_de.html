@@ -1,7 +1,7 @@
 <!--
   The MIT License
  
-  Copyright (c) 2011, Borland (a Micro Focus Company), Matthias Steinkogler, Thomas Fuerer
+  Copyright (c) 2023, Stefan Spieker
  
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -24,17 +24,11 @@
 
 <div>
   <p>
-    If this option is enabled, the matching files or folders will also be backed up. Even more data!
+    Warte bis Jenkins idle ist um ein Backup auszuführen (empfohlene/Standard Einstellung). Es kann auch ein Backup ausgeführt werden, ohne auf die idle Bedingung zu warten.
+    Dies kann Probleme verursachen, die zu korrupten Backups führen, da in Dateien geschrieben werden könnte, während die Datei ins Backup kopiert wird.
+    Bei lang laufenden Jobs (z.B. Test Jobs) kann es sein, dass es keine freien Zeitslots für das Backup gibt. Falls die Jobs nur auf Agents laufen, kann diese Option deaktiviert werden.
   </p>
   <p>
-    If you have specific files not normally backed up, that you also want to back up, entering a regex here which identifies those files will include them. All files with a name matching this regular expression will be backed up. If the expression is invalid, it will be disregarded.
-    <br/>
-    Note that this only allows filename patterns, (not full ant-style patterns) but positive and negative look-aheads are effective at filtering out the primary folder. 
-    <br/>
-    <strong>Example:</strong><br/>
-    <em>^(email\-templates|.*\.jelly)$</em> will include email-templates/*.jelly .
-    <br/>
-    <em>^(?!jobs)(?!plugins)(?!logs)(?!users)(log|.*\.xml)$</em> will include *.xml and log/*.xml while skipping the jobs, logs, users and plugins folders under the home folder.
+    <strong>HINWEIS:</strong><br/>Es kann nicht 100% garantiert werden, dass das BAckup vollständig ist, falls diese Option deaktiviert ist.
   </p>
-  
 </div>
