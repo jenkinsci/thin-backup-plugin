@@ -306,8 +306,7 @@ public class TestHudsonBackup {
     FreeStyleProject mockJob = mock(FreeStyleProject.class);
     when(mockHudson.getItem(TestHelper.TEST_JOB_NAME)).thenReturn(mockJob);
     FreeStyleBuild mockRun = mock(FreeStyleBuild.class);
-    // for some reason Mockito has issues mocking this interface and so is is used to return true to isKeepLog()
-    when(mockRun.getWhyKeepLog()).thenReturn("x");
+    when(mockRun.isKeepLog()).thenReturn(true);
     when(mockJob.getBuilds()).thenReturn(RunList.fromRuns(Collections.singleton(mockRun)));
     when(mockRun.getRootDir()).thenReturn(buildDir);
 
@@ -315,7 +314,7 @@ public class TestHudsonBackup {
 
     String[] list = backupDir.list();
     Assert.assertNotNull(list);
-    Assert.assertEquals(1, list.length);
+    Assert.assertEquals(Arrays.toString(list) ,1, list.length);
     final File backup = new File(backupDir, list[0]);
     list = backup.list();
     Assert.assertNotNull(list);

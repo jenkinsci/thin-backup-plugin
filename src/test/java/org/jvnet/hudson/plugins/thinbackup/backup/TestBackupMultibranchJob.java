@@ -12,8 +12,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Date;
 
-import org.apache.commons.io.FileUtils;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -84,7 +82,5 @@ public class TestBackupMultibranchJob {
     assertTrue(new File(jobBackup, HudsonBackup.INDEXING_DIR_NAME).exists());
     assertTrue(new File(jobBackup, HudsonBackup.INDEXING_DIR_NAME+"/indexing.xml").exists());
     assertTrue(new File(jobBackup, HudsonBackup.INDEXING_DIR_NAME+"/indexing.log").exists());
-
   }
-
 }
