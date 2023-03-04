@@ -3,6 +3,7 @@
 /.classpath
 /.project
 /work
+/.idea/
 *~
 # IntelliJ project files
 *.iml

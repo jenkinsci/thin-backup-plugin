@@ -120,11 +120,16 @@
 			<groupId>io.jenkins.plugins</groupId>
 			<artifactId>ionicons-api</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.jenkins-ci.plugins.pipeline-stage-view</groupId>
+			<artifactId>pipeline-rest-api</artifactId>
+			<version>2.10</version>
+		</dependency>
 	</dependencies>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<jenkins.version>2.346.1</jenkins.version>
+		<jenkins.version>2.346.3</jenkins.version>
 		<!-- 		<jenkins-test-harness.version>2.13</jenkins-test-harness.version> -->
 	</properties>
 
