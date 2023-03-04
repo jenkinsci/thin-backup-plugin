@@ -9,25 +9,29 @@ import hudson.model.ItemGroup;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Date;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.plugins.thinbackup.TestHelper;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl;
-import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 
 public class TestBackupMultibranchJob {
-  
+
+  @TempDir
+  static Path tempDir;
+
   private File backupDir;
   private File jenkinsHome;
 
   @BeforeEach
   public void setup() throws IOException, InterruptedException {
-    File base = new File(System.getProperty("java.io.tmpdir"));
+    File base = tempDir.toFile();
     backupDir = TestHelper.createBackupFolder(base);
 
     jenkinsHome = TestHelper.createBasicFolderStructure(base);
@@ -35,13 +39,6 @@ public class TestBackupMultibranchJob {
     TestHelper.addNewBuildToJob(jobDir);
     
     TestHelper.addSingleMultibranchResult(jobDir);
-  }
-  
-  @AfterEach
-  public void tearDown() throws Exception {
-    FileUtils.deleteDirectory(jenkinsHome);
-    FileUtils.deleteDirectory(backupDir);
-    FileUtils.deleteDirectory(new File(Utils.THINBACKUP_TMP_DIR));
   }
   
   private ThinBackupPluginImpl createMockPlugin() {
