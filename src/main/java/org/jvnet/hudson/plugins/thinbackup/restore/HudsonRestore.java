@@ -20,10 +20,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -252,11 +253,8 @@ public class HudsonRestore {
   }
 
   private void restoreNextBuildNumber(File file, Integer toRestoreNextBuildNumber) throws IOException {
-    file.delete();
-    file.createNewFile();
-    try (Writer writer = new FileWriter(file)) {
-      writer.write(toRestoreNextBuildNumber);
-    }
+    final String buildNumber = toRestoreNextBuildNumber + "\n";
+    Files.write(file.toPath(), buildNumber.getBytes(StandardCharsets.UTF_8), StandardOpenOption.TRUNCATE_EXISTING);
   }
 
   private Future<UpdateCenterJob> installPlugin(String pluginID, String version) {

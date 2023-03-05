@@ -26,14 +26,11 @@ import java.util.concurrent.Future;
 
 
 import hudson.PluginManager;
-import hudson.PluginWrapper;
 import hudson.model.UpdateCenter;
 import hudson.model.UpdateSite;
 import hudson.model.UpdateSite.Plugin;
-import hudson.security.ACL;
 import jenkins.model.Jenkins;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 public class PluginRestoreUpdateCenter extends UpdateCenter {
   public class PluginRestoreJob extends DownloadJob {
@@ -85,16 +82,6 @@ public class PluginRestoreUpdateCenter extends UpdateCenter {
     @Override
     protected void _run() throws IOException, InstallationStatus {
       super._run();
-
-      PluginWrapper pw = plugin.getInstalled();
-      if (pw != null && pw.isBundled()) {
-        try {
-          SecurityContextHolder.getContext().setAuthentication(ACL.SYSTEM2);
-          pw.doPin();
-        } finally {
-          SecurityContextHolder.clearContext();
-        }
-      }
     }
   }
 
