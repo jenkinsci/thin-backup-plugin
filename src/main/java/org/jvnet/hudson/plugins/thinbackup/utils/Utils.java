@@ -95,9 +95,11 @@ public final class Utils {
   /**
    * Waits until all executors are idle and switch jenkins to quiet mode. If it takes to long that all executors are
    * idle because in the mean time other jobs are executed the timeout ensure that the quiet mode is forced.
+   * But if timeout is set to -1, it will never force jenkins to quiet mode.
    *
    * @param timeout
-   *          specifies when a quiet mode is forced. 0 = no timeout.
+   *          specifies when a quiet mode is forced. 
+   *          0 = no timeout; -1 = disable timer, never force jenkins to quiet mode.
    * @param unit
    *          specifies the time unit for the value of timeout.
    * @throws IOException ?
@@ -127,7 +129,7 @@ public final class Utils {
         Thread.currentThread().interrupt();
       }
 
-      if (!jenkins.isQuietingDown() && starttime + unit.toMillis(timeout) < System.currentTimeMillis()) {
+      if (timeout != -1 && !jenkins.isQuietingDown() && starttime + unit.toMillis(timeout) < System.currentTimeMillis()) {
         LOGGER.info("Force quiet mode for jenkins now and wait until all executors are idle.");
         jenkins.doQuietDown();
       }
