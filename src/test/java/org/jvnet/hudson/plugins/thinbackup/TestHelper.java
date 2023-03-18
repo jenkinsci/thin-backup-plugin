@@ -24,7 +24,7 @@ public class TestHelper {
 
   public static File createBasicFolderStructure(File base) throws IOException {
     File root = new File(base, "RootDirForHudsonBackupTest");
-    root.mkdir();
+    root.mkdirs();
 
     new File(root, "config.xml").createNewFile();
     new File(root, "thinBackup.xml").createNewFile();
@@ -42,7 +42,7 @@ public class TestHelper {
   
   public static File createBackupFolder(File base) {
     File backupDir = new File(base, "BackupDirForHudsonBackupTest");
-    backupDir.mkdir();
+    backupDir.mkdirs();
     
     return backupDir;
   }
@@ -104,12 +104,12 @@ public class TestHelper {
   
   public static File addNewBuildToJob(File job) throws IOException, InterruptedException {
     final File builds = new File(job, HudsonBackup.BUILDS_DIR_NAME);
-    builds.mkdir();
+    builds.mkdirs();
     final File build = new File(builds, CONCRETE_BUILD_DIRECTORY_NAME);
-    build.mkdir();
+    build.mkdirs();
     
     final File changelogDir = new File(build, HudsonBackup.CHANGELOG_HISTORY_PLUGIN_DIR_NAME);
-    changelogDir.mkdir();
+    changelogDir.mkdirs();
     new File(changelogDir, "1.xml").createNewFile();
     new File(changelogDir, "2.xml").createNewFile();
 
@@ -121,12 +121,9 @@ public class TestHelper {
     new File(build, "logfile.xlog").createNewFile();
 
     final File archiveDir = new File(build, HudsonBackup.ARCHIVE_DIR_NAME);
-    archiveDir.mkdir();
+    archiveDir.mkdirs();
     new File(archiveDir, "someFile.log").createNewFile();
     
-    Util.createSymlink(job, HudsonBackup.BUILDS_DIR_NAME+"/"+ CONCRETE_BUILD_DIRECTORY_NAME, "lastSuccessful", new StreamTaskListener(new StringWriter()));
-    Util.createSymlink(job, HudsonBackup.BUILDS_DIR_NAME+"/"+ CONCRETE_BUILD_DIRECTORY_NAME, "lastStable", new StreamTaskListener(new StringWriter()));
-
     return build;
   }
   

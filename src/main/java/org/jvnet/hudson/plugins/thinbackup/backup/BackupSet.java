@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
@@ -222,11 +223,7 @@ public class BackupSet implements Comparable<BackupSet> {
     final StringBuilder sb = new StringBuilder();
 
     sb.append("[FULL backup: ");
-    if (fullBackupName != null) {
-      sb.append(fullBackupName);
-    } else {
-      sb.append("NONE");
-    }
+    sb.append(Objects.requireNonNullElse(fullBackupName, "NONE"));
     sb.append("; DIFF backups: ");
     boolean hasDiffs = false;
     if (diffBackupsNames != null) {
