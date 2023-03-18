@@ -264,7 +264,7 @@ public class ThinBackupPluginImpl extends Plugin {
 
   public FormValidation doCheckForceQuietModeTimeout(final StaplerRequest res, final StaplerResponse rsp,
       @QueryParameter("value") final String timeout) {
-    FormValidation validation = FormValidation.validateNonNegativeInteger(timeout);
+    FormValidation validation = FormValidation.validateIntegerInRange(timeout, -1, Integer.MAX_VALUE);
     if (!FormValidation.ok().equals(validation)) {
       return validation;
     }
