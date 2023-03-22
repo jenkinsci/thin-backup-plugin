@@ -247,7 +247,7 @@ public class HudsonBackup {
   private void backupJobsDirectory(@NonNull final File jobsDirectory, final File jobsBackupDirectory) throws IOException {
     final String[] list = jobsDirectory.list();
     Collection<String> jobNames = Arrays.asList(list != null ? list : new String[0]);
-    LOGGER.log(Level.INFO, "Found {0} jobs to back up.", jobNames.size());
+    LOGGER.log(Level.INFO, "Found " + jobNames.size() + " jobs in " + jobsDirectory.getPath() + " to back up.");
     LOGGER.log(Level.FINE, "\t{0}", jobNames);
 
     for (final String jobName : jobNames) {
