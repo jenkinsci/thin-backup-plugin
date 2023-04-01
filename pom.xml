@@ -143,10 +143,6 @@
 			<plugin>
 				<groupId>com.github.spotbugs</groupId>
 				<artifactId>spotbugs-maven-plugin</artifactId>
-				<configuration>
-					<!--  due to legacy code I need to set the option to not fail the build -->
-					<failOnError>false</failOnError>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>
