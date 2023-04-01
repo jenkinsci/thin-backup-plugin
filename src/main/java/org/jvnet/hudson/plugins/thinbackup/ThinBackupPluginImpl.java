@@ -69,7 +69,13 @@ public class ThinBackupPluginImpl extends Plugin {
   }
 
   public static ThinBackupPluginImpl getInstance() {
-    return Jenkins.get().getPlugin(ThinBackupPluginImpl.class);
+    final Jenkins jenkins = Jenkins.getInstanceOrNull();
+    if (jenkins != null) {
+      return jenkins.getPlugin(ThinBackupPluginImpl.class);
+    }
+    else {
+      return null;
+    }
   }
 
   public File getHudsonHome() {

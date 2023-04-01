@@ -302,9 +302,11 @@ public class BackupSet implements Comparable<BackupSet> {
           final String fullPathToEntry = entry.getName();
           final String pathToEntry = fullPathToEntry.substring(0, fullPathToEntry.lastIndexOf(File.separator));
           final File entryDir = new File(unzipDir, pathToEntry);
-          final boolean dirCreationResult = entryDir.mkdirs();
-          if (!dirCreationResult) {
-            LOGGER.log(Level.WARNING, "Unable to create following directory during unzip: " + entryDir.getAbsolutePath());
+          if (!entryDir.exists()) {
+            final boolean dirCreationResult = entryDir.mkdirs();
+            if (!dirCreationResult) {
+              LOGGER.log(Level.WARNING, "Unable to create following directory during unzip: " + entryDir.getAbsolutePath());
+            }
           }
           final String entryName = fullPathToEntry.substring(fullPathToEntry.lastIndexOf(File.separator) + 1);
 
