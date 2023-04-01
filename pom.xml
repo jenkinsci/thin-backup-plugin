@@ -88,7 +88,7 @@
 			<dependency>
 				<groupId>io.jenkins.tools.bom</groupId>
 				<artifactId>bom-2.361.x</artifactId>
-				<version>1887.vda_d0ddb_c15c4</version>
+				<version>1968.vb_14a_29e76128</version>
 				<scope>import</scope>
 				<type>pom</type>
 			</dependency>
@@ -112,11 +112,6 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>commons-io</groupId>
-			<artifactId>commons-io</artifactId>
-			<version>2.11.0</version>
-		</dependency>
-		<dependency>
 			<groupId>io.jenkins.plugins</groupId>
 			<artifactId>ionicons-api</artifactId>
 		</dependency>
@@ -124,8 +119,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<jenkins.version>2.361.1</jenkins.version>
-		<!-- 		<jenkins-test-harness.version>2.13</jenkins-test-harness.version> -->
+		<jenkins.version>2.361.4</jenkins.version>
 		<surefire.forkNumber>1</surefire.forkNumber>
 	</properties>
 
