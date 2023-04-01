@@ -133,7 +133,10 @@ public class HudsonBackup {
 
     this.backupRoot = new File(plugin.getExpandedBackupPath());
     if (!backupRoot.exists()) {
-      backupRoot.mkdirs();
+      final boolean dirCreationResult = backupRoot.mkdirs();
+      if (!dirCreationResult) {
+        LOGGER.log(Level.WARNING, "Unable to create following directory: " + backupRoot.getAbsolutePath());
+      }
     }
 
     latestFullBackupDate = getLatestFullBackupDate();
@@ -258,7 +261,10 @@ public class HudsonBackup {
           if (childJobsFolder.exists()) { // found CloudBeesFolder
             File folderBackupDirectory = new File(jobsBackupDirectory, jobName);
             File folderJobsBackupDirectory = new File(folderBackupDirectory, JOBS_DIR_NAME);
-            folderJobsBackupDirectory.mkdirs();
+            final boolean dirCreationResult = folderJobsBackupDirectory.mkdirs();
+            if (!dirCreationResult) {
+              LOGGER.log(Level.WARNING, "Unable to create following directory during backup creation: " + folderJobsBackupDirectory.getAbsolutePath());
+            }
             File expectedConfigXml = new File(jobDirectory, CONFIG_XML);
             if (expectedConfigXml.exists() && expectedConfigXml.isFile()) {
               FileUtils.copyFile(new File(jobDirectory, CONFIG_XML), new File(folderBackupDirectory, CONFIG_XML));

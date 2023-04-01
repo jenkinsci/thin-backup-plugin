@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -57,6 +58,19 @@ public class PluginList implements Comparable<PluginList> {
     if (xmlFile.exists()) {
       xmlFile.unmarshal(this);
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    PluginList that = (PluginList) o;
+    return Objects.equals(plugins, that.plugins);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(plugins);
   }
 
   @Override
