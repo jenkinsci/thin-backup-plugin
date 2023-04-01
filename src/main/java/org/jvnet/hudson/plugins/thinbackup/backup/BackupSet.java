@@ -281,11 +281,16 @@ public class BackupSet implements Comparable<BackupSet> {
 
     if (inZipFile && isValid()) {
       if (!directory.exists()) {
-        directory.mkdirs();
+        final boolean dirCreationResult = directory.mkdirs();
+        if (!dirCreationResult) {
+          LOGGER.log(Level.WARNING, "Unable to create following directory during unzip: " + directory.getAbsolutePath());
+        }
       }
       unzipDir = new File(directory, getBackupSetZipFileName().replace(HudsonBackup.ZIP_FILE_EXTENSION, ""));
       if (!unzipDir.exists()) {
-        unzipDir.mkdirs();
+        if (!unzipDir.mkdirs()) {
+          LOGGER.log(Level.WARNING, "Unable to create following directory during unzip: " + unzipDir.getAbsolutePath());
+        }
       }
 
       try (ZipFile zipFile = new ZipFile(backupSetzipFile)) {
@@ -297,7 +302,12 @@ public class BackupSet implements Comparable<BackupSet> {
           final String fullPathToEntry = entry.getName();
           final String pathToEntry = fullPathToEntry.substring(0, fullPathToEntry.lastIndexOf(File.separator));
           final File entryDir = new File(unzipDir, pathToEntry);
-          entryDir.mkdirs();
+          if (!entryDir.exists()) {
+            final boolean dirCreationResult = entryDir.mkdirs();
+            if (!dirCreationResult) {
+              LOGGER.log(Level.WARNING, "Unable to create following directory during unzip: " + entryDir.getAbsolutePath());
+            }
+          }
           final String entryName = fullPathToEntry.substring(fullPathToEntry.lastIndexOf(File.separator) + 1);
 
           try (
@@ -402,6 +412,19 @@ public class BackupSet implements Comparable<BackupSet> {
     }
 
     return result;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    BackupSet backupSet = (BackupSet) o;
+    return Objects.equals(fullBackupName, backupSet.fullBackupName);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(fullBackupName);
   }
 
   /**

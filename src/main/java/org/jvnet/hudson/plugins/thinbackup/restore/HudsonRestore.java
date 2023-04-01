@@ -171,7 +171,7 @@ public class HudsonRestore {
           TrueFileFilter.INSTANCE);
       final Map<String, Integer> nextBuildNumbers = new HashMap<>();
       for (final File file : restore) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(file, StandardCharsets.UTF_8))) {
           nextBuildNumbers.put(file.getParentFile().getName(), Integer.parseInt(reader.readLine()));
         }
       }
@@ -179,7 +179,7 @@ public class HudsonRestore {
       final Collection<File> current = FileUtils.listFiles(hudsonHome, nextBuildNumberFileFilter,
           TrueFileFilter.INSTANCE);
       for (final File file : current) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(file, StandardCharsets.UTF_8))) {
           final int currentBuildNumber = Integer.parseInt(reader.readLine());
           final Integer toRestoreNextBuildNumber = nextBuildNumbers.get(file.getParentFile().getName());
           if (currentBuildNumber < toRestoreNextBuildNumber) {

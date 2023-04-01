@@ -61,12 +61,6 @@ public class ThinBackupPluginImpl extends Plugin {
   private boolean backupNextBuildNumber = false;
   private boolean backupBuildsToKeepOnly = false;
 
-  private static ThinBackupPluginImpl instance;
-
-  public ThinBackupPluginImpl() {
-    instance = this;
-  }
-
   @Override
   public void start() throws Exception {
     super.start();
@@ -75,7 +69,13 @@ public class ThinBackupPluginImpl extends Plugin {
   }
 
   public static ThinBackupPluginImpl getInstance() {
-    return instance;
+    final Jenkins jenkins = Jenkins.getInstanceOrNull();
+    if (jenkins != null) {
+      return jenkins.getPlugin(ThinBackupPluginImpl.class);
+    }
+    else {
+      return null;
+    }
   }
 
   public File getHudsonHome() {
@@ -116,7 +116,7 @@ public class ThinBackupPluginImpl extends Plugin {
 
   /**
    * Get the backup path as entered by the user. May contain traces of environment variables.
-   *
+   * <p>
    * If you need a path that can be used as is (env. vars expanded), please use @link{getExpandedBackupPath}.
    *
    * @return the backup path as stored in the settings page.
@@ -312,7 +312,10 @@ public class ThinBackupPluginImpl extends Plugin {
       }
     } finally {
       if (tmp.exists()) {
-        tmp.delete();
+        final boolean deleted = tmp.delete();
+        if (!deleted) {
+          LOGGER.log(Level.WARNING, "Temp-file "+  tmp.getAbsolutePath() + " could not be deleted.");
+        }
       }
     }
     if (!expandedPath.trim().equals(expandedPath)) {
