@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.apache.commons.lang.StringUtils;
 
 import hudson.XmlFile;
@@ -74,7 +75,7 @@ public class PluginList implements Comparable<PluginList> {
   }
 
   @Override
-  public int compareTo(final PluginList other) {
+  public int compareTo(@NonNull final PluginList other) {
     if (other == null) {
       return -1;
     }

@@ -2,15 +2,12 @@ package org.jvnet.hudson.plugins.thinbackup;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import hudson.Util;
-import hudson.util.StreamTaskListener;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.file.Files;
 
@@ -80,9 +77,8 @@ public class TestHelper {
    * @param jenkinsHome
    * @param jobName
    * @return
-   * @throws IOException
    */
-  public static File createMaliciousMultiJob(File jenkinsHome, String jobName) throws IOException {
+  public static File createMaliciousMultiJob(File jenkinsHome, String jobName) {
 	    final File emptyJobDir = new File(new File(jenkinsHome, HudsonBackup.JOBS_DIR_NAME), "empty");
 	    emptyJobDir.mkdirs();
 	    final File jobsDirectory = new File(emptyJobDir, HudsonBackup.JOBS_DIR_NAME);
@@ -91,7 +87,7 @@ public class TestHelper {
 	    return emptyJobDir;
   }
 
-  private static File createJobsFolderWithConfiguration(File jenkinsHome, String jobName) throws IOException, FileNotFoundException {
+  private static File createJobsFolderWithConfiguration(File jenkinsHome, String jobName) throws IOException {
     final File testJob = new File(new File(jenkinsHome, HudsonBackup.JOBS_DIR_NAME), jobName);
     testJob.mkdirs();
     final File config = new File(testJob, "config.xml");
@@ -102,7 +98,7 @@ public class TestHelper {
     return testJob;
   }
   
-  public static File addNewBuildToJob(File job) throws IOException, InterruptedException {
+  public static File addNewBuildToJob(File job) throws IOException {
     final File builds = new File(job, HudsonBackup.BUILDS_DIR_NAME);
     builds.mkdirs();
     final File build = new File(builds, CONCRETE_BUILD_DIRECTORY_NAME);
