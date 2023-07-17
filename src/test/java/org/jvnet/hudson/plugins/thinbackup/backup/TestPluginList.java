@@ -16,75 +16,73 @@
  */
 package org.jvnet.hudson.plugins.thinbackup.backup;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.File;
 import java.io.IOException;
-
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 public class TestPluginList {
 
-  private PluginList pluginList;
-  private File pluginsXml;
-  private File pluginsXml2;
+    private PluginList pluginList;
+    private File pluginsXml;
+    private File pluginsXml2;
 
-  @BeforeEach
-  public void setup() throws IOException {
-    pluginsXml = File.createTempFile("pluginList", ".xml");
-    pluginList = new PluginList(pluginsXml);
-    pluginList.add("default", "0.1");
-  }
+    @BeforeEach
+    public void setup() throws IOException {
+        pluginsXml = File.createTempFile("pluginList", ".xml");
+        pluginList = new PluginList(pluginsXml);
+        pluginList.add("default", "0.1");
+    }
 
-  @AfterEach
-  public void teardown() {
-    FileUtils.deleteQuietly(pluginsXml);
-    FileUtils.deleteQuietly(pluginsXml2);
-  }
+    @AfterEach
+    public void teardown() {
+        FileUtils.deleteQuietly(pluginsXml);
+        FileUtils.deleteQuietly(pluginsXml2);
+    }
 
-  @Test
-  public void testAdd() {
-    assertEquals(1, pluginList.getPlugins().size());
-    pluginList.add("plugin", "0.1");
-    assertEquals(2, pluginList.getPlugins().size());
-  }
+    @Test
+    public void testAdd() {
+        assertEquals(1, pluginList.getPlugins().size());
+        pluginList.add("plugin", "0.1");
+        assertEquals(2, pluginList.getPlugins().size());
+    }
 
-  @Test
-  public void testCompareToEqualPluginList() throws IOException {
-    pluginsXml2 = File.createTempFile("pluginList2", ".xml");
-    final PluginList pluginList2 = new PluginList(pluginsXml2);
-    pluginList2.add("default", "0.1");
+    @Test
+    public void testCompareToEqualPluginList() throws IOException {
+        pluginsXml2 = File.createTempFile("pluginList2", ".xml");
+        final PluginList pluginList2 = new PluginList(pluginsXml2);
+        pluginList2.add("default", "0.1");
 
-    assertEquals(0, pluginList.compareTo(pluginList2));
-    assertEquals(0, pluginList2.compareTo(pluginList));
-  }
+        assertEquals(0, pluginList.compareTo(pluginList2));
+        assertEquals(0, pluginList2.compareTo(pluginList));
+    }
 
-  @Test
-  public void testCompareToNotEqualPluginList() throws IOException {
-    pluginsXml2 = File.createTempFile("pluginList2", ".xml");
-    final PluginList pluginList2 = new PluginList(pluginsXml2);
+    @Test
+    public void testCompareToNotEqualPluginList() throws IOException {
+        pluginsXml2 = File.createTempFile("pluginList2", ".xml");
+        final PluginList pluginList2 = new PluginList(pluginsXml2);
 
-    assertEquals(-1, pluginList.compareTo(pluginList2));
-    assertEquals(-1, pluginList2.compareTo(pluginList));
+        assertEquals(-1, pluginList.compareTo(pluginList2));
+        assertEquals(-1, pluginList2.compareTo(pluginList));
 
-    pluginList2.add("default", "0.2");
+        pluginList2.add("default", "0.2");
 
-    assertEquals(-1, pluginList.compareTo(pluginList2));
-    assertEquals(-1, pluginList2.compareTo(pluginList));
-  }
+        assertEquals(-1, pluginList.compareTo(pluginList2));
+        assertEquals(-1, pluginList2.compareTo(pluginList));
+    }
 
-  @Test
-  public void testCompareToDifferentSecondPluginList() throws IOException {
-    pluginsXml2 = File.createTempFile("pluginList2", ".xml");
-    final PluginList pluginList2 = new PluginList(pluginsXml2);
+    @Test
+    public void testCompareToDifferentSecondPluginList() throws IOException {
+        pluginsXml2 = File.createTempFile("pluginList2", ".xml");
+        final PluginList pluginList2 = new PluginList(pluginsXml2);
 
-    pluginList2.add("hudson", "0.2");
+        pluginList2.add("hudson", "0.2");
 
-    assertEquals(-1, pluginList.compareTo(pluginList2));
-    assertEquals(-1, pluginList2.compareTo(pluginList));
-  }
-
+        assertEquals(-1, pluginList.compareTo(pluginList2));
+        assertEquals(-1, pluginList2.compareTo(pluginList));
+    }
 }

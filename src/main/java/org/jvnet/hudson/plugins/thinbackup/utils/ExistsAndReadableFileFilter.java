@@ -2,7 +2,6 @@ package org.jvnet.hudson.plugins.thinbackup.utils;
 
 import java.io.File;
 import java.io.Serializable;
-
 import org.apache.commons.io.filefilter.AbstractFileFilter;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
@@ -16,12 +15,12 @@ public class ExistsAndReadableFileFilter extends AbstractFileFilter implements S
      * @return The wrapped file filter
      */
     public static IOFileFilter wrapperFilter(final IOFileFilter filter) {
-      return FileFilterUtils.asFileFilter((dir, name) -> {
-        File file = new File(dir, name);
-        if (file.exists() && file.canRead()) {
-          return filter.accept(file);
+        return FileFilterUtils.asFileFilter((dir, name) -> {
+            File file = new File(dir, name);
+            if (file.exists() && file.canRead()) {
+                return filter.accept(file);
             }
-        return false;
+            return false;
         });
     }
 }
