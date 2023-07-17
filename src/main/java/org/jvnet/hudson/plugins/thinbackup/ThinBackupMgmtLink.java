@@ -142,7 +142,8 @@ public class ThinBackupMgmtLink extends ManagementLink {
       @QueryParameter("backupAdditionalFilesRegex") final String backupAdditionalFilesRegex,
       @QueryParameter("waitForIdle") final boolean waitForIdle,
       @QueryParameter("backupConfigHistory") final boolean backupConfigHistory,
-      @QueryParameter("forceQuietModeTimeout") final String forceQuietModeTimeout) throws IOException {
+      @QueryParameter("forceQuietModeTimeout") final String forceQuietModeTimeout,
+      @QueryParameter("backupConfigHistory") final boolean failFast) throws IOException {
     Jenkins jenkins = Jenkins.getInstanceOrNull();
     if (jenkins == null) {
       return;
@@ -168,6 +169,7 @@ public class ThinBackupMgmtLink extends ManagementLink {
     plugin.setBackupAdditionalFilesRegex(backupAdditionalFilesRegex);
     plugin.setWaitForIdle(waitForIdle);
     plugin.setForceQuietModeTimeout(Integer.parseInt(forceQuietModeTimeout));
+    plugin.setFailFast(failFast);
     plugin.save();
     LOGGER.finest("Saving backup settings done.");
     rsp.sendRedirect(res.getContextPath() + THIN_BACKUP_SUBPATH);

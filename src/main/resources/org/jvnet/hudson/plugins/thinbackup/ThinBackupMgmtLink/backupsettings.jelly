@@ -122,6 +122,11 @@
                         help="/plugin/thinBackup/help/help-moveOldBackupsToZipFile.html"
                         checked="${it.configuration.moveOldBackupsToZipFile}"
                         name="moveOldBackupsToZipFile" />
+                    
+                    <f:optionalBlock title="${%fail_fast}"
+                        help="/plugin/thinBackup/help/help-failFast.html"
+                        checked="${it.configuration.failFast}"
+                        name="failFast" />
                 </f:section>
                 
                 <f:section>
