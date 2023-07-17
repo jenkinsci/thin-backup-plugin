@@ -25,7 +25,7 @@ import org.junit.Test;
 public class TestBackupSet extends BackupDirStructureSetup {
 
   @Test
-  public void testSimpleBackupSet() throws Exception {
+  public void testSimpleBackupSet() {
     final BackupSet setFromFull = new BackupSet(full2);
     Assert.assertTrue(setFromFull.isValid());
     Assert.assertEquals(1, setFromFull.getDiffBackups().size());

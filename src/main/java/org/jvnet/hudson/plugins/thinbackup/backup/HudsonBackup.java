@@ -511,7 +511,7 @@ public class HudsonBackup {
       latestFullPlugins = getPluginListFromLatestFull();
     }
 
-    if (pluginList.compareTo(latestFullPlugins) != 0) {
+    if (latestFullPlugins == null || pluginList.compareTo(latestFullPlugins) != 0) {
       LOGGER.fine("Storing list of installed plugins...");
       pluginList.save();
     } else {

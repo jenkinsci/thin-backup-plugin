@@ -46,7 +46,7 @@ public class TestPluginList {
   }
 
   @Test
-  public void testAdd() throws Exception {
+  public void testAdd() {
     assertEquals(1, pluginList.getPlugins().size());
     pluginList.add("plugin", "0.1");
     assertEquals(2, pluginList.getPlugins().size());
