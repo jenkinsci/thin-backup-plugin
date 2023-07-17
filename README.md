@@ -5,9 +5,9 @@ This plugin simply backs up the global and job specific configurations (not the 
 ## Why another backup plugin
 
 The [Backup Plugin](https://plugins.jenkins.io/backup/) only does manual backups and
-stores all data found in JENKINS\_HOME.  This is sometimes not practical because of time and disk
+stores all data found in `JENKINS\_HOME`.  This is sometimes not practical because of time and disk
 space requirements and the fact that it can only be manually triggered.  *ThinBackup*s can be
-scheduled and only backs up the most vital configuration info. Furthermore the Backup Plugin is unmaintained for quite a while.
+scheduled and only backs up the most vital configuration info. Furthermore, the Backup Plugin is unmaintained for quite a while.
 
 ## Documentation
 
@@ -33,8 +33,7 @@ redirected to the plugin main page.  To activate the restored settings you need 
 
 **Note**: The file **nextBuildNumber** will not be backed up or restored to prevent buildnumber
 collision by default.  The archive and the workspace will not be deleted or changed, but all backed
-up files will simply be overwritten with the restored versions (e.g., config.xml, thinBackup.xml
--\> for more info simply look in a backup).
+up files will simply be overwritten with the restored versions (e.g., `config.xml`, `thinBackup.xml` &rarr; for more info simply look in a backup).
 
 ![](images/backupStore.png).
 
@@ -42,7 +41,7 @@ up files will simply be overwritten with the restored versions (e.g., config.xml
 
 If this option is enabled, the file nextBuildNumber will also be restored.
 
-**Note**: Take special care when restoring a backup that contains a nextBuildNumber file, as this
+**Note**: Take special care when restoring a backup that contains a `nextBuildNumber` file, as this
 may potentially cause a lot of problems.
 
 #### Restore plugins
@@ -148,7 +147,7 @@ decided to explain my ideas behind the backup process.
 
 First of all, **Jenkins will not be shutdown at any time**.  Second, I use the built-in quiet mode
 (Jenkins is going to shutdown) to ensure a safe environment during the backup process and cancel
-the quiet mode afterwards.  This could be misleading, **but there is no point where Jenkins will be
+the quiet mode afterward.  This could be misleading, **but there is no point where Jenkins will be
 shutdown**.
 
 So, what is a safe environment?  A safe environment would mean that no jobs are running. Because a
