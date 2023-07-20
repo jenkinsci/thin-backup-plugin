@@ -143,7 +143,7 @@ public class ThinBackupMgmtLink extends ManagementLink {
       @QueryParameter("waitForIdle") final boolean waitForIdle,
       @QueryParameter("backupConfigHistory") final boolean backupConfigHistory,
       @QueryParameter("forceQuietModeTimeout") final String forceQuietModeTimeout,
-      @QueryParameter("backupConfigHistory") final boolean failFast) throws IOException {
+      @QueryParameter("failFast") final boolean failFast) throws IOException {
     Jenkins jenkins = Jenkins.getInstanceOrNull();
     if (jenkins == null) {
       return;
