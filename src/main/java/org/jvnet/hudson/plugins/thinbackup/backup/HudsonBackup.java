@@ -19,7 +19,9 @@ package org.jvnet.hudson.plugins.thinbackup.backup;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -48,6 +50,8 @@ import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl;
 import org.jvnet.hudson.plugins.thinbackup.utils.ExistsAndReadableFileFilter;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
+
+import com.google.common.base.Throwables;
 
 import hudson.PluginWrapper;
 import hudson.model.ItemGroup;
@@ -190,7 +194,17 @@ public class HudsonBackup {
     if (plugin.isBackupPluginArchives()) {
       backupPluginArchives();
     }
-    storePluginListIfChanged();
+    
+    try {
+        storePluginListIfChanged();
+      } catch (IOException e) {
+        if(plugin.isFailFast()) {
+          throw e;
+        } else {
+          LOGGER.warning("Failed to store plugin list changes: " + e.getLocalizedMessage());
+          LOGGER.warning(Throwables.getStackTraceAsString(e));
+        }
+      }
 
     if (plugin.isBackupAdditionalFiles()) {
       backupAdditionalFiles();
@@ -233,8 +247,16 @@ public class HudsonBackup {
 
     IOFileFilter suffixFileFilter = FileFilterUtils.and(FileFileFilter.INSTANCE,
         FileFilterUtils.suffixFileFilter(XML_FILE_EXTENSION), getFileAgeDiffFilter(), getExcludedFilesFilter());
-    FileUtils.copyDirectory(hudsonHome, backupDirectory, ExistsAndReadableFileFilter.wrapperFilter(suffixFileFilter));
-
+    try {
+      FileUtils.copyDirectory(hudsonHome, backupDirectory, ExistsAndReadableFileFilter.wrapperFilter(suffixFileFilter));
+    } catch (IOException e) {
+      if(plugin.isFailFast()) {
+        throw e;
+      } else {
+        LOGGER.warning("Failed to copy directory: " + e.getLocalizedMessage());
+        LOGGER.warning(Throwables.getStackTraceAsString(e));
+      }
+    }
     LOGGER.fine("DONE backing up global configuration files.");
   }
 
@@ -271,7 +293,16 @@ public class HudsonBackup {
             }
             backupJobsDirectory(childJobsFolder, folderJobsBackupDirectory);
           } else {
-            backupJob(jobDirectory, jobsBackupDirectory, jobName);
+            try {
+              backupJob(jobDirectory, jobsBackupDirectory, jobName);
+            } catch (Exception e) {
+              if(plugin.isFailFast()) {
+                throw e;
+              } else {
+                LOGGER.warning("Failed to backup job " + jobName + " correctly: " + e.getLocalizedMessage());
+                LOGGER.warning(Throwables.getStackTraceAsString(e));
+              }
+            }
           }
         } else if (FileUtils.isSymlink(jobDirectory)) {
           // TODO: check if copySymLink needed here
@@ -285,7 +316,7 @@ public class HudsonBackup {
   }
 
   private void backupJob(final File jobDirectory, final File jobsBackupDirectory, final String jobName)
-      throws IOException {
+      throws IOException, NoSuchFileException {
     final File jobBackupDirectory = new File(jobsBackupDirectory, jobName);
     backupJobConfigFor(jobDirectory, jobBackupDirectory);
     backupBuildsFor(jobDirectory, jobBackupDirectory);
@@ -345,7 +376,16 @@ public class HudsonBackup {
       final IOFileFilter filter = FileFilterUtils.and(addFilesFilter, FileFilterUtils.or(DirectoryFileFilter.DIRECTORY,
           FileFilterUtils.and(getFileAgeDiffFilter(), getExcludedFilesFilter())));
 
-      FileUtils.copyDirectory(hudsonHome, backupDirectory, ExistsAndReadableFileFilter.wrapperFilter(filter));
+      try {
+        FileUtils.copyDirectory(hudsonHome, backupDirectory, ExistsAndReadableFileFilter.wrapperFilter(filter));
+      } catch (IOException e) {
+        if(plugin.isFailFast()) {
+          throw e;
+        } else {
+          LOGGER.warning("Failed to copy directory: " + e.getLocalizedMessage());
+          LOGGER.warning(Throwables.getStackTraceAsString(e));
+        }
+      }
     } else {
       LOGGER.info("No Additional File regex was provided: selecting no Additional Files to back up.");
     }
@@ -357,7 +397,16 @@ public class HudsonBackup {
     LOGGER.fine("Backing up nodes configuration files...");
 
     final IOFileFilter filter = FileFilterUtils.nameFileFilter(CONFIG_XML);
-    backupRootFolder(NODES_DIR_NAME, filter);
+    try {
+      backupRootFolder(NODES_DIR_NAME, filter);
+    } catch (IOException e) {
+      if(plugin.isFailFast()) {
+        throw e;
+      } else {
+        LOGGER.warning("Failed to backup nodes configuration folder " + NODES_DIR_NAME + ": " + e.getLocalizedMessage());
+        LOGGER.warning(Throwables.getStackTraceAsString(e));
+      }
+    }
 
     LOGGER.fine("DONE backing up nodes configuration files.");
   }
@@ -369,7 +418,13 @@ public class HudsonBackup {
     return new File(jobBackupdirectory, pathToConfiguration.substring(pathToJob.length()));
   }
 
-  private List<File> findAllConfigurations(File dir) {
+  /**
+   * 
+   * @param dir
+   * @return
+   * @throws UncheckedIOException - FileUtils.listFiles broke with such an exception
+   */
+  private List<File> findAllConfigurations(File dir) throws UncheckedIOException {
     Collection<File> listFiles = FileUtils.listFiles(dir, FileFilterUtils.nameFileFilter(CONFIG_XML),
         TrueFileFilter.INSTANCE);
 
@@ -482,7 +537,16 @@ public class HudsonBackup {
   }
 
   private void backupRootFolder(String folderName) throws IOException {
-    backupRootFolder(folderName, TrueFileFilter.INSTANCE);
+    try {
+      backupRootFolder(folderName, TrueFileFilter.INSTANCE);
+    } catch (IOException e) {
+      if(plugin.isFailFast()) {
+        throw e;
+      } else {
+        LOGGER.warning("Failed to backup root folder " + folderName + ": " + e.getLocalizedMessage());
+        LOGGER.warning(Throwables.getStackTraceAsString(e));
+      }
+    }
   }
 
   private void backupRootFolder(String folderName, IOFileFilter fileFilter) throws IOException {
