@@ -60,6 +60,7 @@ public class ThinBackupPluginImpl extends Plugin {
   private String backupAdditionalFilesRegex = null;
   private boolean backupNextBuildNumber = false;
   private boolean backupBuildsToKeepOnly = false;
+  private boolean failFast = true;
 
   @Override
   public void start() throws Exception {
@@ -390,5 +391,15 @@ public class ThinBackupPluginImpl extends Plugin {
 
   public void setBackupConfigHistory(boolean backupConfigHistory) {
     this.backupConfigHistory = backupConfigHistory;
+  }
+
+  public boolean isFailFast()
+  {
+    return failFast;
+  }
+
+  public void setFailFast(boolean failFast)
+  {
+    this.failFast = failFast;
   }
 }

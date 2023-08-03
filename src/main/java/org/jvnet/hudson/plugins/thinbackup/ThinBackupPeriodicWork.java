@@ -88,6 +88,7 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
         }
 
         new HudsonBackup(plugin, type).backup();
+        LOGGER.info("Backup process finished successfully.");
       } else {
         LOGGER.warning("ThinBackup is not configured yet: No backup path set.");
       }
@@ -101,7 +102,7 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
       if (!inQuietModeBeforeBackup) {
         jenkins.doCancelQuietDown();
       } else {
-        LOGGER.info("Backup process finished, but still in quiet mode as before. The quiet mode needs to be canceled manually, because it is not clear who is putting Jenkins into quiet mode.");
+        LOGGER.warning("Still in quiet mode as before. The quiet mode needs to be canceled manually, because it is not clear who is putting Jenkins into quiet mode.");
       }
     }
   }
