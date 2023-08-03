@@ -1,5 +1,9 @@
 # Thin Backup Plugin
 
+[![Build Status](https://ci.jenkins.io/job/Plugins/job/thin-backup-plugin/job/master/badge/icon)](https://ci.jenkins.io/job/Plugins/job/thin-backup-plugin/job/master/)
+[![GitHub release](https://img.shields.io/github/v/release/jenkinsci/thin-backup-plugin.svg?label=release)](https://github.com/jenkinsci/thin-backup-plugin/releases/latest)
+[![Jenkins Plugin Installs](https://img.shields.io/jenkins/plugin/i/thinBackup.svg?color=blue)](https://plugins.jenkins.io/thinBackup/)
+
 This plugin simply backs up the global and job specific configurations (not the archive or the workspace).
 
 ## Why another backup plugin
