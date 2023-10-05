@@ -16,63 +16,59 @@
  */
 package org.jvnet.hudson.plugins.thinbackup.backup;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.hasItem;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import hudson.model.FreeStyleBuild;
+import hudson.model.FreeStyleProject;
 import hudson.model.ItemGroup;
 import hudson.model.TopLevelItem;
-import hudson.model.FreeStyleProject;
 import hudson.util.RunList;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.FileFilterUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.jvnet.hudson.plugins.thinbackup.TestHelper;
+import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
+import org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl;
+import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.FileFilterUtils;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.jvnet.hudson.plugins.thinbackup.TestHelper;
-import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
-import org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl;
-import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasItem;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class TestHudsonBackup {
 
-  private File backupDir;
-  private File jenkinsHome;
+  @TempDir
+  File backupDir;
+  File jenkinsHome;
   private File buildDir;
   private ItemGroup<TopLevelItem> mockHudson;
 
-  @Before
+  @BeforeEach
   public void setup() throws IOException, InterruptedException {
     mockHudson = mock(ItemGroup.class);
     
     File base = new File(System.getProperty("java.io.tmpdir"));
-    backupDir = TestHelper.createBackupFolder(base);
 
     jenkinsHome = TestHelper.createBasicFolderStructure(base);
     File jobDir = TestHelper.createJob(jenkinsHome, TestHelper.TEST_JOB_NAME);
     TestHelper.createMaliciousMultiJob(jenkinsHome, "emptyJob");
     buildDir = TestHelper.addNewBuildToJob(jobDir);
   }
-  
-  @After
+
+  @AfterEach
   public void tearDown() throws Exception {
     FileUtils.deleteDirectory(jenkinsHome);
     FileUtils.deleteDirectory(backupDir);
@@ -86,29 +82,29 @@ public class TestHudsonBackup {
     new HudsonBackup(mockPlugin, BackupType.FULL, new Date(), mockHudson).backup();
 
     String[] list = backupDir.list();
-    Assert.assertNotNull(list);
-    Assert.assertEquals(1, list.length);
+    assertNotNull(list);
+    assertEquals(1, list.length);
     final File backup = new File(backupDir, list[0]);
     list = backup.list();
-    Assert.assertNotNull(list);
-    Assert.assertEquals(6, list.length);
+    assertNotNull(list);
+    assertEquals(6, list.length);
 
     final File job = new File(new File(backup, HudsonBackup.JOBS_DIR_NAME), TestHelper.TEST_JOB_NAME);
     final List<String> arrayList = Arrays.asList(job.list());
-    Assert.assertEquals(2, arrayList.size());
-    Assert.assertFalse(arrayList.contains(HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME));
+    assertEquals(2, arrayList.size());
+    assertFalse(arrayList.contains(HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME));
 
     final File build = new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), TestHelper.CONCRETE_BUILD_DIRECTORY_NAME);
     list = build.list();
-    Assert.assertNotNull(list);
-    Assert.assertEquals(7, list.length);
+    assertNotNull(list);
+    assertEquals(7, list.length);
 
     final File changelogHistory = new File(
         new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), TestHelper.CONCRETE_BUILD_DIRECTORY_NAME),
         HudsonBackup.CHANGELOG_HISTORY_PLUGIN_DIR_NAME);
     list = changelogHistory.list();
-    Assert.assertNotNull(list);
-    Assert.assertEquals(2, list.length);
+    assertNotNull(list);
+    assertEquals(2, list.length);
   }  
 
   @Test
@@ -119,29 +115,29 @@ public class TestHudsonBackup {
     new HudsonBackup(mockPlugin, BackupType.FULL, new Date(), mockHudson).backup();
 
     String[] list = backupDir.list();
-    Assert.assertNotNull(list);
-    Assert.assertEquals(1, list.length);
+    assertNotNull(list);
+    assertEquals(1, list.length);
     final File backup = new File(backupDir, list[0]);
     list = backup.list();
-    Assert.assertNotNull(list);
-    Assert.assertEquals(6, list.length);
+    assertNotNull(list);
+    assertEquals(6, list.length);
 
     final File job = new File(new File(backup, HudsonBackup.JOBS_DIR_NAME), TestHelper.TEST_JOB_NAME);
     list = job.list();
-    Assert.assertNotNull(list);
-    Assert.assertEquals(2, list.length);
+    assertNotNull(list);
+    assertEquals(2, list.length);
 
     final File build = new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), TestHelper.CONCRETE_BUILD_DIRECTORY_NAME);
     list = build.list();
-    Assert.assertNotNull(list);
-    Assert.assertEquals(6, list.length);
+    assertNotNull(list);
+    assertEquals(6, list.length);
 
     final File changelogHistory = new File(
         new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), TestHelper.CONCRETE_BUILD_DIRECTORY_NAME),
         HudsonBackup.CHANGELOG_HISTORY_PLUGIN_DIR_NAME);
     list = changelogHistory.list();
-    Assert.assertNotNull(list);
-    Assert.assertEquals(2, list.length);
+    assertNotNull(list);
+    assertEquals(2, list.length);
 
     boolean containsLogfile = false;
     for (final String string : list) {
@@ -150,7 +146,7 @@ public class TestHudsonBackup {
         break;
       }
     }
-    Assert.assertFalse(containsLogfile);
+    assertFalse(containsLogfile);
   }
 
   @Test
@@ -161,18 +157,18 @@ public class TestHudsonBackup {
     new HudsonBackup(mockPlugin, BackupType.FULL, new Date(), mockHudson).backup();
 
     String[] list = backupDir.list();
-    Assert.assertNotNull(list);
-    Assert.assertEquals(1, list.length);
+    assertNotNull(list);
+    assertEquals(1, list.length);
     final File backup = new File(backupDir, list[0]);
     list = backup.list();
-    Assert.assertNotNull(list);
-    Assert.assertEquals(6, list.length);
+    assertNotNull(list);
+    assertEquals(6, list.length);
 
     final File job = new File(new File(backup, HudsonBackup.JOBS_DIR_NAME), TestHelper.TEST_JOB_NAME);
     list = job.list();
-    Assert.assertNotNull(list);
-    Assert.assertEquals(1, list.length);
-    Assert.assertEquals("config.xml", list[0]);
+    assertNotNull(list);
+    assertEquals(1, list.length);
+    assertEquals("config.xml", list[0]);
   }
 
   public void performHudsonDiffBackup(final ThinBackupPluginImpl mockPlugin) throws Exception {
@@ -200,7 +196,7 @@ public class TestHudsonBackup {
 
     final File lastDiffBackup = backupDir.listFiles((FileFilter) FileFilterUtils.prefixFileFilter(BackupType.DIFF
         .toString()))[0];
-    Assert.assertEquals(1, lastDiffBackup.list().length);
+    assertEquals(1, lastDiffBackup.list().length);
   }
 
   @Test
@@ -211,29 +207,29 @@ public class TestHudsonBackup {
     new HudsonBackup(mockPlugin, BackupType.FULL, new Date(), mockHudson).backup();
 
     String[] list = backupDir.list();
-    Assert.assertNotNull(list);
-    Assert.assertEquals(1, list.length);
+    assertNotNull(list);
+    assertEquals(1, list.length);
     final File backup = new File(backupDir, list[0]);
     list = backup.list();
-    Assert.assertNotNull(list);
-    Assert.assertEquals(6, list.length);
+    assertNotNull(list);
+    assertEquals(6, list.length);
 
     final File job = new File(new File(backup, HudsonBackup.JOBS_DIR_NAME), TestHelper.TEST_JOB_NAME);
     final List<String> arrayList = Arrays.asList(job.list());
-    Assert.assertEquals(3, arrayList.size());
+    assertEquals(3, arrayList.size());
     assertThat(arrayList, hasItem(containsString(HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME)));
 
     final File build = new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), TestHelper.CONCRETE_BUILD_DIRECTORY_NAME);
     list = build.list();
-    Assert.assertNotNull(list);
-    Assert.assertEquals(7, list.length);
+    assertNotNull(list);
+    assertEquals(7, list.length);
 
     final File changelogHistory = new File(
         new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), TestHelper.CONCRETE_BUILD_DIRECTORY_NAME),
         HudsonBackup.CHANGELOG_HISTORY_PLUGIN_DIR_NAME);
     list = changelogHistory.list();
-    Assert.assertNotNull(list);
-    Assert.assertEquals(2, list.length);
+    assertNotNull(list);
+    assertEquals(2, list.length);
   }
 
   @Test
@@ -244,28 +240,28 @@ public class TestHudsonBackup {
     new HudsonBackup(mockPlugin, BackupType.FULL, new Date(), mockHudson).backup();
 
     String[] list = backupDir.list();
-    Assert.assertNotNull(list);
-    Assert.assertEquals(1, list.length);
+    assertNotNull(list);
+    assertEquals(1, list.length);
     final File backup = new File(backupDir, list[0]);
     list = backup.list();
-    Assert.assertNotNull(list);
-    Assert.assertEquals(6, list.length);
+    assertNotNull(list);
+    assertEquals(6, list.length);
 
     final File job = new File(new File(backup, HudsonBackup.JOBS_DIR_NAME), TestHelper.TEST_JOB_NAME);
     List<String> arrayList = Arrays.asList(job.list());
-    Assert.assertEquals(2, arrayList.size());
-    Assert.assertFalse(arrayList.contains(HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME));
+    assertEquals(2, arrayList.size());
+    assertFalse(arrayList.contains(HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME));
 
     final File build = new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), TestHelper.CONCRETE_BUILD_DIRECTORY_NAME);
     arrayList = Arrays.asList(build.list());
-    Assert.assertEquals(8, arrayList.size());
+    assertEquals(8, arrayList.size());
 
     final File changelogHistory = new File(
         new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), TestHelper.CONCRETE_BUILD_DIRECTORY_NAME),
         HudsonBackup.CHANGELOG_HISTORY_PLUGIN_DIR_NAME);
     list = changelogHistory.list();
-    Assert.assertNotNull(list);
-    Assert.assertEquals(2, list.length);
+    assertNotNull(list);
+    assertEquals(2, list.length);
   }
 
   @Test
@@ -283,18 +279,18 @@ public class TestHudsonBackup {
     new HudsonBackup(mockPlugin, BackupType.FULL, new Date(), mockHudson).backup();
 
     String[] list = backupDir.list();
-    Assert.assertNotNull(list);
-    Assert.assertEquals(1, list.length);
+    assertNotNull(list);
+    assertEquals(1, list.length);
     final File backup = new File(backupDir, list[0]);
     list = backup.list();
-    Assert.assertNotNull(list);
-    Assert.assertEquals(6, list.length);
+    assertNotNull(list);
+    assertEquals(6, list.length);
 
     final File job = new File(new File(backup, HudsonBackup.JOBS_DIR_NAME), TestHelper.TEST_JOB_NAME);
     list = job.list();
-    Assert.assertNotNull(list);
-    Assert.assertEquals(1, list.length);
-    Assert.assertEquals("config.xml", list[0]);    
+    assertNotNull(list);
+    assertEquals(1, list.length);
+    assertEquals("config.xml", list[0]);
   }  
   
   @Test
@@ -313,22 +309,22 @@ public class TestHudsonBackup {
     new HudsonBackup(mockPlugin, BackupType.FULL, new Date(), mockHudson).backup();
 
     String[] list = backupDir.list();
-    Assert.assertNotNull(list);
-    Assert.assertEquals(Arrays.toString(list) ,1, list.length);
+    assertNotNull(list);
+    assertEquals(1, list.length);
     final File backup = new File(backupDir, list[0]);
     list = backup.list();
-    Assert.assertNotNull(list);
-    Assert.assertEquals(6, list.length);
+    assertNotNull(list);
+    assertEquals(6, list.length);
 
     final File job = new File(new File(backup, HudsonBackup.JOBS_DIR_NAME), TestHelper.TEST_JOB_NAME);
     final List<String> arrayList = Arrays.asList(job.list());
-    Assert.assertEquals(2, arrayList.size());
-    Assert.assertFalse(arrayList.contains(HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME));
+    assertEquals(2, arrayList.size());
+    assertFalse(arrayList.contains(HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME));
 
     final File build = new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), TestHelper.CONCRETE_BUILD_DIRECTORY_NAME);
     list = build.list();
-    Assert.assertNotNull(list);
-    Assert.assertEquals(7, list.length);
+    assertNotNull(list);
+    assertEquals(7, list.length);
   }
   
   @Test
@@ -355,7 +351,7 @@ public class TestHudsonBackup {
     }
     final ThinBackupPluginImpl mockPlugin = TestHelper.createMockPlugin(jenkinsHome, backupDir);
 
-    Assert.assertEquals(filesAndFolders.toString(),72, filesAndFolders.size());
+    assertEquals(72, filesAndFolders.size());
     HudsonBackup backup = new HudsonBackup(mockPlugin, BackupType.FULL, new Date(), mockHudson);
     backup.removeEmptyDirs(jenkinsHome);
     try (Stream<Path> walk = Files.walk(jenkinsHome.toPath())) {
@@ -366,7 +362,7 @@ public class TestHudsonBackup {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-    Assert.assertEquals(filesAndFolders.toString(),25, filesAndFolders.size());
+    assertEquals(25, filesAndFolders.size());
   }
   
   @Test
@@ -378,23 +374,23 @@ public class TestHudsonBackup {
     new HudsonBackup(mockPlugin, BackupType.FULL, new Date(), mockHudson).backup();
 
     String[] list = backupDir.list();
-    Assert.assertNotNull(list);
-    Assert.assertEquals(1, list.length);
+    assertNotNull(list);
+    assertEquals(1, list.length);
     final File backup = new File(backupDir, list[0]);
     list = backup.list();
-    Assert.assertNotNull(list);
-    Assert.assertEquals(7, list.length);
+    assertNotNull(list);
+    assertEquals(7, list.length);
 
     final File nodes = new File(backup, HudsonBackup.NODES_DIR_NAME);
     list = nodes.list();
-    Assert.assertNotNull(list);
-    Assert.assertEquals(1, list.length);
-    Assert.assertEquals(TestHelper.TEST_NODE_NAME, list[0]);
+    assertNotNull(list);
+    assertEquals(1, list.length);
+    assertEquals(TestHelper.TEST_NODE_NAME, list[0]);
 
     final File node = new File(nodes, TestHelper.TEST_NODE_NAME);
     list = node.list();
-    Assert.assertNotNull(list);
-    Assert.assertEquals(1, list.length);
-    Assert.assertEquals(HudsonBackup.CONFIG_XML, list[0]);
+    assertNotNull(list);
+    assertEquals(1, list.length);
+    assertEquals(HudsonBackup.CONFIG_XML, list[0]);
   }
 }

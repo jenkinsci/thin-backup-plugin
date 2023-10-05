@@ -1,19 +1,19 @@
 package org.jvnet.hudson.plugins.thinbackup.backup;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.Calendar;
 
 import static org.jvnet.hudson.plugins.thinbackup.utils.Utils.getFormattedDirectory;
 
 public class BackupDirStructureSetup {
 
-  @Rule
-  public TemporaryFolder tmpFolder = new TemporaryFolder(new File(System.getProperty("java.io.tmpdir")));
+  @TempDir
+  Path tmpFolder;
 
   protected File backupDir;
 
@@ -31,9 +31,9 @@ public class BackupDirStructureSetup {
 
   protected File diff41;
 
-  @Before
-  public void setup() throws Exception {
-    backupDir = tmpFolder.newFolder("thin-backup");
+  @BeforeEach
+  public void setup() {
+    backupDir =  tmpFolder.toFile();
 
     final Calendar cal = Calendar.getInstance();
     cal.set(2011, Calendar.JANUARY, 1, 0, 0);

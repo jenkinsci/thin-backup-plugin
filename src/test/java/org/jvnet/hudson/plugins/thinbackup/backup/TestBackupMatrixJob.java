@@ -2,16 +2,17 @@ package org.jvnet.hudson.plugins.thinbackup.backup;
 
 import hudson.model.ItemGroup;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.plugins.thinbackup.TestHelper;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Date;
 
 import static org.mockito.Mockito.mock;
@@ -19,19 +20,20 @@ import static org.mockito.Mockito.when;
 
 public class TestBackupMatrixJob {
 
-  @Rule
-  public TemporaryFolder tmpFolder = new TemporaryFolder();
+  @TempDir
+  public Path tmpFolder;
 
   private File backupDir;
   private File jenkinsHome;
 
-  @Before
+  @BeforeEach
   public void setUp() throws IOException, InterruptedException {
-    backupDir = TestHelper.createBackupFolder(tmpFolder.newFolder("thin-backup"));
-    jenkinsHome = TestHelper.createBasicFolderStructure(tmpFolder.newFolder("jenkins"));
+    backupDir = TestHelper.createBackupFolder(Files.createDirectory(tmpFolder.resolve("thin-backup-matrix-job")).toFile());
+    jenkinsHome = TestHelper.createBasicFolderStructure(Files.createDirectory(tmpFolder.resolve("jenkins-matrix-job")).toFile());
+
     File jobDir = TestHelper.createJob(jenkinsHome, TestHelper.TEST_JOB_NAME);
     TestHelper.addNewBuildToJob(jobDir);
-    
+
     TestHelper.addSingleConfigurationResult(jobDir);
   }
   
