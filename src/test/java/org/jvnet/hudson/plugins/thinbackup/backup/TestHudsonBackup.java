@@ -51,8 +51,8 @@ import static org.mockito.Mockito.when;
 public class TestHudsonBackup {
 
   @TempDir
-  File backupDir;
-  File jenkinsHome;
+  public File backupDir;
+  public File jenkinsHome;
   private File buildDir;
   private ItemGroup<TopLevelItem> mockHudson;
 
