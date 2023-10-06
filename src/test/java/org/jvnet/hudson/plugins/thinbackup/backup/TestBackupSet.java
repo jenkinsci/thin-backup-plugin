@@ -16,56 +16,58 @@
  */
 package org.jvnet.hudson.plugins.thinbackup.backup;
 
+import org.junit.jupiter.api.Test;
+
 import java.io.File;
 import java.io.IOException;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
 
 public class TestBackupSet extends BackupDirStructureSetup {
 
   @Test
   public void testSimpleBackupSet() {
     final BackupSet setFromFull = new BackupSet(full2);
-    Assert.assertTrue(setFromFull.isValid());
-    Assert.assertEquals(1, setFromFull.getDiffBackups().size());
-    Assert.assertEquals(full2, setFromFull.getFullBackup());
-    Assert.assertTrue(setFromFull.getDiffBackups().contains(diff21));
+    assertTrue(setFromFull.isValid());
+    assertEquals(1, setFromFull.getDiffBackups().size());
+    assertEquals(full2, setFromFull.getFullBackup());
+    assertTrue(setFromFull.getDiffBackups().contains(diff21));
 
     final BackupSet setFromDiff = new BackupSet(diff21);
-    Assert.assertTrue(setFromDiff.isValid());
-    Assert.assertEquals(1, setFromDiff.getDiffBackups().size());
-    Assert.assertEquals(full2, setFromDiff.getFullBackup());
-    Assert.assertTrue(setFromDiff.getDiffBackups().contains(diff21));
+    assertTrue(setFromDiff.isValid());
+    assertEquals(1, setFromDiff.getDiffBackups().size());
+    assertEquals(full2, setFromDiff.getFullBackup());
+    assertTrue(setFromDiff.getDiffBackups().contains(diff21));
   }
 
   @Test
   public void testDelete() throws Exception {
     final BackupSet setFromFull = new BackupSet(full1);
-    Assert.assertTrue(setFromFull.isValid());
-    Assert.assertEquals(4, setFromFull.getDiffBackups().size());
-    Assert.assertEquals(full1, setFromFull.getFullBackup());
-    Assert.assertTrue(setFromFull.getDiffBackups().contains(diff11));
-    Assert.assertTrue(setFromFull.getDiffBackups().contains(diff12));
-    Assert.assertTrue(setFromFull.getDiffBackups().contains(diff13));
-    Assert.assertTrue(setFromFull.getDiffBackups().contains(diff14));
+    assertTrue(setFromFull.isValid());
+    assertEquals(4, setFromFull.getDiffBackups().size());
+    assertEquals(full1, setFromFull.getFullBackup());
+    assertTrue(setFromFull.getDiffBackups().contains(diff11));
+    assertTrue(setFromFull.getDiffBackups().contains(diff12));
+    assertTrue(setFromFull.getDiffBackups().contains(diff13));
+    assertTrue(setFromFull.getDiffBackups().contains(diff14));
 
-    Assert.assertEquals(10, backupDir.list().length);
+    assertEquals(10, backupDir.list().length);
     setFromFull.delete();
-    Assert.assertEquals(5, backupDir.list().length);
+    assertEquals(5, backupDir.list().length);
   }
 
   @Test
   public void testInvalidSet() throws Exception {
     final BackupSet setFromDiff = new BackupSet(diff41);
-    Assert.assertFalse(setFromDiff.isValid());
-    Assert.assertFalse(setFromDiff.isValid());
-    Assert.assertNull(setFromDiff.getFullBackup());
-    Assert.assertNull(setFromDiff.getDiffBackups());
+    assertFalse(setFromDiff.isValid());
+    assertFalse(setFromDiff.isValid());
+    assertNull(setFromDiff.getFullBackup());
+    assertNull(setFromDiff.getDiffBackups());
 
-    Assert.assertEquals(10, backupDir.list().length);
+    assertEquals(10, backupDir.list().length);
     setFromDiff.delete();
-    Assert.assertEquals(10, backupDir.list().length);
+    assertEquals(10, backupDir.list().length);
   }
 
   @Test
@@ -74,38 +76,38 @@ public class TestBackupSet extends BackupDirStructureSetup {
     final BackupSet backupSet2 = new BackupSet(full2);
     final BackupSet invalidBackupSet = new BackupSet(diff41);
 
-    Assert.assertEquals(0, backupSet1.compareTo(backupSet1));
-    Assert.assertEquals(-1, backupSet1.compareTo(backupSet2));
-    Assert.assertEquals(1, backupSet2.compareTo(backupSet1));
-    Assert.assertEquals(1, backupSet1.compareTo(invalidBackupSet));
-    Assert.assertEquals(1, backupSet2.compareTo(invalidBackupSet));
-    Assert.assertEquals(-1, invalidBackupSet.compareTo(backupSet1));
+    assertEquals(0, backupSet1.compareTo(backupSet1));
+    assertEquals(-1, backupSet1.compareTo(backupSet2));
+    assertEquals(1, backupSet2.compareTo(backupSet1));
+    assertEquals(1, backupSet1.compareTo(invalidBackupSet));
+    assertEquals(1, backupSet2.compareTo(invalidBackupSet));
+    assertEquals(-1, invalidBackupSet.compareTo(backupSet1));
   }
 
   @Test
   public void testBackupSetContainsDirectory() throws IOException {
     final BackupSet backupSet1 = new BackupSet(full1);
 
-    Assert.assertTrue(backupSet1.containsDirectory(full1));
-    Assert.assertTrue(backupSet1.containsDirectory(new File(full1.getAbsolutePath())));
-    Assert.assertTrue(backupSet1.containsDirectory(diff11));
-    Assert.assertTrue(backupSet1.containsDirectory(diff12));
-    Assert.assertTrue(backupSet1.containsDirectory(diff13));
-    Assert.assertTrue(backupSet1.containsDirectory(diff14));
-    Assert.assertFalse(backupSet1.containsDirectory(null));
-    Assert.assertFalse(backupSet1.containsDirectory(full2));
-    Assert.assertFalse(backupSet1.containsDirectory(diff21));
-    Assert.assertFalse(backupSet1.containsDirectory(new File(diff21.getAbsolutePath())));
+    assertTrue(backupSet1.containsDirectory(full1));
+    assertTrue(backupSet1.containsDirectory(new File(full1.getAbsolutePath())));
+    assertTrue(backupSet1.containsDirectory(diff11));
+    assertTrue(backupSet1.containsDirectory(diff12));
+    assertTrue(backupSet1.containsDirectory(diff13));
+    assertTrue(backupSet1.containsDirectory(diff14));
+    assertFalse(backupSet1.containsDirectory(null));
+    assertFalse(backupSet1.containsDirectory(full2));
+    assertFalse(backupSet1.containsDirectory(diff21));
+    assertFalse(backupSet1.containsDirectory(new File(diff21.getAbsolutePath())));
 
     final BackupSet invalidBackupSet = new BackupSet(diff41);
-    Assert.assertFalse(invalidBackupSet.containsDirectory(diff41));
+    assertFalse(invalidBackupSet.containsDirectory(diff41));
 
     final File tempDir = new File(System.getProperty("java.io.tmpdir"));
     backupDir = new File(tempDir, "BackupDirForHudsonBackupTest");
-    final File testFile = tmpFolder.newFile("tempFile.nxt");
+    final File testFile = tmpFolder.resolve("tempFile.nxt").toFile();
     testFile.createNewFile();
-    Assert.assertFalse(backupSet1.containsDirectory(testFile));
-    Assert.assertFalse(backupSet1.containsDirectory(new File(testFile.getAbsolutePath())));
+    assertFalse(backupSet1.containsDirectory(testFile));
+    assertFalse(backupSet1.containsDirectory(new File(testFile.getAbsolutePath())));
   }
 
 }

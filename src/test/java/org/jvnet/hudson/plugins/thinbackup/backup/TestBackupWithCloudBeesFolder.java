@@ -1,13 +1,6 @@
 package org.jvnet.hudson.plugins.thinbackup.backup;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Mockito.mock;
 import hudson.model.ItemGroup;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Date;
-
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
@@ -17,6 +10,13 @@ import org.jvnet.hudson.plugins.thinbackup.TestHelper;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Date;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Mockito.mock;
 
 public class TestBackupWithCloudBeesFolder {
   private static final String TEST_FOLDER = "testFolder";

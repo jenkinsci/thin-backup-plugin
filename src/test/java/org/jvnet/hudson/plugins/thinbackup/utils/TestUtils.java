@@ -26,25 +26,27 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 import org.jvnet.hudson.plugins.thinbackup.backup.BackupDirStructureSetup;
 import org.jvnet.hudson.plugins.thinbackup.backup.BackupSet;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestUtils extends BackupDirStructureSetup {
 
   private File tmpDir;
 
-  @Before
+  @BeforeEach
   public void init() {
     tmpDir = new File(System.getenv("tmp"), "test");
     tmpDir.mkdir();
   }
   
-  @After
+  @AfterEach
   public void cleanup() throws IOException {
     FileUtils.deleteDirectory(tmpDir);
   }
@@ -53,24 +55,28 @@ public class TestUtils extends BackupDirStructureSetup {
   public void testConvertToDirectoryNameDateFormat() throws ParseException {
     final String displayDate = "2011-02-13 10:48";
     final String fileDate = Utils.convertToDirectoryNameDateFormat(displayDate);
-    Assert.assertEquals("2011-02-13_10-48", fileDate);
+    assertEquals("2011-02-13_10-48", fileDate);
   }
 
-  @Test(expected = ParseException.class)
-  public void testBadFormatConvertToDirectoryNameDateFormat() throws ParseException {
-    final String displayDate = "2011-02-13-10:48";
-    Utils.convertToDirectoryNameDateFormat(displayDate);
+  @Test
+  public void testBadFormatConvertToDirectoryNameDateFormat() {
+    assertThrows(ParseException.class,
+            () -> Utils.convertToDirectoryNameDateFormat("2011-02-13-10:48")
+    );
   }
 
-  @Test(expected = ParseException.class)
-  public void testWrongFormatConvertToDirectoryNameDateFormat() throws ParseException {
-    final String displayDate = "FULL-2011-02-13_10-48";
-    Utils.convertToDirectoryNameDateFormat(displayDate);
+  @Test
+  public void testWrongFormatConvertToDirectoryNameDateFormat() {
+    assertThrows(ParseException.class,
+            () -> Utils.convertToDirectoryNameDateFormat("FULL-2011-02-13_10-48")
+    );
   }
 
-  @Test(expected = ParseException.class)
-  public void testEmptyDateConvertToDirectoryNameDateFormat() throws ParseException {
-    Utils.convertToDirectoryNameDateFormat("");
+  @Test
+  public void testEmptyDateConvertToDirectoryNameDateFormat() {
+    assertThrows(ParseException.class,
+            () -> Utils.convertToDirectoryNameDateFormat("")
+    );
   }
 
   @Test
@@ -82,75 +88,75 @@ public class TestUtils extends BackupDirStructureSetup {
 
     String displayDate = "FULL-2011-02-13_10-48";
     Date tmp = Utils.getDateFromBackupDirectoryName(displayDate);
-    Assert.assertNotNull(tmp);
-    Assert.assertEquals(expected, tmp);
+    assertNotNull(tmp);
+    assertEquals(expected, tmp);
 
     displayDate = "DIFF-2011-02-13_10-48";
     tmp = Utils.getDateFromBackupDirectoryName(displayDate);
-    Assert.assertNotNull(tmp);
-    Assert.assertEquals(expected, tmp);
+    assertNotNull(tmp);
+    assertEquals(expected, tmp);
   }
 
   @Test
   public void testGetDateFromInvalidBackupDir() {
     final String displayDate = "DWDWD-2011-02-13_10-48";
     final Date tmp = Utils.getDateFromBackupDirectoryName(displayDate);
-    Assert.assertNull(tmp);
+    assertNull(tmp);
   }
 
   @Test
   public void testGetBackupTypeDirectories() {
     final List<File> fullBackupDirs = Utils.getBackupTypeDirectories(backupDir, BackupType.FULL);
-    Assert.assertEquals(3, fullBackupDirs.size());
+    assertEquals(3, fullBackupDirs.size());
 
     final List<File> diffBackupDirs = Utils.getBackupTypeDirectories(backupDir, BackupType.DIFF);
-    Assert.assertEquals(7, diffBackupDirs.size());
+    assertEquals(7, diffBackupDirs.size());
   }
 
   @Test
   public void testGetReferencedFullBackup() {
     File fullBackup = Utils.getReferencedFullBackup(diff11);
-    Assert.assertEquals(full1, fullBackup);
+    assertEquals(full1, fullBackup);
 
     fullBackup = Utils.getReferencedFullBackup(diff12);
-    Assert.assertEquals(full1, fullBackup);
+    assertEquals(full1, fullBackup);
 
     fullBackup = Utils.getReferencedFullBackup(diff13);
-    Assert.assertEquals(full1, fullBackup);
+    assertEquals(full1, fullBackup);
 
     fullBackup = Utils.getReferencedFullBackup(diff14);
-    Assert.assertEquals(full1, fullBackup);
+    assertEquals(full1, fullBackup);
 
     fullBackup = Utils.getReferencedFullBackup(full1);
-    Assert.assertEquals(full1, fullBackup);
+    assertEquals(full1, fullBackup);
 
     fullBackup = Utils.getReferencedFullBackup(diff41);
-    Assert.assertNull(fullBackup);
+    assertNull(fullBackup);
   }
 
   @Test
   public void testGetReferencingDiffBackups() {
     List<File> diffBackups = Utils.getReferencingDiffBackups(full1);
-    Assert.assertEquals(4, diffBackups.size());
-    Assert.assertTrue(diffBackups.contains(diff11));
-    Assert.assertTrue(diffBackups.contains(diff12));
-    Assert.assertTrue(diffBackups.contains(diff13));
-    Assert.assertTrue(diffBackups.contains(diff14));
+    assertEquals(4, diffBackups.size());
+    assertTrue(diffBackups.contains(diff11));
+    assertTrue(diffBackups.contains(diff12));
+    assertTrue(diffBackups.contains(diff13));
+    assertTrue(diffBackups.contains(diff14));
 
     diffBackups = Utils.getReferencingDiffBackups(diff41);
-    Assert.assertEquals(0, diffBackups.size());
+    assertEquals(0, diffBackups.size());
   }
 
   @Test
   public void testGetBackups() {
     final List<String> backups = Utils.getBackupsAsDates(backupDir.getAbsoluteFile());
-    Assert.assertEquals(9, backups.size());
+    assertEquals(9, backups.size());
   }
 
   @Test
   public void testGetValidBackupSets() {
     final List<BackupSet> validBackupSets = Utils.getValidBackupSetsFromDirectories(backupDir);
-    Assert.assertEquals(3, validBackupSets.size());
+    assertEquals(3, validBackupSets.size());
   }
 
   @Test
@@ -158,19 +164,19 @@ public class TestUtils extends BackupDirStructureSetup {
     final Map<String, String> map = new HashMap<>();
     map.put("TEST_VAR", "REPLACEMENT");
     String path = "${TEST_VAR}";
-    Assert.assertEquals("REPLACEMENT", Utils.internalExpandEnvironmentVariables(path, map));
+    assertEquals("REPLACEMENT", Utils.internalExpandEnvironmentVariables(path, map));
     path = "1${TEST_VAR}2";
-    Assert.assertEquals("1REPLACEMENT2", Utils.internalExpandEnvironmentVariables(path, map));
+    assertEquals("1REPLACEMENT2", Utils.internalExpandEnvironmentVariables(path, map));
     path = "1${TEST_VAR2";
-    Assert.assertEquals("1${TEST_VAR2", Utils.internalExpandEnvironmentVariables(path, map));
+    assertEquals("1${TEST_VAR2", Utils.internalExpandEnvironmentVariables(path, map));
     path = "1${TEST_VAR}2${3";
-    Assert.assertEquals("1REPLACEMENT2${3", Utils.internalExpandEnvironmentVariables(path, map));
+    assertEquals("1REPLACEMENT2${3", Utils.internalExpandEnvironmentVariables(path, map));
     path = "1${TEST_VAR}2${TEST_VAR}3";
-    Assert.assertEquals("1REPLACEMENT2REPLACEMENT3", Utils.internalExpandEnvironmentVariables(path, map));
+    assertEquals("1REPLACEMENT2REPLACEMENT3", Utils.internalExpandEnvironmentVariables(path, map));
     path = "1${NO_VALUE_DEFINED}";
     try {
       Utils.internalExpandEnvironmentVariables(path, map);
-      Assert.fail("Expected an exception.");
+      fail("Expected an exception.");
     } catch (final EnvironmentVariableNotDefinedException evnde) {
       // if an exception is caught, everything is AOK.
     }
