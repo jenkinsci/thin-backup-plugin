@@ -109,7 +109,7 @@ public class ThinBackupMgmtLink extends ManagementLink {
       final File hudsonHome = jenkins.getRootDir();
       final Date restoreFromDate = new SimpleDateFormat(Utils.DISPLAY_DATE_FORMAT).parse(restoreBackupFrom);
 
-      final HudsonRestore hudsonRestore = new HudsonRestore(hudsonHome, ThinBackupPluginImpl.getInstance()
+      final HudsonRestore hudsonRestore = new HudsonRestore(hudsonHome, ThinBackupPluginImpl.get()
           .getExpandedBackupPath(), restoreFromDate, "on".equals(restoreNextBuildNumber), "on".equals(restorePlugins));
       hudsonRestore.restore();
 
@@ -150,7 +150,7 @@ public class ThinBackupMgmtLink extends ManagementLink {
     }
     jenkins.checkPermission(Jenkins.ADMINISTER);
 
-    final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.getInstance();
+    final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.get();
     plugin.setBackupPath(backupPath);
     plugin.setFullBackupSchedule(fullBackupSchedule);
     plugin.setDiffBackupSchedule(diffBackupSchedule);
@@ -176,11 +176,11 @@ public class ThinBackupMgmtLink extends ManagementLink {
   }
 
   public ThinBackupPluginImpl getConfiguration() {
-    return ThinBackupPluginImpl.getInstance();
+    return ThinBackupPluginImpl.get();
   }
 
   public List<String> getAvailableBackups() {
-    final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.getInstance();
+    final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.get();
     return Utils.getBackupsAsDates(new File(plugin.getExpandedBackupPath()));
   }
 

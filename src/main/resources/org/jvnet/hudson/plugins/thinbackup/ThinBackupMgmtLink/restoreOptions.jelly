@@ -30,11 +30,11 @@
               <f:section title="${%restore_options}">
                 <f:entry title="${%restore_backup_from}" help="/plugin/thinBackup/help/help-restore.html">
                   <j:set var="allBackups" value="${it.availableBackups}"/>
-                  <select name="restoreBackupFrom" >
+                  <f:select name="restoreBackupFrom" >
                       <j:forEach var="backup" items="${allBackups}">
                         <f:option>${backup}</f:option>
                       </j:forEach>
-                  </select>
+                  </f:select>
                 </f:entry>
 
                 <f:optionalBlock title="${%restore_next_build_number}"

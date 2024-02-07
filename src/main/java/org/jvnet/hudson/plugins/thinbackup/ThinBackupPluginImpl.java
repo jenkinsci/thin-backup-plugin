@@ -22,6 +22,10 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import hudson.Extension;
+import hudson.ExtensionList;
+import jenkins.model.GlobalConfiguration;
+import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.jvnet.hudson.plugins.thinbackup.utils.EnvironmentVariableNotDefinedException;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
@@ -30,12 +34,12 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 import antlr.ANTLRException;
-import hudson.Plugin;
 import hudson.scheduler.CronTab;
 import hudson.util.FormValidation;
 import jenkins.model.Jenkins;
 
-public class ThinBackupPluginImpl extends Plugin {
+@Extension
+public class ThinBackupPluginImpl extends GlobalConfiguration {
 
   private static final int VERY_HIGH_TIMEOUT = 12 * 60;
 
@@ -63,20 +67,19 @@ public class ThinBackupPluginImpl extends Plugin {
   private boolean failFast = true;
 
   @Override
-  public void start() throws Exception {
-    super.start();
+  public boolean configure(StaplerRequest request, JSONObject jsonObject) {
+    return true;
+  }
+
+  public ThinBackupPluginImpl() {
     load();
     LOGGER.fine("'thinBackup' plugin initialized.");
   }
 
-  public static ThinBackupPluginImpl getInstance() {
-    final Jenkins jenkins = Jenkins.getInstanceOrNull();
-    if (jenkins != null) {
-      return jenkins.getPlugin(ThinBackupPluginImpl.class);
-    }
-    else {
-      return null;
-    }
+  public static ThinBackupPluginImpl get() {
+    ExtensionList<GlobalConfiguration> all = GlobalConfiguration.all();
+    ThinBackupPluginImpl thinBackupPlugin = all.get(ThinBackupPluginImpl.class);
+    return thinBackupPlugin;
   }
 
   public File getHudsonHome() {
@@ -89,6 +92,7 @@ public class ThinBackupPluginImpl extends Plugin {
 
   public void setFullBackupSchedule(final String fullBackupSchedule) {
     this.fullBackupSchedule = fullBackupSchedule;
+    save();
   }
 
   public String getFullBackupSchedule() {
@@ -97,6 +101,7 @@ public class ThinBackupPluginImpl extends Plugin {
 
   public void setDiffBackupSchedule(final String diffBackupSchedule) {
     this.diffBackupSchedule = diffBackupSchedule;
+    save();
   }
 
   public String getDiffBackupSchedule() {
@@ -109,10 +114,12 @@ public class ThinBackupPluginImpl extends Plugin {
 
   public void setForceQuietModeTimeout(int forceQuietModeTimeout) {
     this.forceQuietModeTimeout = forceQuietModeTimeout;
+    save();
   }
 
   public void setBackupPath(final String backupPath) {
     this.backupPath = backupPath;
+    save();
   }
 
   /**
@@ -144,6 +151,7 @@ public class ThinBackupPluginImpl extends Plugin {
 
   public void setNrMaxStoredFull(final int nrMaxStoredFull) {
     this.nrMaxStoredFull = nrMaxStoredFull;
+    save();
   }
 
   /**
@@ -161,6 +169,7 @@ public class ThinBackupPluginImpl extends Plugin {
         this.nrMaxStoredFull = -1;
       }
     }
+    save();
   }
 
   public int getNrMaxStoredFull() {
@@ -169,6 +178,7 @@ public class ThinBackupPluginImpl extends Plugin {
 
   public void setCleanupDiff(final boolean cleanupDiff) {
     this.cleanupDiff = cleanupDiff;
+    save();
   }
 
   public boolean isCleanupDiff() {
@@ -177,6 +187,7 @@ public class ThinBackupPluginImpl extends Plugin {
 
   public void setMoveOldBackupsToZipFile(final boolean moveOldBackupsToZipFile) {
     this.moveOldBackupsToZipFile = moveOldBackupsToZipFile;
+    save();
   }
 
   public boolean isMoveOldBackupsToZipFile() {
@@ -185,6 +196,7 @@ public class ThinBackupPluginImpl extends Plugin {
 
   public void setBackupBuildResults(final boolean backupBuildResults) {
     this.backupBuildResults = backupBuildResults;
+    save();
   }
 
   public boolean isBackupBuildResults() {
@@ -193,6 +205,7 @@ public class ThinBackupPluginImpl extends Plugin {
 
   public void setBackupBuildArchive(final boolean backupBuildArchive) {
     this.backupBuildArchive = backupBuildArchive;
+    save();
   }
 
   public boolean isBackupBuildArchive() {
@@ -201,6 +214,7 @@ public class ThinBackupPluginImpl extends Plugin {
 
   public void setBackupBuildsToKeepOnly(boolean backupBuildsToKeepOnly) {
     this.backupBuildsToKeepOnly = backupBuildsToKeepOnly;
+    save();
   }
 
   public boolean isBackupBuildsToKeepOnly() {
@@ -209,6 +223,7 @@ public class ThinBackupPluginImpl extends Plugin {
 
   public void setBackupNextBuildNumber(final boolean backupNextBuildNumber) {
     this.backupNextBuildNumber = backupNextBuildNumber;
+    save();
   }
 
   public boolean isBackupNextBuildNumber() {
@@ -217,6 +232,7 @@ public class ThinBackupPluginImpl extends Plugin {
 
   public void setExcludedFilesRegex(final String excludedFilesRegex) {
     this.excludedFilesRegex = excludedFilesRegex;
+    save();
   }
 
   public boolean isBackupUserContents() {
@@ -225,6 +241,7 @@ public class ThinBackupPluginImpl extends Plugin {
 
   public void setBackupUserContents(boolean backupUserContents) {
     this.backupUserContents = backupUserContents;
+    save();
   }
 
   public String getExcludedFilesRegex() {
@@ -233,6 +250,7 @@ public class ThinBackupPluginImpl extends Plugin {
 
   public void setBackupPluginArchives(final boolean backupPluginArchives) {
     this.backupPluginArchives = backupPluginArchives;
+    save();
   }
 
   public boolean isBackupPluginArchives() {
@@ -241,6 +259,7 @@ public class ThinBackupPluginImpl extends Plugin {
 
   public void setBackupAdditionalFiles(final boolean backupAdditionalFiles) {
     this.backupAdditionalFiles = backupAdditionalFiles;
+    save();
   }
 
   public boolean isBackupAdditionalFiles() {
@@ -249,6 +268,7 @@ public class ThinBackupPluginImpl extends Plugin {
 
   public void setBackupAdditionalFilesRegex(final String backupAdditionalFilesRegex) {
     this.backupAdditionalFilesRegex = backupAdditionalFilesRegex;
+    save();
   }
 
   public String getBackupAdditionalFilesRegex() {
@@ -257,6 +277,7 @@ public class ThinBackupPluginImpl extends Plugin {
 
   public void setWaitForIdle(boolean waitForIdle) {
     this.waitForIdle = waitForIdle;
+    save();
   }
 
   public boolean isWaitForIdle() {
@@ -391,6 +412,7 @@ public class ThinBackupPluginImpl extends Plugin {
 
   public void setBackupConfigHistory(boolean backupConfigHistory) {
     this.backupConfigHistory = backupConfigHistory;
+    save();
   }
 
   public boolean isFailFast()
@@ -401,5 +423,6 @@ public class ThinBackupPluginImpl extends Plugin {
   public void setFailFast(boolean failFast)
   {
     this.failFast = failFast;
+    save();
   }
 }

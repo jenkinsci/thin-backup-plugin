@@ -41,7 +41,7 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
 
   private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
 
-  private final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.getInstance();
+  private final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.get();
 
   public enum BackupType {
     NONE, FULL, DIFF
