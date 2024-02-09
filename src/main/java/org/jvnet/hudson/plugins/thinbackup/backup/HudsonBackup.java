@@ -289,7 +289,7 @@ public class HudsonBackup {
             }
             File expectedConfigXml = new File(jobDirectory, CONFIG_XML);
             if (expectedConfigXml.exists() && expectedConfigXml.isFile()) {
-              FileUtils.copyFile(new File(jobDirectory, CONFIG_XML), new File(folderBackupDirectory, CONFIG_XML));
+              FileUtils.copyFile(expectedConfigXml, new File(folderBackupDirectory, CONFIG_XML));
             }
             backupJobsDirectory(childJobsFolder, folderJobsBackupDirectory);
           } else {
@@ -297,7 +297,7 @@ public class HudsonBackup {
               backupJob(jobDirectory, jobsBackupDirectory, jobName);
             } catch (Exception e) {
               if(plugin.isFailFast()) {
-                throw e;
+                throw new IOException("Exception in backing up job in directory: " + jobDirectory, e);
               } else {
                 LOGGER.warning("Failed to backup job " + jobName + " correctly: " + e.getLocalizedMessage());
                 LOGGER.warning(Throwables.getStackTraceAsString(e));
@@ -308,7 +308,7 @@ public class HudsonBackup {
           // TODO: check if copySymLink needed here
         }
       } else {
-        final String msg = String.format("Read access denied on directory '%s', cannot back up the job '%s'.",
+        final String msg = String.format("Either file does not exist or read access denied on directory '%s', cannot back up the job '%s'.",
             jobDirectory.getAbsolutePath(), jobName);
         LOGGER.severe(msg);
       }
@@ -316,7 +316,7 @@ public class HudsonBackup {
   }
 
   private void backupJob(final File jobDirectory, final File jobsBackupDirectory, final String jobName)
-      throws IOException, NoSuchFileException {
+      throws IOException, NoSuchFileException, FileNotFoundException {
     final File jobBackupDirectory = new File(jobsBackupDirectory, jobName);
     backupJobConfigFor(jobDirectory, jobBackupDirectory);
     backupBuildsFor(jobDirectory, jobBackupDirectory);
@@ -450,9 +450,15 @@ public class HudsonBackup {
   }
 
   private void backupJobConfigFor(final File jobDirectory, final File jobBackupDirectory) throws IOException {
-    final IOFileFilter filter = FileFilterUtils.and(FileFilterUtils.or(
-        FileFilterUtils.suffixFileFilter(XML_FILE_EXTENSION), FileFilterUtils.nameFileFilter(SVN_CREDENTIALS_FILE_NAME),
-        FileFilterUtils.nameFileFilter(SVN_EXTERNALS_FILE_NAME)), getFileAgeDiffFilter(), getExcludedFilesFilter());
+    final IOFileFilter filter = FileFilterUtils.and(
+        FileFilterUtils.or(
+            FileFilterUtils.suffixFileFilter(XML_FILE_EXTENSION), 
+            FileFilterUtils.nameFileFilter(SVN_CREDENTIALS_FILE_NAME),
+            FileFilterUtils.nameFileFilter(SVN_EXTERNALS_FILE_NAME)
+        ),
+        getFileAgeDiffFilter(),
+        getExcludedFilesFilter()
+    );
 
     FileUtils.copyDirectory(jobDirectory, jobBackupDirectory, ExistsAndReadableFileFilter.wrapperFilter(filter));
     backupNextBuildNumberFile(jobDirectory, jobBackupDirectory);
