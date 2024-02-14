@@ -1,7 +1,6 @@
 package org.jvnet.hudson.plugins.thinbackup.backup;
 
 import hudson.model.ItemGroup;
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -15,6 +14,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Date;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -62,18 +63,18 @@ public class TestBackupMatrixJob {
     new HudsonBackup(mockPlugin, BackupType.FULL, new Date(), mock(ItemGroup.class)).backup();
     
     String[] list = backupDir.list();
-    Assert.assertEquals(1, list.length);
+    assertEquals(1, list.length);
     final File backup = new File(backupDir, list[0]);
     list = backup.list();
-    Assert.assertEquals(6, list.length);
+    assertEquals(6, list.length);
     
     File jobBackup = new File(backup, "jobs/"+TestHelper.TEST_JOB_NAME);
     
-    Assert.assertTrue(new File(jobBackup, HudsonBackup.CONFIGURATIONS_DIR_NAME).exists());
-    Assert.assertTrue(new File(jobBackup, HudsonBackup.CONFIGURATIONS_DIR_NAME+"/axis-x/a").exists());
-    Assert.assertTrue(new File(jobBackup, HudsonBackup.CONFIGURATIONS_DIR_NAME+"/axis-x/b").exists());
-    Assert.assertTrue(new File(jobBackup, HudsonBackup.CONFIGURATIONS_DIR_NAME+"/axis-x/a/"+HudsonBackup.BUILDS_DIR_NAME+"/"+TestHelper.CONCRETE_BUILD_DIRECTORY_NAME +"/build.xml").exists());
-    Assert.assertTrue(new File(jobBackup, HudsonBackup.CONFIGURATIONS_DIR_NAME+"/axis-x/b/"+HudsonBackup.BUILDS_DIR_NAME+"/"+TestHelper.CONCRETE_BUILD_DIRECTORY_NAME +"/build.xml").exists());
+    assertTrue(new File(jobBackup, HudsonBackup.CONFIGURATIONS_DIR_NAME).exists());
+    assertTrue(new File(jobBackup, HudsonBackup.CONFIGURATIONS_DIR_NAME+"/axis-x/a").exists());
+    assertTrue(new File(jobBackup, HudsonBackup.CONFIGURATIONS_DIR_NAME+"/axis-x/b").exists());
+    assertTrue(new File(jobBackup, HudsonBackup.CONFIGURATIONS_DIR_NAME+"/axis-x/a/"+HudsonBackup.BUILDS_DIR_NAME+"/"+ TestHelper.CONCRETE_BUILD_DIRECTORY_NAME +"/build.xml").exists());
+    assertTrue(new File(jobBackup, HudsonBackup.CONFIGURATIONS_DIR_NAME+"/axis-x/b/"+HudsonBackup.BUILDS_DIR_NAME+"/"+ TestHelper.CONCRETE_BUILD_DIRECTORY_NAME +"/build.xml").exists());
   }
 
 }

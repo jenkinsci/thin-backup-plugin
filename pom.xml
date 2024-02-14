@@ -3,7 +3,7 @@
 	<parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>4.74</version>
+        <version>4.78</version>
     </parent>
 
 	<groupId>org.jvnet.hudson.plugins</groupId>
@@ -67,7 +67,7 @@
 		<connection>scm:git:https://github.com/jenkinsci/thin-backup-plugin.git</connection>
 		<developerConnection>scm:git:https://git@github.com/jenkinsci/thin-backup-plugin.git</developerConnection>
 		<url>https://github.com/jenkinsci/thin-backup-plugin</url>
-		<tag>thinBackup-1.17</tag>
+		<tag>${scmTag}</tag>
 	</scm>
 
 	<repositories>
@@ -87,8 +87,8 @@
 		<dependencies>
 			<dependency>
 				<groupId>io.jenkins.tools.bom</groupId>
-				<artifactId>bom-2.361.x</artifactId>
-				<version>2102.v854b_fec19c92</version>
+				<artifactId>bom-2.401.x</artifactId>
+    			<version>2745.vc7b_fe4c876fa_</version>
 				<scope>import</scope>
 				<type>pom</type>
 			</dependency>
@@ -124,7 +124,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<jenkins.version>2.361.4</jenkins.version>
+		<jenkins.version>2.401.3</jenkins.version>
 		<surefire.forkNumber>1</surefire.forkNumber>
 	</properties>
 
