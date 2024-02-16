@@ -19,29 +19,22 @@ package org.jvnet.hudson.plugins.thinbackup;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 import hudson.Extension;
 import hudson.ExtensionList;
 import jenkins.model.GlobalConfiguration;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.Symbol;
 import org.jvnet.hudson.plugins.thinbackup.utils.EnvironmentVariableNotDefinedException;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
-import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 
-import antlr.ANTLRException;
-import hudson.scheduler.CronTab;
-import hudson.util.FormValidation;
 import jenkins.model.Jenkins;
 
 @Extension
+@Symbol("ThinBackup")
 public class ThinBackupPluginImpl extends GlobalConfiguration {
-
-  private static final int VERY_HIGH_TIMEOUT = 12 * 60;
 
   private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
 
@@ -78,8 +71,7 @@ public class ThinBackupPluginImpl extends GlobalConfiguration {
 
   public static ThinBackupPluginImpl get() {
     ExtensionList<GlobalConfiguration> all = GlobalConfiguration.all();
-    ThinBackupPluginImpl thinBackupPlugin = all.get(ThinBackupPluginImpl.class);
-    return thinBackupPlugin;
+    return all.get(ThinBackupPluginImpl.class);
   }
 
   public File getHudsonHome() {
@@ -92,7 +84,6 @@ public class ThinBackupPluginImpl extends GlobalConfiguration {
 
   public void setFullBackupSchedule(final String fullBackupSchedule) {
     this.fullBackupSchedule = fullBackupSchedule;
-    save();
   }
 
   public String getFullBackupSchedule() {
@@ -101,7 +92,6 @@ public class ThinBackupPluginImpl extends GlobalConfiguration {
 
   public void setDiffBackupSchedule(final String diffBackupSchedule) {
     this.diffBackupSchedule = diffBackupSchedule;
-    save();
   }
 
   public String getDiffBackupSchedule() {
@@ -114,12 +104,10 @@ public class ThinBackupPluginImpl extends GlobalConfiguration {
 
   public void setForceQuietModeTimeout(int forceQuietModeTimeout) {
     this.forceQuietModeTimeout = forceQuietModeTimeout;
-    save();
   }
 
   public void setBackupPath(final String backupPath) {
     this.backupPath = backupPath;
-    save();
   }
 
   /**
@@ -151,7 +139,6 @@ public class ThinBackupPluginImpl extends GlobalConfiguration {
 
   public void setNrMaxStoredFull(final int nrMaxStoredFull) {
     this.nrMaxStoredFull = nrMaxStoredFull;
-    save();
   }
 
   /**
@@ -169,7 +156,6 @@ public class ThinBackupPluginImpl extends GlobalConfiguration {
         this.nrMaxStoredFull = -1;
       }
     }
-    save();
   }
 
   public int getNrMaxStoredFull() {
@@ -178,7 +164,6 @@ public class ThinBackupPluginImpl extends GlobalConfiguration {
 
   public void setCleanupDiff(final boolean cleanupDiff) {
     this.cleanupDiff = cleanupDiff;
-    save();
   }
 
   public boolean isCleanupDiff() {
@@ -187,7 +172,6 @@ public class ThinBackupPluginImpl extends GlobalConfiguration {
 
   public void setMoveOldBackupsToZipFile(final boolean moveOldBackupsToZipFile) {
     this.moveOldBackupsToZipFile = moveOldBackupsToZipFile;
-    save();
   }
 
   public boolean isMoveOldBackupsToZipFile() {
@@ -196,7 +180,6 @@ public class ThinBackupPluginImpl extends GlobalConfiguration {
 
   public void setBackupBuildResults(final boolean backupBuildResults) {
     this.backupBuildResults = backupBuildResults;
-    save();
   }
 
   public boolean isBackupBuildResults() {
@@ -205,7 +188,6 @@ public class ThinBackupPluginImpl extends GlobalConfiguration {
 
   public void setBackupBuildArchive(final boolean backupBuildArchive) {
     this.backupBuildArchive = backupBuildArchive;
-    save();
   }
 
   public boolean isBackupBuildArchive() {
@@ -214,7 +196,6 @@ public class ThinBackupPluginImpl extends GlobalConfiguration {
 
   public void setBackupBuildsToKeepOnly(boolean backupBuildsToKeepOnly) {
     this.backupBuildsToKeepOnly = backupBuildsToKeepOnly;
-    save();
   }
 
   public boolean isBackupBuildsToKeepOnly() {
@@ -223,7 +204,6 @@ public class ThinBackupPluginImpl extends GlobalConfiguration {
 
   public void setBackupNextBuildNumber(final boolean backupNextBuildNumber) {
     this.backupNextBuildNumber = backupNextBuildNumber;
-    save();
   }
 
   public boolean isBackupNextBuildNumber() {
@@ -232,7 +212,6 @@ public class ThinBackupPluginImpl extends GlobalConfiguration {
 
   public void setExcludedFilesRegex(final String excludedFilesRegex) {
     this.excludedFilesRegex = excludedFilesRegex;
-    save();
   }
 
   public boolean isBackupUserContents() {
@@ -241,7 +220,6 @@ public class ThinBackupPluginImpl extends GlobalConfiguration {
 
   public void setBackupUserContents(boolean backupUserContents) {
     this.backupUserContents = backupUserContents;
-    save();
   }
 
   public String getExcludedFilesRegex() {
@@ -250,7 +228,6 @@ public class ThinBackupPluginImpl extends GlobalConfiguration {
 
   public void setBackupPluginArchives(final boolean backupPluginArchives) {
     this.backupPluginArchives = backupPluginArchives;
-    save();
   }
 
   public boolean isBackupPluginArchives() {
@@ -259,7 +236,6 @@ public class ThinBackupPluginImpl extends GlobalConfiguration {
 
   public void setBackupAdditionalFiles(final boolean backupAdditionalFiles) {
     this.backupAdditionalFiles = backupAdditionalFiles;
-    save();
   }
 
   public boolean isBackupAdditionalFiles() {
@@ -268,7 +244,6 @@ public class ThinBackupPluginImpl extends GlobalConfiguration {
 
   public void setBackupAdditionalFilesRegex(final String backupAdditionalFilesRegex) {
     this.backupAdditionalFilesRegex = backupAdditionalFilesRegex;
-    save();
   }
 
   public String getBackupAdditionalFilesRegex() {
@@ -277,134 +252,12 @@ public class ThinBackupPluginImpl extends GlobalConfiguration {
 
   public void setWaitForIdle(boolean waitForIdle) {
     this.waitForIdle = waitForIdle;
-    save();
   }
 
   public boolean isWaitForIdle() {
     return this.waitForIdle;
   }
 
-  public FormValidation doCheckForceQuietModeTimeout(final StaplerRequest res, final StaplerResponse rsp,
-      @QueryParameter("value") final String timeout) {
-    FormValidation validation = FormValidation.validateIntegerInRange(timeout, -1, Integer.MAX_VALUE);
-    if (!FormValidation.ok().equals(validation)) {
-      return validation;
-    }
-
-    int intTimeout = Integer.parseInt(timeout);
-    if (intTimeout > VERY_HIGH_TIMEOUT) {
-      return FormValidation.warning("You choose a very long timeout. The value need to be in minutes.");
-    } else {
-      return FormValidation.ok();
-    }
-  }
-
-  public FormValidation doCheckBackupPath(final StaplerRequest res, final StaplerResponse rsp,
-      @QueryParameter("value") final String path) {
-    if ((path == null) || path.trim().isEmpty()) {
-      return FormValidation.error("Backup path must not be empty.");
-    }
-
-    String expandedPathMessage = "";
-    String expandedPath = "";
-    try {
-      expandedPath = Utils.expandEnvironmentVariables(path);
-    } catch (final EnvironmentVariableNotDefinedException evnd) {
-      return FormValidation.error(evnd.getMessage());
-    }
-    if (!expandedPath.equals(path)) {
-      expandedPathMessage = String.format("The path will be expanded to '%s'.%n%n", expandedPath);
-    }
-
-    final File backupdir = new File(expandedPath);
-    if (!backupdir.exists()) {
-      return FormValidation.warning(expandedPathMessage
-          + "The directory does not exist, but will be created before the first run.");
-    }
-    if (!backupdir.isDirectory()) {
-      return FormValidation.error(expandedPathMessage
-          + "A file with this name exists, thus a directory with the same name cannot be created.");
-    }
-    final File tmp = new File(expandedPath + File.separator + "test.txt");
-    try {
-      tmp.createNewFile();
-    } catch (final Exception e) {
-      if (!tmp.canWrite()) {
-        return FormValidation.error(expandedPathMessage + "The directory exists, but is not writable.");
-      }
-    } finally {
-      if (tmp.exists()) {
-        final boolean deleted = tmp.delete();
-        if (!deleted) {
-          LOGGER.log(Level.WARNING, "Temp-file "+  tmp.getAbsolutePath() + " could not be deleted.");
-        }
-      }
-    }
-    if (!expandedPath.trim().equals(expandedPath)) {
-      return FormValidation.warning(expandedPathMessage
-          + "Path contains leading and/or trailing whitespaces - is this intentional?");
-    }
-
-    if (!expandedPathMessage.isEmpty()) {
-      return FormValidation.warning(expandedPathMessage.substring(0, expandedPathMessage.length() - 2));
-    }
-
-    return FormValidation.ok();
-  }
-
-  public FormValidation doCheckBackupSchedule(final StaplerRequest res, final StaplerResponse rsp,
-      @QueryParameter("value") final String schedule) {
-    if ((schedule != null) && !schedule.isEmpty()) {
-      String message;
-      try {
-        message = new CronTab(schedule).checkSanity();
-      } catch (final ANTLRException e) {
-        return FormValidation.error("Invalid cron schedule. " + e.getMessage());
-      }
-      if (message != null) {
-        return FormValidation.warning("Cron schedule warning: " + message);
-      } else {
-        return FormValidation.ok();
-      }
-    } else {
-      return FormValidation.ok();
-    }
-  }
-
-  public FormValidation doCheckExcludedFilesRegex(final StaplerRequest res, final StaplerResponse rsp,
-      @QueryParameter("value") final String regex) {
-
-    if ((regex == null) || (regex.isEmpty())) {
-      return FormValidation.ok();
-    }
-
-    try {
-      Pattern.compile(regex);
-    } catch (final PatternSyntaxException pse) {
-      return FormValidation.error("Regex syntax is invalid.");
-    }
-
-    if (regex.trim().isEmpty()) {
-      return FormValidation.warning("Regex is valid, but consists entirely of whitespaces - is this intentional?");
-    }
-
-    if (!regex.trim().equals(regex)) {
-      return FormValidation
-          .warning("Regex is valid, but contains leading and/or trailing whitespaces - is this intentional?");
-    }
-
-    return FormValidation.ok();
-  }
-
-  public FormValidation doCheckWaitForIdle(final StaplerRequest res, final StaplerResponse rsp,
-      @QueryParameter("value") final String waitForIdle) {
-    if (Boolean.parseBoolean(waitForIdle)) {
-      return FormValidation.ok();
-    } else {
-      return FormValidation
-          .warning("This may or may not generate corrupt backups! Be aware that no data get changed during the backup process!");
-    }
-  }
 
   public boolean isBackupConfigHistory() {
     return backupConfigHistory;
@@ -412,7 +265,6 @@ public class ThinBackupPluginImpl extends GlobalConfiguration {
 
   public void setBackupConfigHistory(boolean backupConfigHistory) {
     this.backupConfigHistory = backupConfigHistory;
-    save();
   }
 
   public boolean isFailFast()
@@ -423,6 +275,5 @@ public class ThinBackupPluginImpl extends GlobalConfiguration {
   public void setFailFast(boolean failFast)
   {
     this.failFast = failFast;
-    save();
   }
 }

@@ -107,7 +107,7 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
     }
   }
 
-  BackupType getNextScheduledBackupType(final long currentTime, final String fullCron, final String diffCron) {
+  static BackupType getNextScheduledBackupType(final long currentTime, final String fullCron, final String diffCron) {
     final long fullDelay = calculateDelay(currentTime, BackupType.FULL, fullCron);
     final long diffDelay = calculateDelay(currentTime, BackupType.DIFF, diffCron);
 
@@ -133,7 +133,7 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
     return delay < MIN ? res : BackupType.NONE;
   }
 
-  long calculateDelay(final long currentTime, final BackupType backupType, final String cron) {
+  static long calculateDelay(final long currentTime, final BackupType backupType, final String cron) {
     CronTab cronTab;
     try {
       if (StringUtils.isEmpty(cron)) {
@@ -157,7 +157,7 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
       }
 
       return delay;
-    } catch (final ANTLRException e) {
+    } catch (final IllegalArgumentException e) {
       LOGGER.warning(MessageFormat.format(
           "Cannot parse the specified ''Backup schedule for {0} backups''. Check cron notation.", backupType));
       return -1;

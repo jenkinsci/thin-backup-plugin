@@ -17,32 +17,33 @@
  -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
-         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-    <l:layout permission="${app.ADMINISTER}" norefresh="true">
+         xmlns:f="/lib/form">
+    <l:layout permission="${app.ADMINISTER}" norefresh="true" title="">
         <st:include it="${app}" page="sidepanel.jelly"/>
         <l:main-panel>
             <h1>
                 ${%thin_backup_configuration}
             </h1>
 
-            <f:form method="post" action="saveSettings">
+            <f:form method="post" action="saveSettings" name="saveSettings">
                  <f:section title="${%backup_settings}">
                     <f:entry title="${%backup_path}" field="backupPath"
                         help="/plugin/thinBackup/help/help-backupPath.html">
                         <f:textbox value="${it.configuration.backupPath}" name="backupPath"
-                            checkUrl="'${rootURL}/plugin/thinBackup/checkBackupPath?value='+escape(this.value)"/>
+                                   checkMethod="post" checkUrl="'checkBackupPath?value='+escape(this.value)"/>
+<!--
+                                   checkMethod="post" checkUrl="'${rootURL}/plugin/thinBackup/checkBackupPath?value='+escape(this.value)"/>
+-->
                     </f:entry>
                     
                     <f:entry title="${%full_backup_schedule}" field="fullBackupSchedule"
                         help="/plugin/thinBackup/help/help-fullBackupSchedule.html">
-                        <f:textbox value="${it.configuration.fullBackupSchedule}" name="fullBackupSchedule"
-                            checkUrl="'${rootURL}/plugin/thinBackup/checkBackupSchedule?value='+escape(this.value)"/>
+                        <f:textbox value="${it.configuration.fullBackupSchedule}" name="fullBackupSchedule"/>
                     </f:entry>
                     
                     <f:entry title="${%diff_backup_schedule}" field="diffBackupSchedule"
                         help="/plugin/thinBackup/help/help-diffBackupSchedule.html">
-                        <f:textbox value="${it.configuration.diffBackupSchedule}" name="diffBackupSchedule"
-                            checkUrl="'${rootURL}/plugin/thinBackup/checkBackupSchedule?value='+escape(this.value)"/>
+                        <f:textbox value="${it.configuration.diffBackupSchedule}" name="diffBackupSchedule"/>
                     </f:entry>
                     
                     <f:entry title="${%max_backup_full}" field="nrMaxStoredFull"
@@ -52,18 +53,16 @@
                     
                     <f:entry title="${%exclude_files_regex}" field="excludedFilesRegex"
                         help="/plugin/thinBackup/help/help-excludedFilesRegex.html">
-                        <f:textbox value="${it.configuration.excludedFilesRegex}" name="excludedFilesRegex"
-                            checkUrl="'${rootURL}/plugin/thinBackup/checkExcludedFilesRegex?value='+escape(this.value)"/>
+                        <f:textbox value="${it.configuration.excludedFilesRegex}" name="excludedFilesRegex"/>
                     </f:entry>
                     
                     <f:optionalBlock title="${%wait_for_idle}"
                         help="/plugin/thinBackup/help/help-waitForIdle.html"
                         checked="${it.configuration.waitForIdle}"
-                        name="waitForIdle" checkUrl="'${rootURL}/plugin/thinBackup/checkWaitForIdle?value='+escape(this.value)">
+                        name="waitForIdle">
                         <f:entry title="${%force_quite_minutes}" field="forceQuietModeTimeout"
 	                        help="/plugin/thinBackup/help/help-forceQuietModeTimeout.html">
-	                        <f:textbox value="${it.configuration.forceQuietModeTimeout}" name="forceQuietModeTimeout"
-	                            checkUrl="'${rootURL}/plugin/thinBackup/checkForceQuietModeTimeout?value='+escape(this.value)"/>
+	                        <f:textbox value="${it.configuration.forceQuietModeTimeout}" name="forceQuietModeTimeout"/>
                         </f:entry>
                     </f:optionalBlock>
 
@@ -108,8 +107,7 @@
                         checked="${it.configuration.backupAdditionalFiles}"
                         name="backupAdditionalFiles">
                         <f:entry title="${%backup_additional_files_regex}" field="backupAdditionalFilesRegex">
-                            <f:textbox value="${it.configuration.backupAdditionalFilesRegex}" name="backupAdditionalFilesRegex"
-                                checkUrl="'${rootURL}/plugin/thinBackup/checkExcludedFilesRegex?value='+escape(this.value)"/>
+                            <f:textbox value="${it.configuration.backupAdditionalFilesRegex}" name="backupAdditionalFilesRegex"/>
                         </f:entry>
                     </f:optionalBlock>
                     
@@ -127,12 +125,9 @@
                         help="/plugin/thinBackup/help/help-failFast.html"
                         checked="${it.configuration.failFast}"
                         name="failFast" />
-                </f:section>
-                
-                <f:section>
-  		              <f:entry>
-    		                <f:submit value="${%save}"/>
-  		              </f:entry>
+                     <f:entry>
+                         <f:submit value="${%save}"/>
+                     </f:entry>
                 </f:section>
             </f:form>
         </l:main-panel>

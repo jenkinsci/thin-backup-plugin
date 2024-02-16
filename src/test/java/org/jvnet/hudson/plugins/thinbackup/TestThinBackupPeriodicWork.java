@@ -25,11 +25,10 @@ public class TestThinBackupPeriodicWork {
 
   @Test
   public void testGetNextScheduledBackup() {
-    ThinBackupPeriodicWork thinBackupPeriodicWork = new ThinBackupPeriodicWork();
     final long currentTime = System.currentTimeMillis();
     final String fullCron = "* * * * *";
     final String diffCron = "* * * * *";
-    final ThinBackupPeriodicWork.BackupType backupType = thinBackupPeriodicWork.getNextScheduledBackupType(currentTime, fullCron, diffCron);
+    final ThinBackupPeriodicWork.BackupType backupType = ThinBackupPeriodicWork.getNextScheduledBackupType(currentTime, fullCron, diffCron);
     assertEquals(ThinBackupPeriodicWork.BackupType.FULL, backupType);
   }
 }
