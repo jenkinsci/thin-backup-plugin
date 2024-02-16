@@ -144,6 +144,36 @@ as well.
 **Note**: In case "Clean up differential backups" is checked, differential cleanup will be performed
 before zipping is done, and therefore no differential backups will be in the ZIP files.
 
+## Jenkins Configuration as Code (JCasC) support
+
+Since version 2.0 the plugin fully supports JCasC. An example config as a basis can be used from here.
+
+**Note**: Remember to escape backslashes in the YAML
+
+```yaml
+unclassified:
+  ThinBackup:
+    backupAdditionalFiles: false
+    backupAdditionalFilesRegex: "^.*\\.(txt)$"
+    backupBuildArchive: false
+    backupBuildResults: true
+    backupBuildsToKeepOnly: false
+    backupConfigHistory: false
+    backupNextBuildNumber: false
+    backupPath: "c:\\temp\\thin-backup"
+    backupPluginArchives: false
+    backupUserContents: false
+    cleanupDiff: false
+    diffBackupSchedule: "0 12 * * 1-5"
+    excludedFilesRegex: "^.*\\.(log)$"
+    failFast: true
+    forceQuietModeTimeout: 120
+    fullBackupSchedule: "0 12 * * 1"
+    moveOldBackupsToZipFile: false
+    nrMaxStoredFull: -1
+    waitForIdle: true
+```
+
 ## Backup process
 
 Because many of you are asking why Jenkins is going to shutdown when a backup is triggered, I
