@@ -70,8 +70,13 @@ public class ThinBackupPluginImpl extends GlobalConfiguration {
   }
 
   public static ThinBackupPluginImpl get() {
-    ExtensionList<GlobalConfiguration> all = GlobalConfiguration.all();
-    return all.get(ThinBackupPluginImpl.class);
+    try {
+      ExtensionList<GlobalConfiguration> all = GlobalConfiguration.all();
+      return all.get(ThinBackupPluginImpl.class);
+    } catch (IllegalStateException exception) {
+      // probably no Jenkins instance running
+      return null;
+    }
   }
 
   public File getHudsonHome() {
