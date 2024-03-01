@@ -31,7 +31,7 @@ import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 import org.kohsuke.stapler.StaplerRequest;
 
 @Extension
-@Symbol("ThinBackup")
+@Symbol("thinBackup")
 public class ThinBackupPluginImpl extends GlobalConfiguration {
 
     private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
