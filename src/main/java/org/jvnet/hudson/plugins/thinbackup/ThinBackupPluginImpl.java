@@ -19,6 +19,9 @@ package org.jvnet.hudson.plugins.thinbackup;
 import hudson.Extension;
 import hudson.ExtensionList;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.GlobalConfiguration;
@@ -57,12 +60,20 @@ public class ThinBackupPluginImpl extends GlobalConfiguration {
     private boolean backupBuildsToKeepOnly = false;
     private boolean failFast = true;
 
-    @Override
-    public boolean configure(StaplerRequest request, JSONObject jsonObject) {
-        return true;
-    }
-
     public ThinBackupPluginImpl() {
+        // check if old config is there and no new config exists
+        final File oldConfig = new File(Jenkins.get().getRootDir(), "thinBackup.xml");
+        final File newConfig = getConfigFile().getFile();
+        boolean oldConfigExists = oldConfig.exists();
+        boolean newConfigExits = newConfig.exists();
+        if (oldConfigExists && !newConfigExits) {
+            LOGGER.warning("old config of 'thinBackup' detected, moving to new name");
+            try {
+                Files.move(oldConfig.toPath(), newConfig.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException e) {
+                LOGGER.severe("unable to move old config to new config, you will need to reconfigure thinBackup plugin manually");
+            }
+        }
         load();
         LOGGER.fine("'thinBackup' plugin initialized.");
     }
