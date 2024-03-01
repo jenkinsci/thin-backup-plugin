@@ -4,14 +4,7 @@
 [![GitHub release](https://img.shields.io/github/v/release/jenkinsci/thin-backup-plugin.svg?label=release)](https://github.com/jenkinsci/thin-backup-plugin/releases/latest)
 [![Jenkins Plugin Installs](https://img.shields.io/jenkins/plugin/i/thinBackup.svg?color=blue)](https://plugins.jenkins.io/thinBackup/)
 
-This plugin simply backs up the global and job specific configurations (not the archive or the workspace).
-
-## Why another backup plugin
-
-The [Backup Plugin](https://plugins.jenkins.io/backup/) only does manual backups and
-stores all data found in `JENKINS\_HOME`.  This is sometimes not practical because of time and disk
-space requirements and the fact that it can only be manually triggered.  *ThinBackup*s can be
-scheduled and only backs up the most vital configuration info. Furthermore, the Backup Plugin is unmaintained for quite a while.
+This plugin simply backs up the global and job specific configurations (not the archive or the workspace). It can be scheduled and only backs up the most vital configuration info. It also let's you decide what vital means for you.
 
 ## Documentation
 
@@ -208,4 +201,4 @@ Please let us know if you have another option or feature for this plugin by ente
 write us an email.
 
 Before submitting a feature request or bug report, you can check if it has already been submitted by
-searching issues in JIRA categorized under the thin-backup-plugin component or directly on the [plugin site](https://plugins.jenkins.io/thinBackup/#issues)
+searching issues in JIRA categorized under the thin-backup-plugin component or directly on the [plugin site](https://plugins.jenkins.io/thinBackup/#issues).

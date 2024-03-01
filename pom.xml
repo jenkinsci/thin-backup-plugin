@@ -1,23 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-        <groupId>org.jenkins-ci.plugins</groupId>
-        <artifactId>plugin</artifactId>
-        <version>4.78</version>
-    </parent>
+  <modelVersion>4.0.0</modelVersion>
 
-	<groupId>org.jvnet.hudson.plugins</groupId>
-	<artifactId>thinBackup</artifactId>
-	<name>ThinBackup</name>
-	<version>1.19-SNAPSHOT</version>
-	<packaging>hpi</packaging>
+  <parent>
+    <groupId>org.jenkins-ci.plugins</groupId>
+    <artifactId>plugin</artifactId>
+    <version>4.78</version>
+    <relativePath />
+  </parent>
 
-	<licenses>
-		<license>
-			<name>GPLv3</name>
-			<distribution>repo</distribution>
-			<comments>
-    Copyright (C) 2011  Matthias Steinkogler, Thomas Fürer
+  <groupId>org.jvnet.hudson.plugins</groupId>
+  <artifactId>thinBackup</artifactId>
+  <version>1.19-SNAPSHOT</version>
+  <packaging>hpi</packaging>
+  <name>ThinBackup</name>
+  <description>Backs up the most important global and job specific configuration files.</description>
+  <url>https://github.com/jenkinsci/thin-backup-plugin</url>
+
+  <licenses>
+    <license>
+      <name>GPLv3</name>
+      <distribution>repo</distribution>
+      <comments>Copyright (C) 2011  Matthias Steinkogler, Thomas Fürer
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,119 +35,112 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see http://www.gnu.org/licenses.</comments>
-		</license>
-	</licenses>
-	<!-- get every artifact through maven.glassfish.org, which proxies all the
-		artifacts that we need -->
+    </license>
+  </licenses>
 
-	<description>
-    Backs up the most important global and job specific configuration files.
-	</description>
-	<url>https://github.com/jenkinsci/thin-backup-plugin</url>
+  <developers>
+    <developer>
+      <id>tofuatjava</id>
+      <name>Thomas Fuerer</name>
+      <email>tfuerer.javanet@gmail.com</email>
+      <timezone>CET</timezone>
+    </developer>
+    <developer>
+      <id>alienllama</id>
+      <name>Matthias Steinkogler</name>
+      <email>alienllama@gmail.com</email>
+      <organization>Borland (a Microfocus Company)</organization>
+      <organizationUrl>www.borland.com</organizationUrl>
+      <timezone>CET</timezone>
+    </developer>
+    <developer>
+      <id>StefanSpieker</id>
+      <name>Stefan Spieker</name>
+      <timezone>CET</timezone>
+    </developer>
+  </developers>
 
-	<developers>
-		<developer>
-			<id>tofuatjava</id>
-			<name>Thomas Fuerer</name>
-			<email>tfuerer.javanet@gmail.com</email>
-			<timezone>CET</timezone>
-		</developer>
-		<developer>
-			<id>alienllama</id>
-			<name>Matthias Steinkogler</name>
-			<email>alienllama@gmail.com</email>
-			<organization>Borland (a Microfocus Company)</organization>
-			<organizationUrl>www.borland.com</organizationUrl>
-			<timezone>CET</timezone>
-		</developer>
-		<developer>
-			<id>StefanSpieker</id>
-			<name>Stefan Spieker</name>
-			<timezone>CET</timezone>
-		</developer>
-	</developers>
+  <scm>
+    <connection>scm:git:https://github.com/jenkinsci/thin-backup-plugin.git</connection>
+    <developerConnection>scm:git:https://git@github.com/jenkinsci/thin-backup-plugin.git</developerConnection>
+    <tag>${scmTag}</tag>
+    <url>https://github.com/jenkinsci/thin-backup-plugin</url>
+  </scm>
 
-	<scm>
-		<connection>scm:git:https://github.com/jenkinsci/thin-backup-plugin.git</connection>
-		<developerConnection>scm:git:https://git@github.com/jenkinsci/thin-backup-plugin.git</developerConnection>
-		<url>https://github.com/jenkinsci/thin-backup-plugin</url>
-		<tag>${scmTag}</tag>
-	</scm>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <jenkins.version>2.401.3</jenkins.version>
+    <spotless.check.skip>false</spotless.check.skip>
+    <surefire.forkNumber>1</surefire.forkNumber>
+    <hpi.compatibleSinceVersion>2.0</hpi.compatibleSinceVersion>
+  </properties>
 
-	<repositories>
-		<repository>
-			<id>repo.jenkins-ci.org</id>
-			<url>https://repo.jenkins-ci.org/public/</url>
-		</repository>
-	</repositories>
-	<pluginRepositories>
-		<pluginRepository>
-			<id>repo.jenkins-ci.org</id>
-			<url>https://repo.jenkins-ci.org/public/</url>
-		</pluginRepository>
-	</pluginRepositories>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.jenkins.tools.bom</groupId>
+        <artifactId>bom-2.401.x</artifactId>
+        <version>2745.vc7b_fe4c876fa_</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>io.jenkins.tools.bom</groupId>
-				<artifactId>bom-2.401.x</artifactId>
-    			<version>2745.vc7b_fe4c876fa_</version>
-				<scope>import</scope>
-				<type>pom</type>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
+  <dependencies>
+    <dependency>
+      <groupId>io.jenkins.plugins</groupId>
+      <artifactId>ionicons-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.jenkins</groupId>
+      <artifactId>configuration-as-code</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.jenkins.configuration-as-code</groupId>
+      <artifactId>test-harness</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
 
-	<dependencies>
-		<dependency>
-			<groupId>io.jenkins</groupId>
-			<artifactId>configuration-as-code</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>io.jenkins.configuration-as-code</groupId>
-			<artifactId>test-harness</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-core</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>io.jenkins.plugins</groupId>
-			<artifactId>ionicons-api</artifactId>
-		</dependency>
-	</dependencies>
+  <repositories>
+    <repository>
+      <id>repo.jenkins-ci.org</id>
+      <url>https://repo.jenkins-ci.org/public/</url>
+    </repository>
+  </repositories>
+  <pluginRepositories>
+    <pluginRepository>
+      <id>repo.jenkins-ci.org</id>
+      <url>https://repo.jenkins-ci.org/public/</url>
+    </pluginRepository>
+  </pluginRepositories>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<jenkins.version>2.401.3</jenkins.version>
-		<surefire.forkNumber>1</surefire.forkNumber>
-		<hpi.compatibleSinceVersion>2.0</hpi.compatibleSinceVersion>
-	</properties>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>11</source>
-					<target>11</target>
-				</configuration>
-			</plugin>
-
-			<plugin>
-				<groupId>com.github.spotbugs</groupId>
-				<artifactId>spotbugs-maven-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</build>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>11</source>
+          <target>11</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>com.github.spotbugs</groupId>
+        <artifactId>spotbugs-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
 </project>

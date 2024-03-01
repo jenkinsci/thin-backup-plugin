@@ -16,13 +16,13 @@
  */
 package org.jvnet.hudson.plugins.thinbackup;
 
+import hudson.Extension;
+import hudson.ExtensionList;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import hudson.Extension;
-import hudson.ExtensionList;
 import jenkins.model.GlobalConfiguration;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
@@ -30,255 +30,250 @@ import org.jvnet.hudson.plugins.thinbackup.utils.EnvironmentVariableNotDefinedEx
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 import org.kohsuke.stapler.StaplerRequest;
 
-import jenkins.model.Jenkins;
-
 @Extension
 @Symbol("ThinBackup")
 public class ThinBackupPluginImpl extends GlobalConfiguration {
 
-  private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
+    private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
 
-  private String fullBackupSchedule = "";
-  private String diffBackupSchedule = "";
-  private String backupPath = "";
-  private int nrMaxStoredFull = -1;
-  private String excludedFilesRegex = null;
-  private boolean waitForIdle = true;
-  private int forceQuietModeTimeout = Utils.FORCE_QUIETMODE_TIMEOUT_MINUTES;
-  private boolean cleanupDiff = false;
-  private boolean moveOldBackupsToZipFile = false;
-  private boolean backupBuildResults = true;
-  private boolean backupBuildArchive = false;
-  private boolean backupPluginArchives = false;
-  private boolean backupUserContents = false;
+    private String fullBackupSchedule = "";
+    private String diffBackupSchedule = "";
+    private String backupPath = "";
+    private int nrMaxStoredFull = -1;
+    private String excludedFilesRegex = null;
+    private boolean waitForIdle = true;
+    private int forceQuietModeTimeout = Utils.FORCE_QUIETMODE_TIMEOUT_MINUTES;
+    private boolean cleanupDiff = false;
+    private boolean moveOldBackupsToZipFile = false;
+    private boolean backupBuildResults = true;
+    private boolean backupBuildArchive = false;
+    private boolean backupPluginArchives = false;
+    private boolean backupUserContents = false;
 
-  private boolean backupConfigHistory = false;
-  private boolean backupAdditionalFiles = false;
-  private String backupAdditionalFilesRegex = null;
-  private boolean backupNextBuildNumber = false;
-  private boolean backupBuildsToKeepOnly = false;
-  private boolean failFast = true;
+    private boolean backupConfigHistory = false;
+    private boolean backupAdditionalFiles = false;
+    private String backupAdditionalFilesRegex = null;
+    private boolean backupNextBuildNumber = false;
+    private boolean backupBuildsToKeepOnly = false;
+    private boolean failFast = true;
 
-  @Override
-  public boolean configure(StaplerRequest request, JSONObject jsonObject) {
-    return true;
-  }
-
-  public ThinBackupPluginImpl() {
-    load();
-    LOGGER.fine("'thinBackup' plugin initialized.");
-  }
-
-  public static ThinBackupPluginImpl get() {
-    try {
-      ExtensionList<GlobalConfiguration> all = GlobalConfiguration.all();
-      return all.get(ThinBackupPluginImpl.class);
-    } catch (IllegalStateException exception) {
-      // probably no Jenkins instance running
-      return null;
-    }
-  }
-
-  public File getHudsonHome() {
-    Jenkins jenkins = Jenkins.getInstanceOrNull();
-    if (jenkins == null) {
-      return null;
-    }
-    return jenkins.getRootDir();
-  }
-
-  public void setFullBackupSchedule(final String fullBackupSchedule) {
-    this.fullBackupSchedule = fullBackupSchedule;
-  }
-
-  public String getFullBackupSchedule() {
-    return fullBackupSchedule;
-  }
-
-  public void setDiffBackupSchedule(final String diffBackupSchedule) {
-    this.diffBackupSchedule = diffBackupSchedule;
-  }
-
-  public String getDiffBackupSchedule() {
-    return diffBackupSchedule;
-  }
-
-  public int getForceQuietModeTimeout() {
-    return forceQuietModeTimeout;
-  }
-
-  public void setForceQuietModeTimeout(int forceQuietModeTimeout) {
-    this.forceQuietModeTimeout = forceQuietModeTimeout;
-  }
-
-  public void setBackupPath(final String backupPath) {
-    this.backupPath = backupPath;
-  }
-
-  /**
-   * Get the backup path as entered by the user. May contain traces of environment variables.
-   * <p>
-   * If you need a path that can be used as is (env. vars expanded), please use @link{getExpandedBackupPath}.
-   *
-   * @return the backup path as stored in the settings page.
-   */
-  public String getBackupPath() {
-    return backupPath;
-  }
-
-  /**
-   * @return the backup path with possibly contained environment variables expanded.
-   */
-  public String getExpandedBackupPath() {
-    String expandedPath = "";
-
-    try {
-      expandedPath = Utils.expandEnvironmentVariables(backupPath);
-    } catch (final EnvironmentVariableNotDefinedException evnde) {
-      LOGGER.log(Level.SEVERE, evnde.getMessage() + " Using unexpanded path.");
-      expandedPath = backupPath;
+    @Override
+    public boolean configure(StaplerRequest request, JSONObject jsonObject) {
+        return true;
     }
 
-    return expandedPath;
-  }
-
-  public void setNrMaxStoredFull(final int nrMaxStoredFull) {
-    this.nrMaxStoredFull = nrMaxStoredFull;
-  }
-
-  /**
-   * @param nrMaxStoredFull
-   *          if this string can be parsed as an Integer, nrMaxStoredFull is set to this value, otherwise it is set to
-   *          -1.
-   */
-  public void setNrMaxStoredFullAsString(final String nrMaxStoredFull) {
-    if (StringUtils.isEmpty(nrMaxStoredFull)) {
-      this.nrMaxStoredFull = -1;
-    } else {
-      try {
-        this.nrMaxStoredFull = Integer.parseInt(nrMaxStoredFull);
-      } catch (final NumberFormatException nfe) {
-        this.nrMaxStoredFull = -1;
-      }
+    public ThinBackupPluginImpl() {
+        load();
+        LOGGER.fine("'thinBackup' plugin initialized.");
     }
-  }
 
-  public int getNrMaxStoredFull() {
-    return nrMaxStoredFull;
-  }
+    public static ThinBackupPluginImpl get() {
+        try {
+            ExtensionList<GlobalConfiguration> all = GlobalConfiguration.all();
+            return all.get(ThinBackupPluginImpl.class);
+        } catch (IllegalStateException exception) {
+            // probably no Jenkins instance running
+            return null;
+        }
+    }
 
-  public void setCleanupDiff(final boolean cleanupDiff) {
-    this.cleanupDiff = cleanupDiff;
-  }
+    public File getHudsonHome() {
+        Jenkins jenkins = Jenkins.getInstanceOrNull();
+        if (jenkins == null) {
+            return null;
+        }
+        return jenkins.getRootDir();
+    }
 
-  public boolean isCleanupDiff() {
-    return cleanupDiff;
-  }
+    public void setFullBackupSchedule(final String fullBackupSchedule) {
+        this.fullBackupSchedule = fullBackupSchedule;
+    }
 
-  public void setMoveOldBackupsToZipFile(final boolean moveOldBackupsToZipFile) {
-    this.moveOldBackupsToZipFile = moveOldBackupsToZipFile;
-  }
+    public String getFullBackupSchedule() {
+        return fullBackupSchedule;
+    }
 
-  public boolean isMoveOldBackupsToZipFile() {
-    return moveOldBackupsToZipFile;
-  }
+    public void setDiffBackupSchedule(final String diffBackupSchedule) {
+        this.diffBackupSchedule = diffBackupSchedule;
+    }
 
-  public void setBackupBuildResults(final boolean backupBuildResults) {
-    this.backupBuildResults = backupBuildResults;
-  }
+    public String getDiffBackupSchedule() {
+        return diffBackupSchedule;
+    }
 
-  public boolean isBackupBuildResults() {
-    return backupBuildResults;
-  }
+    public int getForceQuietModeTimeout() {
+        return forceQuietModeTimeout;
+    }
 
-  public void setBackupBuildArchive(final boolean backupBuildArchive) {
-    this.backupBuildArchive = backupBuildArchive;
-  }
+    public void setForceQuietModeTimeout(int forceQuietModeTimeout) {
+        this.forceQuietModeTimeout = forceQuietModeTimeout;
+    }
 
-  public boolean isBackupBuildArchive() {
-    return backupBuildArchive;
-  }
+    public void setBackupPath(final String backupPath) {
+        this.backupPath = backupPath;
+    }
 
-  public void setBackupBuildsToKeepOnly(boolean backupBuildsToKeepOnly) {
-    this.backupBuildsToKeepOnly = backupBuildsToKeepOnly;
-  }
+    /**
+     * Get the backup path as entered by the user. May contain traces of environment variables.
+     * <p>
+     * If you need a path that can be used as is (env. vars expanded), please use @link{getExpandedBackupPath}.
+     *
+     * @return the backup path as stored in the settings page.
+     */
+    public String getBackupPath() {
+        return backupPath;
+    }
 
-  public boolean isBackupBuildsToKeepOnly() {
-    return backupBuildsToKeepOnly;
-  }
+    /**
+     * @return the backup path with possibly contained environment variables expanded.
+     */
+    public String getExpandedBackupPath() {
+        String expandedPath = "";
 
-  public void setBackupNextBuildNumber(final boolean backupNextBuildNumber) {
-    this.backupNextBuildNumber = backupNextBuildNumber;
-  }
+        try {
+            expandedPath = Utils.expandEnvironmentVariables(backupPath);
+        } catch (final EnvironmentVariableNotDefinedException evnde) {
+            LOGGER.log(Level.SEVERE, evnde.getMessage() + " Using unexpanded path.");
+            expandedPath = backupPath;
+        }
 
-  public boolean isBackupNextBuildNumber() {
-    return backupNextBuildNumber;
-  }
+        return expandedPath;
+    }
 
-  public void setExcludedFilesRegex(final String excludedFilesRegex) {
-    this.excludedFilesRegex = excludedFilesRegex;
-  }
+    public void setNrMaxStoredFull(final int nrMaxStoredFull) {
+        this.nrMaxStoredFull = nrMaxStoredFull;
+    }
 
-  public boolean isBackupUserContents() {
-    return this.backupUserContents;
-  }
+    /**
+     * @param nrMaxStoredFull
+     *          if this string can be parsed as an Integer, nrMaxStoredFull is set to this value, otherwise it is set to
+     *          -1.
+     */
+    public void setNrMaxStoredFullAsString(final String nrMaxStoredFull) {
+        if (StringUtils.isEmpty(nrMaxStoredFull)) {
+            this.nrMaxStoredFull = -1;
+        } else {
+            try {
+                this.nrMaxStoredFull = Integer.parseInt(nrMaxStoredFull);
+            } catch (final NumberFormatException nfe) {
+                this.nrMaxStoredFull = -1;
+            }
+        }
+    }
 
-  public void setBackupUserContents(boolean backupUserContents) {
-    this.backupUserContents = backupUserContents;
-  }
+    public int getNrMaxStoredFull() {
+        return nrMaxStoredFull;
+    }
 
-  public String getExcludedFilesRegex() {
-    return excludedFilesRegex;
-  }
+    public void setCleanupDiff(final boolean cleanupDiff) {
+        this.cleanupDiff = cleanupDiff;
+    }
 
-  public void setBackupPluginArchives(final boolean backupPluginArchives) {
-    this.backupPluginArchives = backupPluginArchives;
-  }
+    public boolean isCleanupDiff() {
+        return cleanupDiff;
+    }
 
-  public boolean isBackupPluginArchives() {
-    return backupPluginArchives;
-  }
+    public void setMoveOldBackupsToZipFile(final boolean moveOldBackupsToZipFile) {
+        this.moveOldBackupsToZipFile = moveOldBackupsToZipFile;
+    }
 
-  public void setBackupAdditionalFiles(final boolean backupAdditionalFiles) {
-    this.backupAdditionalFiles = backupAdditionalFiles;
-  }
+    public boolean isMoveOldBackupsToZipFile() {
+        return moveOldBackupsToZipFile;
+    }
 
-  public boolean isBackupAdditionalFiles() {
-    return backupAdditionalFiles;
-  }
+    public void setBackupBuildResults(final boolean backupBuildResults) {
+        this.backupBuildResults = backupBuildResults;
+    }
 
-  public void setBackupAdditionalFilesRegex(final String backupAdditionalFilesRegex) {
-    this.backupAdditionalFilesRegex = backupAdditionalFilesRegex;
-  }
+    public boolean isBackupBuildResults() {
+        return backupBuildResults;
+    }
 
-  public String getBackupAdditionalFilesRegex() {
-    return backupAdditionalFilesRegex;
-  }
+    public void setBackupBuildArchive(final boolean backupBuildArchive) {
+        this.backupBuildArchive = backupBuildArchive;
+    }
 
-  public void setWaitForIdle(boolean waitForIdle) {
-    this.waitForIdle = waitForIdle;
-  }
+    public boolean isBackupBuildArchive() {
+        return backupBuildArchive;
+    }
 
-  public boolean isWaitForIdle() {
-    return this.waitForIdle;
-  }
+    public void setBackupBuildsToKeepOnly(boolean backupBuildsToKeepOnly) {
+        this.backupBuildsToKeepOnly = backupBuildsToKeepOnly;
+    }
 
+    public boolean isBackupBuildsToKeepOnly() {
+        return backupBuildsToKeepOnly;
+    }
 
-  public boolean isBackupConfigHistory() {
-    return backupConfigHistory;
-  }
+    public void setBackupNextBuildNumber(final boolean backupNextBuildNumber) {
+        this.backupNextBuildNumber = backupNextBuildNumber;
+    }
 
-  public void setBackupConfigHistory(boolean backupConfigHistory) {
-    this.backupConfigHistory = backupConfigHistory;
-  }
+    public boolean isBackupNextBuildNumber() {
+        return backupNextBuildNumber;
+    }
 
-  public boolean isFailFast()
-  {
-    return failFast;
-  }
+    public void setExcludedFilesRegex(final String excludedFilesRegex) {
+        this.excludedFilesRegex = excludedFilesRegex;
+    }
 
-  public void setFailFast(boolean failFast)
-  {
-    this.failFast = failFast;
-  }
+    public boolean isBackupUserContents() {
+        return this.backupUserContents;
+    }
+
+    public void setBackupUserContents(boolean backupUserContents) {
+        this.backupUserContents = backupUserContents;
+    }
+
+    public String getExcludedFilesRegex() {
+        return excludedFilesRegex;
+    }
+
+    public void setBackupPluginArchives(final boolean backupPluginArchives) {
+        this.backupPluginArchives = backupPluginArchives;
+    }
+
+    public boolean isBackupPluginArchives() {
+        return backupPluginArchives;
+    }
+
+    public void setBackupAdditionalFiles(final boolean backupAdditionalFiles) {
+        this.backupAdditionalFiles = backupAdditionalFiles;
+    }
+
+    public boolean isBackupAdditionalFiles() {
+        return backupAdditionalFiles;
+    }
+
+    public void setBackupAdditionalFilesRegex(final String backupAdditionalFilesRegex) {
+        this.backupAdditionalFilesRegex = backupAdditionalFilesRegex;
+    }
+
+    public String getBackupAdditionalFilesRegex() {
+        return backupAdditionalFilesRegex;
+    }
+
+    public void setWaitForIdle(boolean waitForIdle) {
+        this.waitForIdle = waitForIdle;
+    }
+
+    public boolean isWaitForIdle() {
+        return this.waitForIdle;
+    }
+
+    public boolean isBackupConfigHistory() {
+        return backupConfigHistory;
+    }
+
+    public void setBackupConfigHistory(boolean backupConfigHistory) {
+        this.backupConfigHistory = backupConfigHistory;
+    }
+
+    public boolean isFailFast() {
+        return failFast;
+    }
+
+    public void setFailFast(boolean failFast) {
+        this.failFast = failFast;
+    }
 }
