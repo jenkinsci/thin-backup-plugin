@@ -44,15 +44,12 @@
                 <f:optionalBlock title="${%restore_plugins}"
                     help="/plugin/thinBackup/help/help-restorePlugins.html"
                     name="restorePlugins" />
-                 
-                    
+
+                  <f:entry>
+                      <f:submit value="Restore"/>
+                  </f:entry>
               </f:section>
               
-              <f:section>
-                <f:entry>
-                  <f:submit value="Restore"/>
-                </f:entry>
-              </f:section>
             </f:form>
         </l:main-panel>
     </l:layout>

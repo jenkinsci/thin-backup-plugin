@@ -195,6 +195,11 @@ public class ThinBackupMgmtLink extends ManagementLink {
         return ThinBackupPluginImpl.get();
     }
 
+    public List<String> getAvailableBackups() {
+        final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.get();
+        return Utils.getBackupsAsDates(new File(plugin.getExpandedBackupPath()));
+    }
+
     public ListBoxModel doFillBackupItems() {
         final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.get();
         final List<String> backupsAsDates = Utils.getBackupsAsDates(new File(plugin.getExpandedBackupPath()));
