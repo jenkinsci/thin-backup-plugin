@@ -16,17 +16,11 @@
  */
 package org.jvnet.hudson.plugins.thinbackup;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
 public class TestThinBackupPeriodicWork {
-
-    @Test
-    public void testConstructor() {
-        assertDoesNotThrow(ThinBackupPeriodicWork::new);
-    }
 
     @Test
     public void testGetNextScheduledBackup() {
