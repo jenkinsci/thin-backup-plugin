@@ -1,5 +1,5 @@
 unclassified:
-  ThinBackup:
+  thinBackup:
     backupAdditionalFiles: false
     backupAdditionalFilesRegex: "^.*\\.(txt)$"
     backupBuildArchive: false

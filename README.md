@@ -145,7 +145,7 @@ Since version 2.0 the plugin fully supports JCasC. An example config as a basis 
 
 ```yaml
 unclassified:
-  ThinBackup:
+  thinBackup:
     backupAdditionalFiles: false
     backupAdditionalFilesRegex: "^.*\\.(txt)$"
     backupBuildArchive: false
