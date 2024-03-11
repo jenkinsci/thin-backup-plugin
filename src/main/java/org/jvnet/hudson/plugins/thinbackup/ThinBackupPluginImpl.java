@@ -69,7 +69,8 @@ public class ThinBackupPluginImpl extends GlobalConfiguration {
             try {
                 Files.move(oldConfig.toPath(), newConfig.toPath(), StandardCopyOption.REPLACE_EXISTING);
             } catch (IOException e) {
-                LOGGER.severe("unable to move old config to new config, you will need to reconfigure thinBackup plugin manually");
+                LOGGER.severe(
+                        "unable to move old config to new config, you will need to reconfigure thinBackup plugin manually");
             }
         }
         load();
