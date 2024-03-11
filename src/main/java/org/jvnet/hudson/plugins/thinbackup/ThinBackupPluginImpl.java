@@ -26,12 +26,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
-import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.jvnet.hudson.plugins.thinbackup.utils.EnvironmentVariableNotDefinedException;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
-import org.kohsuke.stapler.StaplerRequest;
 
 @Extension
 @Symbol("thinBackup")
