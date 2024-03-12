@@ -306,8 +306,7 @@ public class HudsonBackup {
                         }
                         File expectedConfigXml = new File(jobDirectory, CONFIG_XML);
                         if (expectedConfigXml.exists() && expectedConfigXml.isFile()) {
-                            FileUtils.copyFile(
-                                    expectedConfigXml, new File(folderBackupDirectory, CONFIG_XML));
+                            FileUtils.copyFile(expectedConfigXml, new File(folderBackupDirectory, CONFIG_XML));
                         }
                         backupJobsDirectory(childJobsFolder, folderJobsBackupDirectory);
                     } else {
