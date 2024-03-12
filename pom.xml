@@ -11,7 +11,7 @@
 
   <groupId>org.jvnet.hudson.plugins</groupId>
   <artifactId>thinBackup</artifactId>
-  <version>1.19-SNAPSHOT</version>
+  <version>1.19</version>
   <packaging>hpi</packaging>
   <name>ThinBackup</name>
   <description>Backs up the most important global and job specific configuration files.</description>
@@ -63,7 +63,7 @@
   <scm>
     <connection>scm:git:https://github.com/jenkinsci/thin-backup-plugin.git</connection>
     <developerConnection>scm:git:https://git@github.com/jenkinsci/thin-backup-plugin.git</developerConnection>
-    <tag>${scmTag}</tag>
+    <tag>thinBackup-1.19</tag>
     <url>https://github.com/jenkinsci/thin-backup-plugin</url>
   </scm>
 
