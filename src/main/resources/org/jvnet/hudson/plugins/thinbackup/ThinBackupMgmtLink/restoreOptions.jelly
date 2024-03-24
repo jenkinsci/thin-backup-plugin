@@ -25,31 +25,34 @@
                 ${%restore_configuration}
             </h1>
 
-            
+
             <f:form method="post" action="restore">
-              <f:section title="${%restore_options}">
-                <f:entry title="${%restore_backup_from}" help="/plugin/thinBackup/help/help-restore.html">
-                  <j:set var="allBackups" value="${it.availableBackups}"/>
-                  <f:select name="restoreBackupFrom" >
-                      <j:forEach var="backup" items="${allBackups}">
-                        <f:option>${backup}</f:option>
-                      </j:forEach>
-                  </f:select>
-                </f:entry>
+                <f:section title="${%restore_options}">
+                    <f:entry title="${%restore_backup_from}" help="/plugin/thinBackup/help/help-restore.html">
+                        <j:set var="allBackups" value="${it.availableBackups}"/>
+                        <select name="restoreBackupFrom" >
+                            <j:forEach var="backup" items="${allBackups}">
+                                <f:option>${backup}</f:option>
+                            </j:forEach>
+                        </select>
+                    </f:entry>
 
-                <f:optionalBlock title="${%restore_next_build_number}"
-                    help="/plugin/thinBackup/help/help-restoreNextBuildNumber.html"
-                    name="restoreNextBuildNumber" />
-                
-                <f:optionalBlock title="${%restore_plugins}"
-                    help="/plugin/thinBackup/help/help-restorePlugins.html"
-                    name="restorePlugins" />
+                    <f:optionalBlock title="${%restore_next_build_number}"
+                                     help="/plugin/thinBackup/help/help-restoreNextBuildNumber.html"
+                                     name="restoreNextBuildNumber" />
 
-                  <f:entry>
-                      <f:submit value="Restore"/>
-                  </f:entry>
-              </f:section>
-              
+                    <f:optionalBlock title="${%restore_plugins}"
+                                     help="/plugin/thinBackup/help/help-restorePlugins.html"
+                                     name="restorePlugins" />
+
+
+                </f:section>
+
+                <f:section>
+                    <f:entry>
+                        <f:submit value="Restore"/>
+                    </f:entry>
+                </f:section>
             </f:form>
         </l:main-panel>
     </l:layout>
