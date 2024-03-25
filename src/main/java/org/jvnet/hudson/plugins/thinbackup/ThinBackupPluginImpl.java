@@ -16,26 +16,24 @@
  */
 package org.jvnet.hudson.plugins.thinbackup;
 
-import antlr.ANTLRException;
-import hudson.Plugin;
-import hudson.scheduler.CronTab;
-import hudson.util.FormValidation;
+import hudson.Extension;
+import hudson.ExtensionList;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
+import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.Symbol;
 import org.jvnet.hudson.plugins.thinbackup.utils.EnvironmentVariableNotDefinedException;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 
-public class ThinBackupPluginImpl extends Plugin {
-
-    private static final int VERY_HIGH_TIMEOUT = 12 * 60;
+@Extension
+@Symbol("thinBackup")
+public class ThinBackupPluginImpl extends GlobalConfiguration {
 
     private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
 
@@ -60,20 +58,27 @@ public class ThinBackupPluginImpl extends Plugin {
     private boolean backupBuildsToKeepOnly = false;
     private boolean failFast = true;
 
-    @Override
-    public void start() throws Exception {
-        super.start();
+    public ThinBackupPluginImpl() {
+        // check if old config is there and no new config exists
+        final File oldConfig = new File(Jenkins.get().getRootDir(), "thinBackup.xml");
+        final File newConfig = getConfigFile().getFile();
+        boolean oldConfigExists = oldConfig.exists();
+        boolean newConfigExits = newConfig.exists();
+        if (oldConfigExists && !newConfigExits) {
+            LOGGER.warning("old config of 'thinBackup' detected, moving to new name");
+            try {
+                Files.move(oldConfig.toPath(), newConfig.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException e) {
+                LOGGER.severe(
+                        "unable to move old config to new config, you will need to reconfigure thinBackup plugin manually");
+            }
+        }
         load();
         LOGGER.fine("'thinBackup' plugin initialized.");
     }
 
-    public static ThinBackupPluginImpl getInstance() {
-        final Jenkins jenkins = Jenkins.getInstanceOrNull();
-        if (jenkins != null) {
-            return jenkins.getPlugin(ThinBackupPluginImpl.class);
-        } else {
-            return null;
-        }
+    public static ThinBackupPluginImpl get() {
+        return ExtensionList.lookupSingleton(ThinBackupPluginImpl.class);
     }
 
     public File getHudsonHome() {
@@ -258,129 +263,6 @@ public class ThinBackupPluginImpl extends Plugin {
 
     public boolean isWaitForIdle() {
         return this.waitForIdle;
-    }
-
-    public FormValidation doCheckForceQuietModeTimeout(
-            final StaplerRequest res, final StaplerResponse rsp, @QueryParameter("value") final String timeout) {
-        FormValidation validation = FormValidation.validateIntegerInRange(timeout, -1, Integer.MAX_VALUE);
-        if (!FormValidation.ok().equals(validation)) {
-            return validation;
-        }
-
-        int intTimeout = Integer.parseInt(timeout);
-        if (intTimeout > VERY_HIGH_TIMEOUT) {
-            return FormValidation.warning("You choose a very long timeout. The value need to be in minutes.");
-        } else {
-            return FormValidation.ok();
-        }
-    }
-
-    public FormValidation doCheckBackupPath(
-            final StaplerRequest res, final StaplerResponse rsp, @QueryParameter("value") final String path) {
-        if ((path == null) || path.trim().isEmpty()) {
-            return FormValidation.error("Backup path must not be empty.");
-        }
-
-        String expandedPathMessage = "";
-        String expandedPath = "";
-        try {
-            expandedPath = Utils.expandEnvironmentVariables(path);
-        } catch (final EnvironmentVariableNotDefinedException evnd) {
-            return FormValidation.error(evnd.getMessage());
-        }
-        if (!expandedPath.equals(path)) {
-            expandedPathMessage = String.format("The path will be expanded to '%s'.%n%n", expandedPath);
-        }
-
-        final File backupdir = new File(expandedPath);
-        if (!backupdir.exists()) {
-            return FormValidation.warning(
-                    expandedPathMessage + "The directory does not exist, but will be created before the first run.");
-        }
-        if (!backupdir.isDirectory()) {
-            return FormValidation.error(expandedPathMessage
-                    + "A file with this name exists, thus a directory with the same name cannot be created.");
-        }
-        final File tmp = new File(expandedPath + File.separator + "test.txt");
-        try {
-            tmp.createNewFile();
-        } catch (final Exception e) {
-            if (!tmp.canWrite()) {
-                return FormValidation.error(expandedPathMessage + "The directory exists, but is not writable.");
-            }
-        } finally {
-            if (tmp.exists()) {
-                final boolean deleted = tmp.delete();
-                if (!deleted) {
-                    LOGGER.log(Level.WARNING, "Temp-file " + tmp.getAbsolutePath() + " could not be deleted.");
-                }
-            }
-        }
-        if (!expandedPath.trim().equals(expandedPath)) {
-            return FormValidation.warning(
-                    expandedPathMessage + "Path contains leading and/or trailing whitespaces - is this intentional?");
-        }
-
-        if (!expandedPathMessage.isEmpty()) {
-            return FormValidation.warning(expandedPathMessage.substring(0, expandedPathMessage.length() - 2));
-        }
-
-        return FormValidation.ok();
-    }
-
-    public FormValidation doCheckBackupSchedule(
-            final StaplerRequest res, final StaplerResponse rsp, @QueryParameter("value") final String schedule) {
-        if ((schedule != null) && !schedule.isEmpty()) {
-            String message;
-            try {
-                message = new CronTab(schedule).checkSanity();
-            } catch (final ANTLRException e) {
-                return FormValidation.error("Invalid cron schedule. " + e.getMessage());
-            }
-            if (message != null) {
-                return FormValidation.warning("Cron schedule warning: " + message);
-            } else {
-                return FormValidation.ok();
-            }
-        } else {
-            return FormValidation.ok();
-        }
-    }
-
-    public FormValidation doCheckExcludedFilesRegex(
-            final StaplerRequest res, final StaplerResponse rsp, @QueryParameter("value") final String regex) {
-
-        if ((regex == null) || (regex.isEmpty())) {
-            return FormValidation.ok();
-        }
-
-        try {
-            Pattern.compile(regex);
-        } catch (final PatternSyntaxException pse) {
-            return FormValidation.error("Regex syntax is invalid.");
-        }
-
-        if (regex.trim().isEmpty()) {
-            return FormValidation.warning(
-                    "Regex is valid, but consists entirely of whitespaces - is this intentional?");
-        }
-
-        if (!regex.trim().equals(regex)) {
-            return FormValidation.warning(
-                    "Regex is valid, but contains leading and/or trailing whitespaces - is this intentional?");
-        }
-
-        return FormValidation.ok();
-    }
-
-    public FormValidation doCheckWaitForIdle(
-            final StaplerRequest res, final StaplerResponse rsp, @QueryParameter("value") final String waitForIdle) {
-        if (Boolean.parseBoolean(waitForIdle)) {
-            return FormValidation.ok();
-        } else {
-            return FormValidation.warning(
-                    "This may or may not generate corrupt backups! Be aware that no data get changed during the backup process!");
-        }
     }
 
     public boolean isBackupConfigHistory() {
