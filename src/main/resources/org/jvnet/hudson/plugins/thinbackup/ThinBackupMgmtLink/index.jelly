@@ -18,13 +18,15 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
   xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout permission="${app.ADMINISTER}" norefresh="true">
+  <l:layout permission="${app.ADMINISTER}" norefresh="true" title="${it.displayName}">
     <st:include it="${app}" page="sidepanel.jelly"/>
     <l:main-panel>
       <h1>
         ${it.displayName}
       </h1>
-
+      <p class="jdl-paragraph">
+        ${%backup_settings_moved}
+      </p>
       <div class="jenkins-buttons-row jenkins-!-padding-3">
         <a href="backupManual" style="text-decoration: none;">
           <button class="jenkins-button" tooltip="${%backup_manual_tooltip}">
@@ -40,13 +42,6 @@
           </button>
         </a>
 
-        <a href="backupsettings" style="text-decoration: none;">
-          <button class="jenkins-button"
-            tooltip="${%backup_settings_tooltip}">
-            <l:icon src="symbol-cog-outline plugin-ionicons-api"/>
-            ${%settings}
-          </button>
-        </a>
       </div>
 
     </l:main-panel>

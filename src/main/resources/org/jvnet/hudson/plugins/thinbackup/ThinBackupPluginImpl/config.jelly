@@ -1,0 +1,114 @@
+<!--
+  Copyright (C) 2011  Matthias Steinkogler, Thomas Fürer
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see http://www.gnu.org/licenses.
+
+ -->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+    <f:section title="${%thin_backup_configuration}">
+        <f:entry title="${%backup_path}" field="backupPath"
+                 help="/plugin/thinBackup/help/help-backupPath.html">
+            <f:textbox name="backupPath"/>
+        </f:entry>
+
+        <f:entry title="${%full_backup_schedule}" field="fullBackupSchedule"
+                 help="/plugin/thinBackup/help/help-fullBackupSchedule.html">
+            <f:textbox name="fullBackupSchedule"/>
+        </f:entry>
+
+        <f:entry title="${%diff_backup_schedule}" field="diffBackupSchedule"
+                 help="/plugin/thinBackup/help/help-diffBackupSchedule.html">
+            <f:textbox name="diffBackupSchedule"/>
+        </f:entry>
+
+        <f:entry title="${%max_backup_full}" field="nrMaxStoredFull"
+                 help="/plugin/thinBackup/help/help-nrMaxStoredFull.html">
+            <f:number min="-1" max="9999" name="nrMaxStoredFull"/>
+        </f:entry>
+
+        <f:entry title="${%exclude_files_regex}" field="excludedFilesRegex"
+                 help="/plugin/thinBackup/help/help-excludedFilesRegex.html">
+            <f:textbox name="excludedFilesRegex"/>
+        </f:entry>
+
+        <f:optionalBlock title="${%wait_for_idle}"
+                         help="/plugin/thinBackup/help/help-waitForIdle.html"
+                         field="waitForIdle"
+                         name="waitForIdle">
+            <f:entry title="${%force_quite_minutes}" field="forceQuietModeTimeout"
+                     help="/plugin/thinBackup/help/help-forceQuietModeTimeout.html">
+                <f:number min="-1" max="9999" name="forceQuietModeTimeout"/>
+            </f:entry>
+        </f:optionalBlock>
+
+        <f:optionalBlock title="${%backup_results}"
+                         help="/plugin/thinBackup/help/help-backupBuildResults.html"
+                         field="backupBuildResults"
+                         name="backupBuildResults">
+            <f:optionalBlock title="${%backup_build_archive}"
+                             help="/plugin/thinBackup/help/help-backupBuildArchive.html"
+                             field="backupBuildArchive"
+                             name="backupBuildArchive"/>
+            <f:optionalBlock title="${%backup_build_keep}"
+                             help="/plugin/thinBackup/help/help-backupBuildToKeepOnly.html"
+                             field="backupBuildsToKeepOnly"
+                             name="backupBuildsToKeepOnly"/>
+        </f:optionalBlock>
+
+        <f:optionalBlock title="${%backup_user_content}"
+                         help="/plugin/thinBackup/help/help-backupUserContent.html"
+                         field="backupUserContents"
+                         name="backupUserContents"/>
+
+        <f:optionalBlock title="${%backup_build_number}"
+                         help="/plugin/thinBackup/help/help-backupNextBuildNumber.html"
+                         field="backupNextBuildNumber"
+                         name="backupNextBuildNumber"/>
+
+        <f:optionalBlock title="${%backup_plugin_archive}"
+                         help="/plugin/thinBackup/help/help-backupPlugins.html"
+                         field="backupPluginArchives"
+                         name="backupPluginArchives"/>
+
+        <f:optionalBlock title="${%backup_config_history}"
+                         help="/plugin/thinBackup/help/help-backupConfigHistory.html"
+                         field="backupConfigHistory"
+                         name="backupConfigHistory"/>
+
+        <f:optionalBlock title="${%backup_additional_files}"
+                         help="/plugin/thinBackup/help/help-backupAdditionalFiles.html"
+                         field="backupAdditionalFiles"
+                         name="backupAdditionalFiles">
+            <f:entry title="${%backup_additional_files_regex}" field="backupAdditionalFilesRegex">
+                <f:textbox name="backupAdditionalFilesRegex"/>
+            </f:entry>
+        </f:optionalBlock>
+
+        <f:optionalBlock title="${%clean_differential}"
+                         help="/plugin/thinBackup/help/help-cleanupDiff.html"
+                         field="cleanupDiff"
+                         name="cleanupDiff"/>
+
+        <f:optionalBlock title="${%move}"
+                         help="/plugin/thinBackup/help/help-moveOldBackupsToZipFile.html"
+                         field="moveOldBackupsToZipFile"
+                         name="moveOldBackupsToZipFile"/>
+
+        <f:optionalBlock title="${%fail_fast}"
+                         help="/plugin/thinBackup/help/help-failFast.html"
+                         field="failFast"
+                         name="failFast"/>
+    </f:section>
+</j:jelly>
