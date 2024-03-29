@@ -5,13 +5,13 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>4.79</version>
+    <version>4.80</version>
     <relativePath />
   </parent>
 
   <groupId>org.jvnet.hudson.plugins</groupId>
   <artifactId>thinBackup</artifactId>
-  <version>1.19-SNAPSHOT</version>
+  <version>1.20-SNAPSHOT</version>
   <packaging>hpi</packaging>
   <name>ThinBackup</name>
   <description>Backs up the most important global and job specific configuration files.</description>
