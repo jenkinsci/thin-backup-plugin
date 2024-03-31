@@ -18,41 +18,41 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-    <l:layout permission="${app.ADMINISTER}" norefresh="true">
+    <l:layout permission="${app.ADMINISTER}" title="${it.displayName}">
         <st:include it="${app}" page="sidepanel.jelly"/>
         <l:main-panel>
             <h1>
                 ${%restore_configuration}
             </h1>
-
-
-            <f:form method="post" action="restore">
+            <f:form method="post" action="restore" name="restoreForm">
                 <f:section title="${%restore_options}">
                     <f:entry title="${%restore_backup_from}" help="/plugin/thinBackup/help/help-restore.html">
                         <j:set var="allBackups" value="${it.availableBackups}"/>
-                        <select name="restoreBackupFrom" >
-                            <j:forEach var="backup" items="${allBackups}">
-                                <f:option>${backup}</f:option>
-                            </j:forEach>
-                        </select>
+                        <div class="jenkins-select">
+                            <select class="jenkins-select__input" name="restoreBackupFrom">
+                                <j:forEach var="backup" items="${allBackups}">
+                                    <f:option>${backup}</f:option>
+                                </j:forEach>
+                            </select>
+                        </div>
                     </f:entry>
 
-                    <f:optionalBlock title="${%restore_next_build_number}"
-                                     help="/plugin/thinBackup/help/help-restoreNextBuildNumber.html"
-                                     name="restoreNextBuildNumber" />
+                    <f:entry title="${%restore_next_build_number}"
+                             help="/plugin/thinBackup/help/help-restoreNextBuildNumber.html">
+                        <f:checkbox name="restoreNextBuildNumber"/>
+                    </f:entry>
 
-                    <f:optionalBlock title="${%restore_plugins}"
-                                     help="/plugin/thinBackup/help/help-restorePlugins.html"
-                                     name="restorePlugins" />
-
+                    <f:entry title="${%restore_plugins}" help="/plugin/thinBackup/help/help-restorePlugins.html">
+                        <f:checkbox name="restorePlugins"/>
+                    </f:entry>
 
                 </f:section>
 
-                <f:section>
+                <f:bottomButtonBar>
                     <f:entry>
                         <f:submit value="Restore"/>
                     </f:entry>
-                </f:section>
+                </f:bottomButtonBar>
             </f:form>
         </l:main-panel>
     </l:layout>
