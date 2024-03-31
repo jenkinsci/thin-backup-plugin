@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import jenkins.model.Jenkins;
-import org.apache.commons.lang.StringUtils;
 
 public class PluginList implements Comparable<PluginList> {
     private Map<String, String> plugins;
@@ -93,7 +92,7 @@ public class PluginList implements Comparable<PluginList> {
             final String version = entry.getValue();
             final String prevVersion = plugins2.get(plugin);
 
-            if (StringUtils.isEmpty(version) || StringUtils.isEmpty(prevVersion) || !version.equals(prevVersion)) {
+            if ((version == null || version.isEmpty()) || prevVersion == null || prevVersion.isEmpty() || !version.equals(prevVersion)) {
                 return -1;
             }
         }
