@@ -92,7 +92,10 @@ public class PluginList implements Comparable<PluginList> {
             final String version = entry.getValue();
             final String prevVersion = plugins2.get(plugin);
 
-            if ((version == null || version.isEmpty()) || prevVersion == null || prevVersion.isEmpty() || !version.equals(prevVersion)) {
+            if ((version == null || version.isEmpty())
+                    || prevVersion == null
+                    || prevVersion.isEmpty()
+                    || !version.equals(prevVersion)) {
                 return -1;
             }
         }
