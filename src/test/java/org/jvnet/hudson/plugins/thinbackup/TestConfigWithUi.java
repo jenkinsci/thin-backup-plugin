@@ -24,8 +24,8 @@ public class TestConfigWithUi {
             assertEquals(-1, ThinBackupPluginImpl.get().getNrMaxStoredFull());
             final HtmlForm config = r.createWebClient().goTo("configure").getFormByName("config");
 
-            HtmlTextInput textbox = config.getInputByName("backupPath");
-            HtmlNumberInput numberInput = config.getInputByName("nrMaxStoredFull");
+            HtmlTextInput textbox = config.getInputByName("_.backupPath");
+            HtmlNumberInput numberInput = config.getInputByName("_.nrMaxStoredFull");
             textbox.setText("c:\\temp");
             numberInput.setText("10");
             r.submit(config);

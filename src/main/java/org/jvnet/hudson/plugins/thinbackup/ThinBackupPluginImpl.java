@@ -16,6 +16,7 @@
  */
 package org.jvnet.hudson.plugins.thinbackup;
 
+import hudson.BulkChange;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.scheduler.CronTab;
@@ -98,36 +99,13 @@ public class ThinBackupPluginImpl extends GlobalConfiguration {
 
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-        // hidden in optionalBlock
-        if (json.containsKey("waitForIdle")) {
-            forceQuietModeTimeout = json.getJSONObject("waitForIdle").getInt("forceQuietModeTimeout");
+
+        try (BulkChange bc = new BulkChange(this)) {
+            req.bindJSON(this, json);
+            bc.commit();
+        } catch (IOException e) {
+            throw new FormException(e, "thinBackup");
         }
-
-        if (json.containsKey("backupAdditionalFiles")) {
-            backupAdditionalFilesRegex =
-                    json.getJSONObject("backupAdditionalFiles").getString("backupAdditionalFilesRegex");
-        }
-
-        waitForIdle = json.containsKey("waitForIdle");
-        backupAdditionalFiles = json.containsKey("backupAdditionalFiles");
-        backupBuildArchive = json.containsKey("backupBuildArchive");
-        backupBuildResults = json.containsKey("backupBuildResults");
-        backupBuildsToKeepOnly = json.containsKey("backupBuildsToKeepOnly");
-        backupConfigHistory = json.containsKey("backupConfigHistory");
-        backupNextBuildNumber = json.containsKey("backupNextBuildNumber");
-        backupPluginArchives = json.containsKey("backupPluginArchives");
-        backupUserContents = json.containsKey("backupUserContents");
-        cleanupDiff = json.containsKey("cleanupDiff");
-        failFast = json.containsKey("failFast");
-        moveOldBackupsToZipFile = json.containsKey("moveOldBackupsToZipFile");
-
-        nrMaxStoredFull = json.getInt("nrMaxStoredFull");
-
-        backupPath = json.getString("backupPath");
-        diffBackupSchedule = json.getString("diffBackupSchedule");
-        excludedFilesRegex = json.getString("excludedFilesRegex");
-        fullBackupSchedule = json.getString("fullBackupSchedule");
-        save();
         return true;
     }
 
