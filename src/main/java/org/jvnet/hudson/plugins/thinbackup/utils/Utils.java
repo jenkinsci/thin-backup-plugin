@@ -65,10 +65,7 @@ public final class Utils {
      * Waits until all Hudson slaves are idle.
      */
     public static void waitUntilIdle() {
-        Jenkins jenkins = Jenkins.getInstanceOrNull();
-        if (jenkins == null) {
-            return;
-        }
+        Jenkins jenkins = Jenkins.get();
         final Computer[] computers = jenkins.getComputers();
 
         boolean running;
@@ -103,10 +100,7 @@ public final class Utils {
      * @throws IOException ?
      */
     public static void waitUntilIdleAndSwitchToQuietMode(int timeout, TimeUnit unit) throws IOException {
-        Jenkins jenkins = Jenkins.getInstanceOrNull();
-        if (jenkins == null) {
-            return;
-        }
+        Jenkins jenkins = Jenkins.get();
         final Computer[] computers = jenkins.getComputers();
 
         boolean running;

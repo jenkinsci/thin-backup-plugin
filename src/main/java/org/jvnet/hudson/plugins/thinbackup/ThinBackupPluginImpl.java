@@ -91,11 +91,8 @@ public class ThinBackupPluginImpl extends GlobalConfiguration {
         return ExtensionList.lookupSingleton(ThinBackupPluginImpl.class);
     }
 
-    public File getHudsonHome() {
-        Jenkins jenkins = Jenkins.getInstanceOrNull();
-        if (jenkins == null) {
-            return null;
-        }
+    public File getJenkinsHome() {
+        Jenkins jenkins = Jenkins.get();
         return jenkins.getRootDir();
     }
 

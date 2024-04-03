@@ -48,7 +48,6 @@ import org.apache.commons.io.filefilter.FileFileFilter;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
-import org.apache.commons.lang.StringUtils;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 import org.jvnet.hudson.plugins.thinbackup.backup.BackupSet;
 import org.jvnet.hudson.plugins.thinbackup.backup.HudsonBackup;
@@ -82,7 +81,7 @@ public class HudsonRestore {
     }
 
     public void restore() {
-        if (StringUtils.isEmpty(backupPath)) {
+        if (backupPath == null || backupPath.isEmpty()) {
             LOGGER.severe("Backup path not specified for restoration. Aborting.");
             return;
         }
@@ -224,10 +223,7 @@ public class HudsonRestore {
         pluginList.load();
         Map<String, String> toRestorePlugins = pluginList.getPlugins();
         List<Future<UpdateCenterJob>> pluginRestoreJobs = new ArrayList<>(toRestorePlugins.size());
-        Jenkins jenkins = Jenkins.getInstanceOrNull();
-        if (jenkins == null) {
-            return;
-        }
+        Jenkins jenkins = Jenkins.get();
         PluginManager pluginManager = jenkins.getPluginManager();
         for (Entry<String, String> entry : toRestorePlugins.entrySet()) {
             if (pluginManager.getPlugin(entry.getKey())
@@ -265,10 +261,7 @@ public class HudsonRestore {
 
     private Future<UpdateCenterJob> installPlugin(String pluginID, String version) {
         if (!version.contains("SNAPSHOT") && !"Hudson core".equals(pluginID) && !"Jenkins core".equals(pluginID)) {
-            Jenkins jenkins = Jenkins.getInstanceOrNull();
-            if (jenkins == null) {
-                return null;
-            }
+            Jenkins jenkins = Jenkins.get();
             UpdateCenter updateCenter = jenkins.getUpdateCenter();
 
             for (UpdateSite site : updateCenter.getSites()) {

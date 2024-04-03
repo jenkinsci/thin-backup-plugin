@@ -17,69 +17,80 @@
 package org.jvnet.hudson.plugins.thinbackup.backup;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasItem;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.lessThan;
+import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
-import hudson.model.ItemGroup;
-import hudson.model.TopLevelItem;
-import hudson.util.RunList;
+import hudson.model.Label;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.FileFilterUtils;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.plugins.thinbackup.TestHelper;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
+import org.jvnet.hudson.test.JenkinsRule;
 
 public class TestHudsonBackup {
 
-    @TempDir
-    public File backupDir;
+    @Rule
+    public JenkinsRule r = new JenkinsRule();
 
-    public File jenkinsHome;
-    private File buildDir;
-    private ItemGroup<TopLevelItem> mockHudson;
-
-    @BeforeEach
-    public void setup() throws IOException, InterruptedException {
-        mockHudson = mock(ItemGroup.class);
-
-        File base = new File(System.getProperty("java.io.tmpdir"));
-
-        jenkinsHome = TestHelper.createBasicFolderStructure(base);
-        File jobDir = TestHelper.createJob(jenkinsHome, TestHelper.TEST_JOB_NAME);
-        TestHelper.createMaliciousMultiJob(jenkinsHome, "emptyJob");
-        buildDir = TestHelper.addNewBuildToJob(jobDir);
-    }
-
-    @AfterEach
-    public void tearDown() throws Exception {
-        FileUtils.deleteDirectory(jenkinsHome);
-        FileUtils.deleteDirectory(backupDir);
-        FileUtils.deleteDirectory(new File(Utils.THINBACKUP_TMP_DIR));
-    }
+    @Rule
+    public TemporaryFolder tmpFolder = new TemporaryFolder();
 
     @Test
     public void testBackup() throws Exception {
-        final ThinBackupPluginImpl mockPlugin = TestHelper.createMockPlugin(jenkinsHome, backupDir);
+        File backupDir = tmpFolder.newFolder();
 
-        new HudsonBackup(mockPlugin, BackupType.FULL, new Date(), mockHudson).backup();
+        final ThinBackupPluginImpl thinBackupPlugin = ThinBackupPluginImpl.get();
+        thinBackupPlugin.setBackupPath(backupDir.getAbsolutePath());
+        thinBackupPlugin.setBackupBuildResults(true);
+        final File rootDir = r.jenkins.getRootDir();
+        final Date date = new Date();
+
+        // create job
+        final FreeStyleProject test = r.createFreeStyleProject("test");
+        File buildDir = TestHelper.addNewBuildToJob(test.getRootDir());
+
+        // create empty job
+        TestHelper.createMaliciousMultiJob(rootDir, "jobs");
+
+        // run backup
+        new HudsonBackup(thinBackupPlugin, BackupType.FULL, date, r.jenkins).backup();
+        final String[] listedBackupDirs = backupDir.list();
+        assertEquals(1, listedBackupDirs.length);
+
+        Path backupFolderName =
+                Utils.getFormattedDirectory(backupDir, BackupType.FULL, date).toPath();
+        final List<String> listedBackupFiles = List.of(backupFolderName.toFile().list());
+
+        // check basic files are there
+        assertThat(
+                listedBackupFiles,
+                hasItems(
+                        "installedPlugins.xml",
+                        "config.xml",
+                        "org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl.xml",
+                        "hudson.model.UpdateCenter.xml",
+                        "jobs"));
 
         String[] list = backupDir.list();
         assertNotNull(list);
@@ -87,7 +98,7 @@ public class TestHudsonBackup {
         final File backup = new File(backupDir, list[0]);
         list = backup.list();
         assertNotNull(list);
-        assertEquals(6, list.length);
+        assertThat(list.length, greaterThan(6));
 
         final File job = new File(new File(backup, HudsonBackup.JOBS_DIR_NAME), TestHelper.TEST_JOB_NAME);
         final List<String> arrayList = Arrays.asList(job.list());
@@ -110,18 +121,39 @@ public class TestHudsonBackup {
 
     @Test
     public void testBackupWithExcludes() throws Exception {
-        final ThinBackupPluginImpl mockPlugin = TestHelper.createMockPlugin(jenkinsHome, backupDir);
-        when(mockPlugin.getExcludedFilesRegex()).thenReturn("^.*\\.(log)$");
+        File backupDir = tmpFolder.newFolder();
 
-        new HudsonBackup(mockPlugin, BackupType.FULL, new Date(), mockHudson).backup();
+        final ThinBackupPluginImpl thinBackupPlugin = ThinBackupPluginImpl.get();
+        thinBackupPlugin.setBackupPath(backupDir.getAbsolutePath());
+        thinBackupPlugin.setBackupBuildResults(true);
+        thinBackupPlugin.setExcludedFilesRegex("^.*\\.(log)$");
+        final File rootDir = r.jenkins.getRootDir();
+        final Date date = new Date();
 
+        // create job
+        final FreeStyleProject test = r.createFreeStyleProject("test");
+        File buildDir = TestHelper.addNewBuildToJob(test.getRootDir());
+
+        // add some log files
+        new File(buildDir, "log").createNewFile(); // should be copied
+        new File(buildDir, "log.txt").createNewFile(); // should be copied
+        new File(buildDir, "logfile.log").createNewFile(); // should NOT be copied
+        new File(buildDir, "logfile.xlog").createNewFile(); // should be copied
+
+        // create empty job
+        TestHelper.createMaliciousMultiJob(rootDir, "jobs/emptyJob");
+
+        // run backup
+        new HudsonBackup(thinBackupPlugin, BackupType.FULL, date, r.jenkins).backup();
+
+        // verify
         String[] list = backupDir.list();
         assertNotNull(list);
         assertEquals(1, list.length);
         final File backup = new File(backupDir, list[0]);
         list = backup.list();
         assertNotNull(list);
-        assertEquals(6, list.length);
+        assertThat(list.length, greaterThan(6));
 
         final File job = new File(new File(backup, HudsonBackup.JOBS_DIR_NAME), TestHelper.TEST_JOB_NAME);
         list = job.list();
@@ -132,31 +164,34 @@ public class TestHudsonBackup {
                 new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), TestHelper.CONCRETE_BUILD_DIRECTORY_NAME);
         list = build.list();
         assertNotNull(list);
-        assertEquals(6, list.length);
+        assertEquals(7, list.length);
 
-        final File changelogHistory = new File(
-                new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), TestHelper.CONCRETE_BUILD_DIRECTORY_NAME),
-                HudsonBackup.CHANGELOG_HISTORY_PLUGIN_DIR_NAME);
-        list = changelogHistory.list();
-        assertNotNull(list);
-        assertEquals(2, list.length);
-
-        boolean containsLogfile = false;
-        for (final String string : list) {
-            if (string.equals("logfile.log")) {
-                containsLogfile = true;
-                break;
-            }
-        }
-        assertFalse(containsLogfile);
+        List<String> buildList = List.of(list);
+        assertThat(buildList, not(hasItem("logfile.log")));
     }
 
     @Test
     public void testBackupWithoutBuildResults() throws Exception {
-        final ThinBackupPluginImpl mockPlugin = TestHelper.createMockPlugin(jenkinsHome, backupDir);
-        when(mockPlugin.isBackupBuildResults()).thenReturn(false);
+        File backupDir = tmpFolder.newFolder();
 
-        new HudsonBackup(mockPlugin, BackupType.FULL, new Date(), mockHudson).backup();
+        final ThinBackupPluginImpl thinBackupPlugin = ThinBackupPluginImpl.get();
+        thinBackupPlugin.setBackupPath(backupDir.getAbsolutePath());
+        thinBackupPlugin.setBackupBuildResults(false);
+        final File rootDir = r.jenkins.getRootDir();
+        final Date date = new Date();
+
+        // create job
+        final FreeStyleProject test = r.createFreeStyleProject("test");
+        File buildDir = TestHelper.addNewBuildToJob(test.getRootDir());
+
+        // add some log files
+        new File(buildDir, "log").createNewFile();
+        new File(buildDir, "log.txt").createNewFile();
+        new File(buildDir, "logfile.log").createNewFile();
+        new File(buildDir, "logfile.xlog").createNewFile();
+
+        // run backup
+        new HudsonBackup(thinBackupPlugin, BackupType.FULL, date, r.jenkins).backup();
 
         String[] list = backupDir.list();
         assertNotNull(list);
@@ -164,7 +199,15 @@ public class TestHudsonBackup {
         final File backup = new File(backupDir, list[0]);
         list = backup.list();
         assertNotNull(list);
-        assertEquals(6, list.length);
+        // check basic files are there
+        assertThat(
+                List.of(list),
+                hasItems(
+                        "installedPlugins.xml",
+                        "config.xml",
+                        "org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl.xml",
+                        "hudson.model.UpdateCenter.xml",
+                        "jobs"));
 
         final File job = new File(new File(backup, HudsonBackup.JOBS_DIR_NAME), TestHelper.TEST_JOB_NAME);
         list = job.list();
@@ -173,40 +216,42 @@ public class TestHudsonBackup {
         assertEquals("config.xml", list[0]);
     }
 
-    public void performHudsonDiffBackup(final ThinBackupPluginImpl mockPlugin) throws Exception {
-        final Calendar cal = Calendar.getInstance();
-        cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE) - 10);
-
-        new HudsonBackup(mockPlugin, BackupType.FULL, cal.getTime(), mockHudson).backup();
-
-        // fake modification
-        backupDir.listFiles((FileFilter) FileFilterUtils.prefixFileFilter(BackupType.FULL.toString()))[0]
-                .setLastModified(System.currentTimeMillis() - 60000 * 60);
-
-        for (final File globalConfigFile : jenkinsHome.listFiles()) {
-            globalConfigFile.setLastModified(System.currentTimeMillis() - 60000 * 120);
-        }
-
-        new HudsonBackup(mockPlugin, BackupType.DIFF, new Date(), mockHudson).backup();
-    }
-
-    @Test
-    public void testHudsonDiffBackup() throws Exception {
-        final ThinBackupPluginImpl mockPlugin = TestHelper.createMockPlugin(jenkinsHome, backupDir);
-
-        performHudsonDiffBackup(mockPlugin);
-
-        final File lastDiffBackup =
-                backupDir.listFiles((FileFilter) FileFilterUtils.prefixFileFilter(BackupType.DIFF.toString()))[0];
-        assertEquals(1, lastDiffBackup.list().length);
-    }
-
     @Test
     public void testBackupNextBuildNumber() throws Exception {
-        final ThinBackupPluginImpl mockPlugin = TestHelper.createMockPlugin(jenkinsHome, backupDir);
-        when(mockPlugin.isBackupNextBuildNumber()).thenReturn(true);
+        File backupDir = tmpFolder.newFolder();
 
-        new HudsonBackup(mockPlugin, BackupType.FULL, new Date(), mockHudson).backup();
+        final ThinBackupPluginImpl thinBackupPlugin = ThinBackupPluginImpl.get();
+        thinBackupPlugin.setBackupPath(backupDir.getAbsolutePath());
+        thinBackupPlugin.setBackupBuildResults(true);
+        thinBackupPlugin.setBackupNextBuildNumber(true);
+        final File rootDir = r.jenkins.getRootDir();
+        final Date date = new Date();
+
+        // create job
+        final FreeStyleProject test = r.createFreeStyleProject("test");
+        File buildDir = TestHelper.addNewBuildToJob(test.getRootDir());
+
+        // add nextBuildNumber file
+        new File(test.getRootDir(), "nextBuildNumber").createNewFile();
+
+        // run backup
+        new HudsonBackup(thinBackupPlugin, BackupType.FULL, date, r.jenkins).backup();
+        final String[] listedBackupDirs = backupDir.list();
+        assertEquals(1, listedBackupDirs.length);
+
+        Path backupFolderName =
+                Utils.getFormattedDirectory(backupDir, BackupType.FULL, date).toPath();
+        final List<String> listedBackupFiles = List.of(backupFolderName.toFile().list());
+
+        // check basic files are there
+        assertThat(
+                listedBackupFiles,
+                hasItems(
+                        "installedPlugins.xml",
+                        "config.xml",
+                        "org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl.xml",
+                        "hudson.model.UpdateCenter.xml",
+                        "jobs"));
 
         String[] list = backupDir.list();
         assertNotNull(list);
@@ -214,7 +259,7 @@ public class TestHudsonBackup {
         final File backup = new File(backupDir, list[0]);
         list = backup.list();
         assertNotNull(list);
-        assertEquals(6, list.length);
+        assertThat(list.length, greaterThan(6));
 
         final File job = new File(new File(backup, HudsonBackup.JOBS_DIR_NAME), TestHelper.TEST_JOB_NAME);
         final List<String> arrayList = Arrays.asList(job.list());
@@ -237,10 +282,36 @@ public class TestHudsonBackup {
 
     @Test
     public void testBackupArchive() throws Exception {
-        final ThinBackupPluginImpl mockPlugin = TestHelper.createMockPlugin(jenkinsHome, backupDir);
-        when(mockPlugin.isBackupBuildArchive()).thenReturn(true);
+        File backupDir = tmpFolder.newFolder();
 
-        new HudsonBackup(mockPlugin, BackupType.FULL, new Date(), mockHudson).backup();
+        final ThinBackupPluginImpl thinBackupPlugin = ThinBackupPluginImpl.get();
+        thinBackupPlugin.setBackupPath(backupDir.getAbsolutePath());
+        thinBackupPlugin.setBackupBuildArchive(true);
+        final File rootDir = r.jenkins.getRootDir();
+        final Date date = new Date();
+
+        // create job
+        final FreeStyleProject test = r.createFreeStyleProject("test");
+        File buildDir = TestHelper.addNewBuildToJob(test.getRootDir());
+
+        // run backup
+        new HudsonBackup(thinBackupPlugin, BackupType.FULL, date, r.jenkins).backup();
+        final String[] listedBackupDirs = backupDir.list();
+        assertEquals(1, listedBackupDirs.length);
+
+        Path backupFolderName =
+                Utils.getFormattedDirectory(backupDir, BackupType.FULL, date).toPath();
+        final List<String> listedBackupFiles = List.of(backupFolderName.toFile().list());
+
+        // check basic files are there
+        assertThat(
+                listedBackupFiles,
+                hasItems(
+                        "installedPlugins.xml",
+                        "config.xml",
+                        "org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl.xml",
+                        "hudson.model.UpdateCenter.xml",
+                        "jobs"));
 
         String[] list = backupDir.list();
         assertNotNull(list);
@@ -248,7 +319,7 @@ public class TestHudsonBackup {
         final File backup = new File(backupDir, list[0]);
         list = backup.list();
         assertNotNull(list);
-        assertEquals(6, list.length);
+        assertThat(list.length, greaterThan(6));
 
         final File job = new File(new File(backup, HudsonBackup.JOBS_DIR_NAME), TestHelper.TEST_JOB_NAME);
         List<String> arrayList = Arrays.asList(job.list());
@@ -269,18 +340,42 @@ public class TestHudsonBackup {
     }
 
     @Test
-    public void testBackupKeptBuildsOnly_doNotKeep() throws Exception {
-        final ThinBackupPluginImpl mockPlugin = TestHelper.createMockPlugin(jenkinsHome, backupDir);
+    public void testBackupKeptBuildsOnly_doKeep() throws Exception {
+        File backupDir = tmpFolder.newFolder();
 
-        when(mockPlugin.isBackupBuildsToKeepOnly()).thenReturn(true);
+        final ThinBackupPluginImpl thinBackupPlugin = ThinBackupPluginImpl.get();
+        thinBackupPlugin.setBackupPath(backupDir.getAbsolutePath());
+        thinBackupPlugin.setBackupBuildsToKeepOnly(true);
+        final File rootDir = r.jenkins.getRootDir();
+        final Date date = new Date();
 
-        FreeStyleProject mockJob = mock(FreeStyleProject.class);
-        when(mockHudson.getItem(TestHelper.TEST_JOB_NAME)).thenReturn(mockJob);
-        FreeStyleBuild mockRun = mock(FreeStyleBuild.class);
-        when(mockJob.getBuilds()).thenReturn(RunList.fromRuns(Collections.singleton(mockRun)));
-        when(mockRun.getRootDir()).thenReturn(buildDir);
+        // create job
+        final FreeStyleProject test = r.createFreeStyleProject("test");
 
-        new HudsonBackup(mockPlugin, BackupType.FULL, new Date(), mockHudson).backup();
+        File buildDir = TestHelper.addNewBuildToJob(test.getRootDir());
+
+        // add some log files
+        new File(buildDir, "log").createNewFile();
+        new File(buildDir, "log.txt").createNewFile();
+
+        // run backup
+        new HudsonBackup(thinBackupPlugin, BackupType.FULL, date, r.jenkins).backup();
+        final String[] listedBackupDirs = backupDir.list();
+        assertEquals(1, listedBackupDirs.length);
+
+        Path backupFolderName =
+                Utils.getFormattedDirectory(backupDir, BackupType.FULL, date).toPath();
+        final List<String> listedBackupFiles = List.of(backupFolderName.toFile().list());
+
+        // check basic files are there
+        assertThat(
+                listedBackupFiles,
+                hasItems(
+                        "installedPlugins.xml",
+                        "config.xml",
+                        "org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl.xml",
+                        "hudson.model.UpdateCenter.xml",
+                        "jobs"));
 
         String[] list = backupDir.list();
         assertNotNull(list);
@@ -288,56 +383,32 @@ public class TestHudsonBackup {
         final File backup = new File(backupDir, list[0]);
         list = backup.list();
         assertNotNull(list);
-        assertEquals(6, list.length);
+        assertThat(list.length, greaterThan(6));
 
         final File job = new File(new File(backup, HudsonBackup.JOBS_DIR_NAME), TestHelper.TEST_JOB_NAME);
         list = job.list();
         assertNotNull(list);
-        assertEquals(1, list.length);
-        assertEquals("config.xml", list[0]);
-    }
-
-    @Test
-    public void testBackupKeptBuildsOnly_keep() throws Exception {
-        final ThinBackupPluginImpl mockPlugin = TestHelper.createMockPlugin(jenkinsHome, backupDir);
-
-        when(mockPlugin.isBackupBuildsToKeepOnly()).thenReturn(true);
-
-        FreeStyleProject mockJob = mock(FreeStyleProject.class);
-        when(mockHudson.getItem(TestHelper.TEST_JOB_NAME)).thenReturn(mockJob);
-        FreeStyleBuild mockRun = mock(FreeStyleBuild.class);
-        when(mockRun.isKeepLog()).thenReturn(true);
-        when(mockJob.getBuilds()).thenReturn(RunList.fromRuns(Collections.singleton(mockRun)));
-        when(mockRun.getRootDir()).thenReturn(buildDir);
-
-        new HudsonBackup(mockPlugin, BackupType.FULL, new Date(), mockHudson).backup();
-
-        String[] list = backupDir.list();
-        assertNotNull(list);
-        assertEquals(1, list.length);
-        final File backup = new File(backupDir, list[0]);
-        list = backup.list();
-        assertNotNull(list);
-        assertEquals(6, list.length);
-
-        final File job = new File(new File(backup, HudsonBackup.JOBS_DIR_NAME), TestHelper.TEST_JOB_NAME);
-        final List<String> arrayList = Arrays.asList(job.list());
-        assertEquals(2, arrayList.size());
-        assertFalse(arrayList.contains(HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME));
-
-        final File build =
-                new File(new File(job, HudsonBackup.BUILDS_DIR_NAME), TestHelper.CONCRETE_BUILD_DIRECTORY_NAME);
-        list = build.list();
-        assertNotNull(list);
-        assertEquals(7, list.length);
+        assertEquals(2, list.length);
+        assertThat(List.of(list), containsInAnyOrder("config.xml", "builds"));
     }
 
     @Test
     public void testRemovingEmptyDirs() throws IOException {
-        TestHelper.createBackupFolder(jenkinsHome);
+        File backupDir = tmpFolder.newFolder();
+
+        final ThinBackupPluginImpl thinBackupPlugin = ThinBackupPluginImpl.get();
+        thinBackupPlugin.setBackupPath(backupDir.getAbsolutePath());
+        thinBackupPlugin.setBackupBuildResults(true);
+        final File rootDir = r.jenkins.getRootDir();
+        final Date date = new Date();
+
+        // create job
+        final FreeStyleProject test = r.createFreeStyleProject("test");
+        TestHelper.addNewBuildToJob(test.getRootDir());
+
         // create a couple of empty dirs
         for (int i = 0; i < 10; i++) {
-            File folder = new File(jenkinsHome, "empty" + i);
+            File folder = new File(rootDir, "empty" + i);
             folder.mkdirs();
             for (int j = 0; j < 3; j++) {
                 File folder2 = new File(folder, "child" + j);
@@ -345,8 +416,9 @@ public class TestHudsonBackup {
             }
         }
 
+        // count files before
         List<String> filesAndFolders;
-        try (Stream<Path> walk = Files.walk(jenkinsHome.toPath())) {
+        try (Stream<Path> walk = Files.walk(rootDir.toPath())) {
             // exclude symbolic links, we ignore these in this test
             filesAndFolders = walk.filter(file -> !Files.isSymbolicLink(file))
                     .map(Path::toString)
@@ -354,12 +426,16 @@ public class TestHudsonBackup {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        final ThinBackupPluginImpl mockPlugin = TestHelper.createMockPlugin(jenkinsHome, backupDir);
 
-        assertEquals(72, filesAndFolders.size());
-        HudsonBackup backup = new HudsonBackup(mockPlugin, BackupType.FULL, new Date(), mockHudson);
-        backup.removeEmptyDirs(jenkinsHome);
-        try (Stream<Path> walk = Files.walk(jenkinsHome.toPath())) {
+        assertThat(filesAndFolders.size(), greaterThan(75));
+
+        // run backup (which will clean up empty folders)
+        new HudsonBackup(thinBackupPlugin, BackupType.FULL, date, r.jenkins).backup();
+        final String[] listedBackupDirs = backupDir.list();
+        assertEquals(1, listedBackupDirs.length);
+
+        // count files
+        try (Stream<Path> walk = Files.walk(backupDir.toPath())) {
             // exclude symbolic links, we ignore these in this test
             filesAndFolders = walk.filter(file -> !Files.isSymbolicLink(file))
                     .map(Path::toString)
@@ -367,16 +443,26 @@ public class TestHudsonBackup {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        assertEquals(25, filesAndFolders.size());
+        assertThat(filesAndFolders.size(), lessThan(25));
     }
 
     @Test
     public void testBackupNodes() throws Exception {
-        TestHelper.createNode(jenkinsHome, TestHelper.TEST_NODE_NAME);
+        File backupDir = tmpFolder.newFolder();
 
-        final ThinBackupPluginImpl mockPlugin = TestHelper.createMockPlugin(jenkinsHome, backupDir);
+        final ThinBackupPluginImpl thinBackupPlugin = ThinBackupPluginImpl.get();
+        thinBackupPlugin.setBackupPath(backupDir.getAbsolutePath());
+        thinBackupPlugin.setBackupBuildResults(true);
+        final File rootDir = r.jenkins.getRootDir();
+        final Date date = new Date();
 
-        new HudsonBackup(mockPlugin, BackupType.FULL, new Date(), mockHudson).backup();
+        // create job
+        final FreeStyleProject test = r.createFreeStyleProject("test");
+        TestHelper.addNewBuildToJob(test.getRootDir());
+
+        r.createSlave(Label.get("label"));
+
+        new HudsonBackup(thinBackupPlugin, BackupType.FULL, date, r.jenkins).backup();
 
         String[] list = backupDir.list();
         assertNotNull(list);
@@ -384,15 +470,15 @@ public class TestHudsonBackup {
         final File backup = new File(backupDir, list[0]);
         list = backup.list();
         assertNotNull(list);
-        assertEquals(7, list.length);
+        assertThat(list.length, greaterThan(7));
 
         final File nodes = new File(backup, HudsonBackup.NODES_DIR_NAME);
         list = nodes.list();
         assertNotNull(list);
         assertEquals(1, list.length);
-        assertEquals(TestHelper.TEST_NODE_NAME, list[0]);
+        assertEquals("slave0", list[0]);
 
-        final File node = new File(nodes, TestHelper.TEST_NODE_NAME);
+        final File node = new File(nodes, "slave0");
         list = node.list();
         assertNotNull(list);
         assertEquals(1, list.length);

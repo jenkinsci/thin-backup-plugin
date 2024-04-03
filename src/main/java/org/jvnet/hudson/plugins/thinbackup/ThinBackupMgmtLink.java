@@ -72,10 +72,7 @@ public class ThinBackupMgmtLink extends ManagementLink {
     public void doBackupManual(final StaplerRequest res, final StaplerResponse rsp) throws IOException {
         LOGGER.info("Starting manual backup.");
 
-        final Jenkins jenkins = Jenkins.getInstanceOrNull();
-        if (jenkins == null) {
-            return;
-        }
+        final Jenkins jenkins = Jenkins.get();
         jenkins.checkPermission(Jenkins.ADMINISTER);
 
         final ThinBackupPeriodicWork manualBackupWorker = new ThinBackupPeriodicWork() {
@@ -98,10 +95,7 @@ public class ThinBackupMgmtLink extends ManagementLink {
             throws IOException {
         LOGGER.info("Starting restore operation.");
 
-        final Jenkins jenkins = Jenkins.getInstanceOrNull();
-        if (jenkins == null) {
-            return;
-        }
+        final Jenkins jenkins = Jenkins.get();
         jenkins.checkPermission(Jenkins.ADMINISTER);
 
         jenkins.doQuietDown();

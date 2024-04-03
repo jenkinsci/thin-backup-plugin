@@ -43,10 +43,7 @@ public class PluginRestoreUpdateCenter extends UpdateCenter {
             this.plugin = plugin;
             this.version = version;
 
-            Jenkins jenkins = Jenkins.getInstanceOrNull();
-            if (jenkins == null) {
-                throw new RuntimeException("Setup the Jenkins environment failed.");
-            }
+            Jenkins jenkins = Jenkins.get();
             this.pm = jenkins.getPluginManager();
         }
 

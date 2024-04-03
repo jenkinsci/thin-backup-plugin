@@ -28,7 +28,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
-import org.apache.commons.lang.StringUtils;
 import org.jvnet.hudson.plugins.thinbackup.backup.HudsonBackup;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 
@@ -67,17 +66,14 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
     }
 
     protected void backupNow(final BackupType type) {
-        final Jenkins jenkins = Jenkins.getInstanceOrNull();
-        if (jenkins == null) {
-            return;
-        }
+        final Jenkins jenkins = Jenkins.get();
         final boolean inQuietModeBeforeBackup = jenkins.isQuietingDown();
 
         String backupPath = null;
         try {
             backupPath = plugin.getExpandedBackupPath();
 
-            if (StringUtils.isNotEmpty(backupPath)) {
+            if (backupPath != null && !backupPath.isEmpty()) {
                 if (plugin.isWaitForIdle()) {
                     LOGGER.fine("Wait until executors are idle to perform backup.");
                     Utils.waitUntilIdleAndSwitchToQuietMode(plugin.getForceQuietModeTimeout(), TimeUnit.MINUTES);
@@ -135,7 +131,7 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
     static long calculateDelay(final long currentTime, final BackupType backupType, final String cron) {
         CronTab cronTab;
         try {
-            if (StringUtils.isEmpty(cron)) {
+            if (cron == null || cron.isEmpty()) {
                 return -1;
             }
 
