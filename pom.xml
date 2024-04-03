@@ -73,7 +73,6 @@
     <jenkins.version>2.401.3</jenkins.version>
     <gitHubRepo>jenkinsci/thin-backup-plugin</gitHubRepo>
     <spotless.check.skip>false</spotless.check.skip>
-    <surefire.forkNumber>1</surefire.forkNumber>
     <hpi.compatibleSinceVersion>2.0</hpi.compatibleSinceVersion>
   </properties>
 
