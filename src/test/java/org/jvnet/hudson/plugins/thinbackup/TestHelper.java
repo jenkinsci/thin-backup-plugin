@@ -1,17 +1,15 @@
 package org.jvnet.hudson.plugins.thinbackup;
 
-import org.jvnet.hudson.plugins.thinbackup.backup.HudsonBackup;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import org.jvnet.hudson.plugins.thinbackup.backup.HudsonBackup;
 
 public class TestHelper {
     public static final String CONFIG_XML_CONTENTS = "FILLED WITH DATA... ";
     public static final String CONCRETE_BUILD_DIRECTORY_NAME = "42";
     public static final String TEST_JOB_NAME = "test";
-
 
     /**
      * When deleting multibranch jobs / folders or removing them we saw leftover directories in the Jenkins
