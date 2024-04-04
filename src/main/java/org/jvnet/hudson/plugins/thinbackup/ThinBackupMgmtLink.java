@@ -36,6 +36,7 @@ import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.verb.POST;
 
 /**
  * A backup solution for Hudson. Backs up configuration files from Hudson and its jobs.
@@ -69,6 +70,7 @@ public class ThinBackupMgmtLink extends ManagementLink {
         return "Backup your global and job specific configuration.";
     }
 
+    @POST
     public void doBackupManual(final StaplerRequest res, final StaplerResponse rsp) throws IOException {
         final Jenkins jenkins = Jenkins.get();
         jenkins.checkPermission(Jenkins.ADMINISTER);
@@ -85,6 +87,7 @@ public class ThinBackupMgmtLink extends ManagementLink {
         rsp.sendRedirect(res.getContextPath() + THIN_BACKUP_SUBPATH);
     }
 
+    @POST
     public void doRestore(
             final StaplerRequest res,
             final StaplerResponse rsp,
@@ -134,6 +137,7 @@ public class ThinBackupMgmtLink extends ManagementLink {
         return Utils.getBackupsAsDates(new File(plugin.getExpandedBackupPath()));
     }
 
+    @POST
     public ListBoxModel doFillBackupItems() {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.get();

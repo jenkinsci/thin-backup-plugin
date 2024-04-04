@@ -39,6 +39,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.verb.POST;
 
 @Extension
 @Symbol("thinBackup")
@@ -322,6 +323,7 @@ public class ThinBackupPluginImpl extends GlobalConfiguration {
         save();
     }
 
+    @POST
     public FormValidation doCheckBackupPath(@QueryParameter String value) {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         if ((value == null) || value.trim().isEmpty()) {
@@ -375,10 +377,12 @@ public class ThinBackupPluginImpl extends GlobalConfiguration {
         return FormValidation.ok();
     }
 
+    @POST
     public FormValidation doCheckFullBackupSchedule(@QueryParameter("value") final String schedule) {
         return checkBackupSchedule(schedule);
     }
 
+    @POST
     public FormValidation doCheckDiffBackupSchedule(@QueryParameter("value") final String schedule) {
         return checkBackupSchedule(schedule);
     }
@@ -402,10 +406,12 @@ public class ThinBackupPluginImpl extends GlobalConfiguration {
         }
     }
 
+    @POST
     public FormValidation doCheckExcludedFilesRegex(@QueryParameter("value") final String regex) {
         return checkCronSytax(regex);
     }
 
+    @POST
     public FormValidation doCheckBackupAdditionalFilesRegex(@QueryParameter("value") final String regex) {
         return checkCronSytax(regex);
     }
@@ -435,8 +441,7 @@ public class ThinBackupPluginImpl extends GlobalConfiguration {
         return FormValidation.ok();
     }
 
-
-
+    @POST
     public FormValidation doCheckWaitForIdle(@QueryParameter("value") final String waitForIdle) {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         if (Boolean.parseBoolean(waitForIdle)) {
@@ -447,6 +452,7 @@ public class ThinBackupPluginImpl extends GlobalConfiguration {
         }
     }
 
+    @POST
     public FormValidation doCheckForceQuietModeTimeout(@QueryParameter("value") final String timeout) {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         FormValidation validation = FormValidation.validateIntegerInRange(timeout, -1, Integer.MAX_VALUE);
