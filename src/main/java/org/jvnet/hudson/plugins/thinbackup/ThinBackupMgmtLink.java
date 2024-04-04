@@ -70,10 +70,9 @@ public class ThinBackupMgmtLink extends ManagementLink {
     }
 
     public void doBackupManual(final StaplerRequest res, final StaplerResponse rsp) throws IOException {
-        LOGGER.info("Starting manual backup.");
-
         final Jenkins jenkins = Jenkins.get();
         jenkins.checkPermission(Jenkins.ADMINISTER);
+        LOGGER.info("Starting manual backup.");
 
         final ThinBackupPeriodicWork manualBackupWorker = new ThinBackupPeriodicWork() {
             @Override
@@ -103,11 +102,11 @@ public class ThinBackupMgmtLink extends ManagementLink {
         Utils.waitUntilIdle();
 
         try {
-            final File hudsonHome = jenkins.getRootDir();
+            final File jenkinsHome = jenkins.getRootDir();
             final Date restoreFromDate = new SimpleDateFormat(Utils.DISPLAY_DATE_FORMAT).parse(restoreBackupFrom);
 
             final HudsonRestore hudsonRestore = new HudsonRestore(
-                    hudsonHome,
+                    jenkinsHome,
                     ThinBackupPluginImpl.get().getExpandedBackupPath(),
                     restoreFromDate,
                     "on".equals(restoreNextBuildNumber),
@@ -130,11 +129,13 @@ public class ThinBackupMgmtLink extends ManagementLink {
     }
 
     public List<String> getAvailableBackups() {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.get();
         return Utils.getBackupsAsDates(new File(plugin.getExpandedBackupPath()));
     }
 
     public ListBoxModel doFillBackupItems() {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.get();
         final List<String> backupsAsDates = Utils.getBackupsAsDates(new File(plugin.getExpandedBackupPath()));
         var model = new ListBoxModel();

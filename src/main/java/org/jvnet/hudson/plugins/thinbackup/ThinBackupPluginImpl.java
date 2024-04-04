@@ -323,6 +323,7 @@ public class ThinBackupPluginImpl extends GlobalConfiguration {
     }
 
     public FormValidation doCheckBackupPath(@QueryParameter String value) {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         if ((value == null) || value.trim().isEmpty()) {
             return FormValidation.error("Backup path must not be empty.");
         }
@@ -374,7 +375,16 @@ public class ThinBackupPluginImpl extends GlobalConfiguration {
         return FormValidation.ok();
     }
 
-    public FormValidation doCheckBackupSchedule(@QueryParameter("value") final String schedule) {
+    public FormValidation doCheckFullBackupSchedule(@QueryParameter("value") final String schedule) {
+        return checkBackupSchedule(schedule);
+    }
+
+    public FormValidation doCheckDiffBackupSchedule(@QueryParameter("value") final String schedule) {
+        return checkBackupSchedule(schedule);
+    }
+
+    private FormValidation checkBackupSchedule(final String schedule) {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         if ((schedule != null) && !schedule.isEmpty()) {
             String message;
             try {
@@ -393,7 +403,15 @@ public class ThinBackupPluginImpl extends GlobalConfiguration {
     }
 
     public FormValidation doCheckExcludedFilesRegex(@QueryParameter("value") final String regex) {
+        return checkCronSytax(regex);
+    }
 
+    public FormValidation doCheckBackupAdditionalFilesRegex(@QueryParameter("value") final String regex) {
+        return checkCronSytax(regex);
+    }
+
+    private FormValidation checkCronSytax(final String regex) {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         if ((regex == null) || (regex.isEmpty())) {
             return FormValidation.ok();
         }
@@ -417,7 +435,10 @@ public class ThinBackupPluginImpl extends GlobalConfiguration {
         return FormValidation.ok();
     }
 
+
+
     public FormValidation doCheckWaitForIdle(@QueryParameter("value") final String waitForIdle) {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         if (Boolean.parseBoolean(waitForIdle)) {
             return FormValidation.ok();
         } else {
@@ -427,6 +448,7 @@ public class ThinBackupPluginImpl extends GlobalConfiguration {
     }
 
     public FormValidation doCheckForceQuietModeTimeout(@QueryParameter("value") final String timeout) {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         FormValidation validation = FormValidation.validateIntegerInRange(timeout, -1, Integer.MAX_VALUE);
         if (!FormValidation.ok().equals(validation)) {
             return validation;
