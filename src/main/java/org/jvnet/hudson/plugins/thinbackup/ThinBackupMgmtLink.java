@@ -40,7 +40,7 @@ import org.kohsuke.stapler.verb.POST;
 
 /**
  * A backup solution for Hudson. Backs up configuration files from Hudson and its jobs.
- *
+ * <p>
  * Originally based on the Backup plugin by Vincent Sellier, Manufacture Fran�aise des Pneumatiques Michelin, Romain
  * Seguy, et.al. Subsequently heavily modified.
  */

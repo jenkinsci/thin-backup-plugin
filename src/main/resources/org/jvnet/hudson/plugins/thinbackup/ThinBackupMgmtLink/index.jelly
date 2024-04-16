@@ -28,12 +28,12 @@
         ${%backup_settings_moved}
       </p>
       <div class="jenkins-buttons-row jenkins-!-padding-3">
-        <a href="backupManual" style="text-decoration: none;">
-          <button class="jenkins-button" tooltip="${%backup_manual_tooltip}">
+        <f:form method="POST" action="backupManual">
+          <button class="jenkins-button" tooltip="${%backup_manual_tooltip}" >
             <l:icon src="symbol-cloud-download-outline plugin-ionicons-api"/>
             ${%backup_now}
           </button>
-        </a>
+        </f:form>
 
         <a href="restoreOptions" style="text-decoration: none;">
           <button class="jenkins-button" tooltip="${%restore_options_tooltip}">
