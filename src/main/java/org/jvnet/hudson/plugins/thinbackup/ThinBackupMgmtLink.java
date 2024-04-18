@@ -20,6 +20,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.ManagementLink;
 import hudson.model.TaskListener;
+import hudson.util.ListBoxModel;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
@@ -35,16 +36,18 @@ import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.verb.POST;
 
 /**
  * A backup solution for Hudson. Backs up configuration files from Hudson and its jobs.
- *
+ * <p>
  * Originally based on the Backup plugin by Vincent Sellier, Manufacture Fran�aise des Pneumatiques Michelin, Romain
  * Seguy, et.al. Subsequently heavily modified.
  */
 @Extension
 public class ThinBackupMgmtLink extends ManagementLink {
     private static final String THIN_BACKUP_SUBPATH = "/thinBackup";
+
     private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
 
     @Override
@@ -67,14 +70,11 @@ public class ThinBackupMgmtLink extends ManagementLink {
         return "Backup your global and job specific configuration.";
     }
 
+    @POST
     public void doBackupManual(final StaplerRequest res, final StaplerResponse rsp) throws IOException {
-        LOGGER.info("Starting manual backup.");
-
-        final Jenkins jenkins = Jenkins.getInstanceOrNull();
-        if (jenkins == null) {
-            return;
-        }
+        final Jenkins jenkins = Jenkins.get();
         jenkins.checkPermission(Jenkins.ADMINISTER);
+        LOGGER.info("Starting manual backup.");
 
         final ThinBackupPeriodicWork manualBackupWorker = new ThinBackupPeriodicWork() {
             @Override
@@ -87,6 +87,7 @@ public class ThinBackupMgmtLink extends ManagementLink {
         rsp.sendRedirect(res.getContextPath() + THIN_BACKUP_SUBPATH);
     }
 
+    @POST
     public void doRestore(
             final StaplerRequest res,
             final StaplerResponse rsp,
@@ -96,10 +97,7 @@ public class ThinBackupMgmtLink extends ManagementLink {
             throws IOException {
         LOGGER.info("Starting restore operation.");
 
-        final Jenkins jenkins = Jenkins.getInstanceOrNull();
-        if (jenkins == null) {
-            return;
-        }
+        final Jenkins jenkins = Jenkins.get();
         jenkins.checkPermission(Jenkins.ADMINISTER);
 
         jenkins.doQuietDown();
@@ -107,12 +105,12 @@ public class ThinBackupMgmtLink extends ManagementLink {
         Utils.waitUntilIdle();
 
         try {
-            final File hudsonHome = jenkins.getRootDir();
+            final File jenkinsHome = jenkins.getRootDir();
             final Date restoreFromDate = new SimpleDateFormat(Utils.DISPLAY_DATE_FORMAT).parse(restoreBackupFrom);
 
             final HudsonRestore hudsonRestore = new HudsonRestore(
-                    hudsonHome,
-                    ThinBackupPluginImpl.getInstance().getExpandedBackupPath(),
+                    jenkinsHome,
+                    ThinBackupPluginImpl.get().getExpandedBackupPath(),
                     restoreFromDate,
                     "on".equals(restoreNextBuildNumber),
                     "on".equals(restorePlugins));
@@ -129,67 +127,26 @@ public class ThinBackupMgmtLink extends ManagementLink {
         }
     }
 
-    public void doSaveSettings(
-            final StaplerRequest res,
-            final StaplerResponse rsp,
-            @QueryParameter("backupPath") final String backupPath,
-            @QueryParameter("fullBackupSchedule") final String fullBackupSchedule,
-            @QueryParameter("diffBackupSchedule") final String diffBackupSchedule,
-            @QueryParameter("nrMaxStoredFull") final String nrMaxStoredFull,
-            @QueryParameter("excludedFilesRegex") final String excludedFilesRegex,
-            @QueryParameter("moveOldBackupsToZipFile") final boolean moveOldBackupsToZipFile,
-            @QueryParameter("cleanupDiff") final boolean cleanupDiff,
-            @QueryParameter("backupBuildResults") final boolean backupBuildResults,
-            @QueryParameter("backupBuildArchive") final boolean backupBuildArchive,
-            @QueryParameter("backupBuildsToKeepOnly") final boolean backupBuildsToKeepOnly,
-            @QueryParameter("backupUserContents") final boolean backupUserContents,
-            @QueryParameter("backupNextBuildNumber") final boolean backupNextBuildNumber,
-            @QueryParameter("backupPluginArchives") final boolean backupPluginArchives,
-            @QueryParameter("backupAdditionalFiles") final boolean backupAdditionalFiles,
-            @QueryParameter("backupAdditionalFilesRegex") final String backupAdditionalFilesRegex,
-            @QueryParameter("waitForIdle") final boolean waitForIdle,
-            @QueryParameter("backupConfigHistory") final boolean backupConfigHistory,
-            @QueryParameter("forceQuietModeTimeout") final String forceQuietModeTimeout,
-            @QueryParameter("failFast") final boolean failFast)
-            throws IOException {
-        Jenkins jenkins = Jenkins.getInstanceOrNull();
-        if (jenkins == null) {
-            return;
-        }
-        jenkins.checkPermission(Jenkins.ADMINISTER);
-
-        final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.getInstance();
-        plugin.setBackupPath(backupPath);
-        plugin.setFullBackupSchedule(fullBackupSchedule);
-        plugin.setDiffBackupSchedule(diffBackupSchedule);
-        plugin.setNrMaxStoredFullAsString(nrMaxStoredFull);
-        plugin.setExcludedFilesRegex(excludedFilesRegex);
-        plugin.setCleanupDiff(cleanupDiff);
-        plugin.setMoveOldBackupsToZipFile(moveOldBackupsToZipFile);
-        plugin.setBackupBuildResults(backupBuildResults);
-        plugin.setBackupBuildArchive(backupBuildArchive);
-        plugin.setBackupBuildsToKeepOnly(backupBuildsToKeepOnly);
-        plugin.setBackupUserContents(backupUserContents);
-        plugin.setBackupConfigHistory(backupConfigHistory);
-        plugin.setBackupNextBuildNumber(backupNextBuildNumber);
-        plugin.setBackupPluginArchives(backupPluginArchives);
-        plugin.setBackupAdditionalFiles(backupAdditionalFiles);
-        plugin.setBackupAdditionalFilesRegex(backupAdditionalFilesRegex);
-        plugin.setWaitForIdle(waitForIdle);
-        plugin.setForceQuietModeTimeout(Integer.parseInt(forceQuietModeTimeout));
-        plugin.setFailFast(failFast);
-        plugin.save();
-        LOGGER.finest("Saving backup settings done.");
-        rsp.sendRedirect(res.getContextPath() + THIN_BACKUP_SUBPATH);
-    }
-
     public ThinBackupPluginImpl getConfiguration() {
-        return ThinBackupPluginImpl.getInstance();
+        return ThinBackupPluginImpl.get();
     }
 
     public List<String> getAvailableBackups() {
-        final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.getInstance();
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.get();
         return Utils.getBackupsAsDates(new File(plugin.getExpandedBackupPath()));
+    }
+
+    @POST
+    public ListBoxModel doFillBackupItems() {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.get();
+        final List<String> backupsAsDates = Utils.getBackupsAsDates(new File(plugin.getExpandedBackupPath()));
+        var model = new ListBoxModel();
+        for (String entry : backupsAsDates) {
+            model.add(new ListBoxModel.Option(entry));
+        }
+        return model;
     }
 
     /**

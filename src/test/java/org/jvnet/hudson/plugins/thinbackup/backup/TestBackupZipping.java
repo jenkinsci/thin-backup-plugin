@@ -1,60 +1,104 @@
 package org.jvnet.hudson.plugins.thinbackup.backup;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItems;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.BufferedInputStream;
+import hudson.model.FreeStyleProject;
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Date;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-import org.jvnet.hudson.plugins.thinbackup.TestHelper;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork;
+import org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl;
+import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.MockFolder;
 
 public class TestBackupZipping {
 
-    @TempDir
-    public Path tmpFolder;
+    @Rule
+    public JenkinsRule r = new JenkinsRule();
 
-    private File backupDir;
-    private File jenkinsHome;
-
-    @BeforeEach
-    public void setup() throws IOException {
-        backupDir = TestHelper.createBackupFolder(
-                Files.createDirectory(tmpFolder.resolve("thin-backup-zipping")).toFile());
-        jenkinsHome = TestHelper.createBasicFolderStructure(
-                Files.createDirectory(tmpFolder.resolve("backup-zipping")).toFile());
-
-        File jobDir = TestHelper.createJob(jenkinsHome, TestHelper.TEST_JOB_NAME);
-        TestHelper.addNewBuildToJob(jobDir);
-    }
+    @Rule
+    public TemporaryFolder tmpFolder = new TemporaryFolder();
 
     @Test
     public void testThinBackupZipper() throws Exception {
-        // create a backed up structure with DIFF back ups
-        final TestHudsonBackup tester = new TestHudsonBackup();
-        tester.backupDir = backupDir;
-        tester.jenkinsHome = jenkinsHome;
-        tester.setup();
-        tester.testHudsonDiffBackup();
+        File backupDir = tmpFolder.newFolder();
 
-        File[] files = backupDir.listFiles();
-        assertEquals(2, files.length);
+        final ThinBackupPluginImpl thinBackupPlugin = ThinBackupPluginImpl.get();
+        thinBackupPlugin.setBackupPath(backupDir.getAbsolutePath());
+        thinBackupPlugin.setBackupBuildResults(true);
 
-        final BackupSet backupSetFromDirectory = new BackupSet(files[0]);
+        Instant now = Instant.now(); // current date
+        Instant before = now.minus(Duration.ofDays(7));
+        Date dateBefore = Date.from(before);
+
+        final File rootDir = r.jenkins.getRootDir();
+        final Date date = Date.from(now);
+
+        // create job
+        r.createFreeStyleProject("freeStyleJob");
+
+        // create folder
+        final MockFolder folder1 = r.createFolder("folder1");
+
+        // create job in folder1
+        folder1.createProject(FreeStyleProject.class, "elements");
+
+        // run backup full
+        new HudsonBackup(thinBackupPlugin, ThinBackupPeriodicWork.BackupType.FULL, dateBefore, r.jenkins).backup();
+
+        // create another job
+        folder1.createProject(FreeStyleProject.class, "elements2");
+
+        // run backup diff
+        new HudsonBackup(thinBackupPlugin, ThinBackupPeriodicWork.BackupType.DIFF, date, r.jenkins).backup();
+
+        final String[] listedBackupDirs = backupDir.list();
+        assertEquals(2, listedBackupDirs.length);
+
+        Path backupFolderName = Utils.getFormattedDirectory(
+                        backupDir, ThinBackupPeriodicWork.BackupType.FULL, dateBefore)
+                .toPath();
+        final List<String> listedBackupFiles = List.of(backupFolderName.toFile().list());
+
+        // check basic files are there
+        assertThat(
+                listedBackupFiles,
+                hasItems(
+                        "installedPlugins.xml",
+                        "config.xml",
+                        "org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl.xml",
+                        "hudson.model.UpdateCenter.xml",
+                        "jobs"));
+
+        // create BackupSet
+        final File[] listedFiles = backupDir.listFiles();
+        assertEquals(2, listedFiles.length);
+        final BackupSet backupSetFromDirectory = new BackupSet(listedFiles[0]);
+
         assertTrue(backupSetFromDirectory.isValid());
         assertFalse(backupSetFromDirectory.isInZipFile());
         assertEquals(backupSetFromDirectory, backupSetFromDirectory.unzip());
 
+        // zip files
         final File zippedBackupSet = backupSetFromDirectory.zipTo(backupDir);
         assertNotNull(zippedBackupSet);
 
-        files = backupDir.listFiles();
+        File[] files = backupDir.listFiles();
         assertEquals(3, files.length);
 
         final ZipFile zipFile = new ZipFile(zippedBackupSet);
@@ -64,7 +108,7 @@ public class TestBackupZipping {
             zipEntries.nextElement();
             ++entryCount;
         }
-        assertEquals(23, entryCount);
+        assertEquals(25, entryCount);
         zipFile.close();
 
         final BackupSet backupSetFromZip = new BackupSet(zippedBackupSet);
@@ -85,21 +129,5 @@ public class TestBackupZipping {
         for (final File diffBackup : backupSetFromUnzippedZip.getDiffBackups()) {
             assertTrue(diffBackup.exists());
         }
-
-        final File f1 = new File(backupSetFromUnzippedZip.getFullBackup(), "jobs");
-        final File f2 = new File(f1, "test");
-        final File configXml = new File(f2, "config.xml");
-
-        assertEquals(20, configXml.length());
-        final byte[] data = new byte[20];
-        final BufferedInputStream bis = new BufferedInputStream(Files.newInputStream(configXml.toPath()));
-        bis.read(data);
-        bis.close();
-        final String configXmlContents = new String(data);
-        assertEquals(TestHelper.CONFIG_XML_CONTENTS, configXmlContents);
-
-        backupSetFromZip.deleteUnzipDir();
-        assertFalse(backupSetFromZip.getUnzipDir().exists());
-        assertFalse(backupSetFromUnzippedZip.getFullBackup().exists());
     }
 }

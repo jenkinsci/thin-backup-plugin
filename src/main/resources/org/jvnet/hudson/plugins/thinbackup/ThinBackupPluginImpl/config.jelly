@@ -1,0 +1,96 @@
+<!--
+  Copyright (C) 2011  Matthias Steinkogler, Thomas Fürer
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see http://www.gnu.org/licenses.
+
+ -->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+    <f:section title="${%thin_backup_configuration}">
+        <f:entry title="${%backup_path}" field="backupPath">
+            <f:textbox/>
+        </f:entry>
+
+        <f:entry title="${%full_backup_schedule}" field="fullBackupSchedule">
+            <f:textbox/>
+        </f:entry>
+
+        <f:entry title="${%diff_backup_schedule}" field="diffBackupSchedule">
+            <f:textbox/>
+        </f:entry>
+
+        <f:entry title="${%max_backup_full}" field="nrMaxStoredFull">
+            <f:number min="-1" max="9999"/>
+        </f:entry>
+
+        <f:entry title="${%exclude_files_regex}" field="excludedFilesRegex">
+            <f:textbox/>
+        </f:entry>
+
+        <f:optionalBlock title="${%wait_for_idle}"
+                         field="waitForIdle"
+                         inline="true">
+            <f:entry title="${%force_quite_minutes}" field="forceQuietModeTimeout">
+                <f:number min="-1" max="9999"/>
+            </f:entry>
+        </f:optionalBlock>
+
+        <f:optionalBlock title="${%backup_results}"
+                         field="backupBuildResults"
+                         inline="true">
+            <f:entry title="${%backup_build_archive}" field="backupBuildArchive">
+                <f:checkbox/>
+            </f:entry>
+            <f:entry title="${%backup_build_keep}" field="backupBuildsToKeepOnly">
+                <f:checkbox/>
+            </f:entry>
+        </f:optionalBlock>
+
+        <f:entry title="${%backup_user_content}" field="backupUserContents">
+            <f:checkbox/>
+        </f:entry>
+
+        <f:entry title="${%backup_build_number}" field="backupNextBuildNumber">
+            <f:checkbox/>
+        </f:entry>
+
+        <f:entry title="${%backup_plugin_archive}" field="backupPluginArchives">
+            <f:checkbox/>
+        </f:entry>
+
+        <f:entry title="${%backup_config_history}" field="backupConfigHistory">
+            <f:checkbox/>
+        </f:entry>
+
+        <f:optionalBlock title="${%backup_additional_files}"
+                         field="backupAdditionalFiles"
+                         inline="true">
+            <f:entry title="${%backup_additional_files_regex}" field="backupAdditionalFilesRegex">
+                <f:textbox/>
+            </f:entry>
+        </f:optionalBlock>
+
+        <f:entry title="${%clean_differential}" field="cleanupDiff">
+            <f:checkbox/>
+        </f:entry>
+
+        <f:entry title="${%move}" field="moveOldBackupsToZipFile">
+            <f:checkbox/>
+        </f:entry>
+
+        <f:entry title="${%fail_fast}" field="failFast">
+            <f:checkbox/>
+        </f:entry>
+    </f:section>
+</j:jelly>

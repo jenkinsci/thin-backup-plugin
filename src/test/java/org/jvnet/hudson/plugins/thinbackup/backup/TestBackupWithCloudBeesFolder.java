@@ -1,84 +1,87 @@
 package org.jvnet.hudson.plugins.thinbackup.backup;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Mockito.mock;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasItems;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import hudson.model.ItemGroup;
+import hudson.model.FreeStyleProject;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Date;
-import org.apache.commons.io.FileUtils;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.jvnet.hudson.plugins.thinbackup.TestHelper;
+import java.util.List;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.MockFolder;
 
 public class TestBackupWithCloudBeesFolder {
-    private static final String TEST_FOLDER = "testFolder";
-    private File backupDir;
-    private File jenkinsHome;
-    private File cloudBeesFolder;
 
-    @BeforeEach
-    public void setup() throws IOException, InterruptedException {
-        File base = new File(System.getProperty("java.io.tmpdir"));
-        backupDir = TestHelper.createBackupFolder(base);
+    @Rule
+    public JenkinsRule r = new JenkinsRule();
 
-        jenkinsHome = TestHelper.createBasicFolderStructure(base);
-        cloudBeesFolder = TestHelper.createCloudBeesFolder(jenkinsHome, TEST_FOLDER);
-        File jobDir = TestHelper.createJob(cloudBeesFolder, TestHelper.TEST_JOB_NAME);
-        TestHelper.addNewBuildToJob(jobDir);
-    }
-
-    @AfterEach
-    public void tearDown() throws Exception {
-        FileUtils.deleteDirectory(jenkinsHome);
-        FileUtils.deleteDirectory(backupDir);
-        FileUtils.deleteDirectory(new File(Utils.THINBACKUP_TMP_DIR));
-    }
+    @Rule
+    public TemporaryFolder tmpFolder = new TemporaryFolder();
 
     @Test
-    public void testCloudBeesFolderBackup() throws Exception {
-        final ThinBackupPluginImpl mockPlugin = TestHelper.createMockPlugin(jenkinsHome, backupDir);
-        new HudsonBackup(mockPlugin, BackupType.FULL, new Date(), mock(ItemGroup.class)).backup();
+    public void testWithFolder() throws IOException {
+        File backupDir = tmpFolder.newFolder();
 
-        final File backup = new File(backupDir, backupDir.list()[0]);
-        File rootJobsFolder = new File(backup, HudsonBackup.JOBS_DIR_NAME);
-        String[] list = rootJobsFolder.list();
-        assertThat(list, Matchers.arrayContainingInAnyOrder(TEST_FOLDER));
+        final ThinBackupPluginImpl thinBackupPlugin = ThinBackupPluginImpl.get();
+        thinBackupPlugin.setBackupPath(backupDir.getAbsolutePath());
+        thinBackupPlugin.setBackupBuildResults(true);
+        final File rootDir = r.jenkins.getRootDir();
+        final Date date = new Date();
 
-        File cloudBeesFolder = new File(rootJobsFolder, list[0]);
-        list = cloudBeesFolder.list();
-        assertThat(list, Matchers.arrayContainingInAnyOrder(HudsonBackup.JOBS_DIR_NAME, HudsonBackup.CONFIG_XML));
+        // create job
+        r.createFreeStyleProject("freeStyleJob");
 
-        File childJobsFolder = new File(cloudBeesFolder, HudsonBackup.JOBS_DIR_NAME);
-        list = childJobsFolder.list();
-        assertThat(list, Matchers.arrayContainingInAnyOrder(TestHelper.TEST_JOB_NAME));
+        // create folder
+        final MockFolder folder1 = r.createFolder("folder1");
 
-        File jobFolder = new File(childJobsFolder, TestHelper.TEST_JOB_NAME);
-        list = jobFolder.list();
-        assertThat(list, Matchers.arrayContainingInAnyOrder(HudsonBackup.BUILDS_DIR_NAME, HudsonBackup.CONFIG_XML));
-    }
+        // create job in folder1
+        folder1.createProject(FreeStyleProject.class, "elements");
 
-    @Test
-    public void testRecursiveFolderBackup() throws Exception {
-        File subFolderDirectory = TestHelper.createCloudBeesFolder(cloudBeesFolder, "subFolder");
-        TestHelper.createJob(subFolderDirectory, "folderJob");
+        // run backup
+        new HudsonBackup(thinBackupPlugin, BackupType.FULL, date, r.jenkins).backup();
+        final String[] listedBackupDirs = backupDir.list();
+        assertEquals(1, listedBackupDirs.length);
 
-        final ThinBackupPluginImpl mockPlugin = TestHelper.createMockPlugin(jenkinsHome, backupDir);
-        new HudsonBackup(mockPlugin, BackupType.FULL, new Date(), mock(ItemGroup.class)).backup();
+        Path backupFolderName =
+                Utils.getFormattedDirectory(backupDir, BackupType.FULL, date).toPath();
+        final List<String> listedBackupFiles = List.of(backupFolderName.toFile().list());
 
-        File subFolderJobsBackupDirectory =
-                new File(backupDir, backupDir.list()[0] + "/jobs/" + TEST_FOLDER + "/jobs/subFolder/jobs");
-        String[] list = subFolderJobsBackupDirectory.list();
-        assertThat(list, Matchers.arrayContainingInAnyOrder("folderJob"));
+        // check basic files are there
+        assertThat(
+                listedBackupFiles,
+                hasItems(
+                        "installedPlugins.xml",
+                        "config.xml",
+                        "org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl.xml",
+                        "hudson.model.UpdateCenter.xml",
+                        "jobs"));
 
-        File jobFolder = new File(subFolderJobsBackupDirectory, "folderJob");
-        list = jobFolder.list();
-        assertThat(list, Matchers.arrayContainingInAnyOrder(HudsonBackup.CONFIG_XML));
+        assertTrue(new File(backupFolderName.toFile(), "jobs/folder1/jobs/elements/config.xml").exists());
+
+        // check folder and job is there
+        File jobBackup = new File(backupFolderName.toFile(), "jobs");
+        final List<String> listedFolder = List.of(jobBackup.list());
+        assertThat(listedFolder, containsInAnyOrder("folder1", "freeStyleJob"));
+
+        // check folder for config and jobs folder
+        File elementBackup = new File(jobBackup, "folder1");
+        final List<String> listedElements = List.of(elementBackup.list());
+        assertThat(listedElements, containsInAnyOrder("config.xml", "jobs"));
+
+        // check job is in folder
+        File folderJobDir = new File(elementBackup, "jobs/elements");
+        final List<String> listedJobElements = List.of(folderJobDir.list());
+        assertThat(listedJobElements, containsInAnyOrder("config.xml", "builds"));
     }
 }

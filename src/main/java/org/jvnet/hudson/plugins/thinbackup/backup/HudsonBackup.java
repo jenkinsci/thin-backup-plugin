@@ -35,7 +35,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -101,14 +100,14 @@ public class HudsonBackup {
     }
 
     // package visible constructor for unit testing purposes only.
-    protected HudsonBackup(
+    public HudsonBackup(
             final ThinBackupPluginImpl plugin,
             final BackupType backupType,
             final Date date,
             ItemGroup<TopLevelItem> hudson) {
         this.hudson = hudson;
         this.plugin = plugin;
-        this.hudsonHome = plugin.getHudsonHome();
+        this.hudsonHome = plugin.getJenkinsHome();
 
         final String excludedFilesRegex = plugin.getExcludedFilesRegex();
         if ((excludedFilesRegex != null) && !excludedFilesRegex.trim().isEmpty()) {
@@ -534,8 +533,7 @@ public class HudsonBackup {
                 }
             }
         }
-        // default to true, in the case we can't resolve this folder in the Hudson
-        // instance
+        // default to true, in the case we can't resolve this folder in the Jenkins instance
         return true;
     }
 
@@ -625,17 +623,10 @@ public class HudsonBackup {
     private PluginList getInstalledPlugins() {
         final File pluginVersionList = new File(backupDirectory, INSTALLED_PLUGINS_XML);
         final PluginList newPluginList = new PluginList(pluginVersionList);
-        final Jenkins jenkins = Jenkins.getInstanceOrNull();
-        if (jenkins != null) {
-            newPluginList.add("Hudson core", Jenkins.VERSION);
-        }
+        final Jenkins jenkins = Jenkins.get();
 
         final List<PluginWrapper> installedPlugins;
-        if (jenkins != null) {
-            installedPlugins = jenkins.getPluginManager().getPlugins();
-        } else {
-            installedPlugins = Collections.emptyList();
-        }
+        installedPlugins = jenkins.getPluginManager().getPlugins();
         for (final PluginWrapper pluginWrapper : installedPlugins) {
             newPluginList.add(pluginWrapper.getShortName(), pluginWrapper.getVersion());
         }

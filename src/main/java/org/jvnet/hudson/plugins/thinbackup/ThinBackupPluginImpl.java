@@ -16,26 +16,34 @@
  */
 package org.jvnet.hudson.plugins.thinbackup;
 
-import antlr.ANTLRException;
-import hudson.Plugin;
+import hudson.BulkChange;
+import hudson.Extension;
+import hudson.ExtensionList;
 import hudson.scheduler.CronTab;
 import hudson.util.FormValidation;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
-import org.apache.commons.lang.StringUtils;
+import net.sf.json.JSONObject;
+import org.jenkinsci.Symbol;
 import org.jvnet.hudson.plugins.thinbackup.utils.EnvironmentVariableNotDefinedException;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.verb.POST;
 
-public class ThinBackupPluginImpl extends Plugin {
-
-    private static final int VERY_HIGH_TIMEOUT = 12 * 60;
+@Extension
+@Symbol("thinBackup")
+public class ThinBackupPluginImpl extends GlobalConfiguration {
 
     private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
 
@@ -46,6 +54,7 @@ public class ThinBackupPluginImpl extends Plugin {
     private String excludedFilesRegex = null;
     private boolean waitForIdle = true;
     private int forceQuietModeTimeout = Utils.FORCE_QUIETMODE_TIMEOUT_MINUTES;
+    private static final int VERY_HIGH_TIMEOUT = 12 * 60;
     private boolean cleanupDiff = false;
     private boolean moveOldBackupsToZipFile = false;
     private boolean backupBuildResults = true;
@@ -60,40 +69,61 @@ public class ThinBackupPluginImpl extends Plugin {
     private boolean backupBuildsToKeepOnly = false;
     private boolean failFast = true;
 
-    @Override
-    public void start() throws Exception {
-        super.start();
+    @DataBoundConstructor
+    public ThinBackupPluginImpl() {
+        // check if old config is there and no new config exists
+        final File oldConfig = new File(Jenkins.get().getRootDir(), "thinBackup.xml");
+        final File newConfig = getConfigFile().getFile();
+        boolean oldConfigExists = oldConfig.exists();
+        boolean newConfigExits = newConfig.exists();
+        if (oldConfigExists && !newConfigExits) {
+            LOGGER.warning("old config of 'thinBackup' detected, moving to new name");
+            try {
+                Files.move(oldConfig.toPath(), newConfig.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException e) {
+                LOGGER.severe(
+                        "unable to move old config to new config, you will need to reconfigure thinBackup plugin manually");
+            }
+        }
         load();
         LOGGER.fine("'thinBackup' plugin initialized.");
     }
 
-    public static ThinBackupPluginImpl getInstance() {
-        final Jenkins jenkins = Jenkins.getInstanceOrNull();
-        if (jenkins != null) {
-            return jenkins.getPlugin(ThinBackupPluginImpl.class);
-        } else {
-            return null;
-        }
+    public static ThinBackupPluginImpl get() {
+        return ExtensionList.lookupSingleton(ThinBackupPluginImpl.class);
     }
 
-    public File getHudsonHome() {
-        Jenkins jenkins = Jenkins.getInstanceOrNull();
-        if (jenkins == null) {
-            return null;
-        }
+    public File getJenkinsHome() {
+        Jenkins jenkins = Jenkins.get();
         return jenkins.getRootDir();
     }
 
+    @Override
+    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+
+        try (BulkChange bc = new BulkChange(this)) {
+            req.bindJSON(this, json);
+            bc.commit();
+        } catch (IOException e) {
+            throw new FormException(e, "thinBackup");
+        }
+        return true;
+    }
+
+    @DataBoundSetter
     public void setFullBackupSchedule(final String fullBackupSchedule) {
         this.fullBackupSchedule = fullBackupSchedule;
+        save();
     }
 
     public String getFullBackupSchedule() {
         return fullBackupSchedule;
     }
 
+    @DataBoundSetter
     public void setDiffBackupSchedule(final String diffBackupSchedule) {
         this.diffBackupSchedule = diffBackupSchedule;
+        save();
     }
 
     public String getDiffBackupSchedule() {
@@ -104,12 +134,16 @@ public class ThinBackupPluginImpl extends Plugin {
         return forceQuietModeTimeout;
     }
 
+    @DataBoundSetter
     public void setForceQuietModeTimeout(int forceQuietModeTimeout) {
         this.forceQuietModeTimeout = forceQuietModeTimeout;
+        save();
     }
 
+    @DataBoundSetter
     public void setBackupPath(final String backupPath) {
         this.backupPath = backupPath;
+        save();
     }
 
     /**
@@ -139,156 +173,171 @@ public class ThinBackupPluginImpl extends Plugin {
         return expandedPath;
     }
 
+    @DataBoundSetter
     public void setNrMaxStoredFull(final int nrMaxStoredFull) {
         this.nrMaxStoredFull = nrMaxStoredFull;
-    }
-
-    /**
-     * @param nrMaxStoredFull
-     *          if this string can be parsed as an Integer, nrMaxStoredFull is set to this value, otherwise it is set to
-     *          -1.
-     */
-    public void setNrMaxStoredFullAsString(final String nrMaxStoredFull) {
-        if (StringUtils.isEmpty(nrMaxStoredFull)) {
-            this.nrMaxStoredFull = -1;
-        } else {
-            try {
-                this.nrMaxStoredFull = Integer.parseInt(nrMaxStoredFull);
-            } catch (final NumberFormatException nfe) {
-                this.nrMaxStoredFull = -1;
-            }
-        }
+        save();
     }
 
     public int getNrMaxStoredFull() {
         return nrMaxStoredFull;
     }
 
+    @DataBoundSetter
     public void setCleanupDiff(final boolean cleanupDiff) {
         this.cleanupDiff = cleanupDiff;
+        save();
     }
 
     public boolean isCleanupDiff() {
         return cleanupDiff;
     }
 
+    @DataBoundSetter
     public void setMoveOldBackupsToZipFile(final boolean moveOldBackupsToZipFile) {
         this.moveOldBackupsToZipFile = moveOldBackupsToZipFile;
+        save();
     }
 
     public boolean isMoveOldBackupsToZipFile() {
         return moveOldBackupsToZipFile;
     }
 
+    @DataBoundSetter
     public void setBackupBuildResults(final boolean backupBuildResults) {
         this.backupBuildResults = backupBuildResults;
+        save();
     }
 
     public boolean isBackupBuildResults() {
         return backupBuildResults;
     }
 
+    @DataBoundSetter
     public void setBackupBuildArchive(final boolean backupBuildArchive) {
         this.backupBuildArchive = backupBuildArchive;
+        save();
     }
 
     public boolean isBackupBuildArchive() {
         return backupBuildArchive;
     }
 
+    @DataBoundSetter
     public void setBackupBuildsToKeepOnly(boolean backupBuildsToKeepOnly) {
         this.backupBuildsToKeepOnly = backupBuildsToKeepOnly;
+        save();
     }
 
     public boolean isBackupBuildsToKeepOnly() {
         return backupBuildsToKeepOnly;
     }
 
+    @DataBoundSetter
     public void setBackupNextBuildNumber(final boolean backupNextBuildNumber) {
         this.backupNextBuildNumber = backupNextBuildNumber;
+        save();
     }
 
     public boolean isBackupNextBuildNumber() {
         return backupNextBuildNumber;
     }
 
+    @DataBoundSetter
     public void setExcludedFilesRegex(final String excludedFilesRegex) {
         this.excludedFilesRegex = excludedFilesRegex;
+        save();
     }
 
     public boolean isBackupUserContents() {
         return this.backupUserContents;
     }
 
+    @DataBoundSetter
     public void setBackupUserContents(boolean backupUserContents) {
         this.backupUserContents = backupUserContents;
+        save();
     }
 
     public String getExcludedFilesRegex() {
         return excludedFilesRegex;
     }
 
+    @DataBoundSetter
     public void setBackupPluginArchives(final boolean backupPluginArchives) {
         this.backupPluginArchives = backupPluginArchives;
+        save();
     }
 
     public boolean isBackupPluginArchives() {
         return backupPluginArchives;
     }
 
+    @DataBoundSetter
     public void setBackupAdditionalFiles(final boolean backupAdditionalFiles) {
         this.backupAdditionalFiles = backupAdditionalFiles;
+        save();
     }
 
     public boolean isBackupAdditionalFiles() {
         return backupAdditionalFiles;
     }
 
+    @DataBoundSetter
     public void setBackupAdditionalFilesRegex(final String backupAdditionalFilesRegex) {
         this.backupAdditionalFilesRegex = backupAdditionalFilesRegex;
+        save();
     }
 
     public String getBackupAdditionalFilesRegex() {
         return backupAdditionalFilesRegex;
     }
 
+    @DataBoundSetter
     public void setWaitForIdle(boolean waitForIdle) {
         this.waitForIdle = waitForIdle;
+        save();
     }
 
     public boolean isWaitForIdle() {
         return this.waitForIdle;
     }
 
-    public FormValidation doCheckForceQuietModeTimeout(
-            final StaplerRequest res, final StaplerResponse rsp, @QueryParameter("value") final String timeout) {
-        FormValidation validation = FormValidation.validateIntegerInRange(timeout, -1, Integer.MAX_VALUE);
-        if (!FormValidation.ok().equals(validation)) {
-            return validation;
-        }
-
-        int intTimeout = Integer.parseInt(timeout);
-        if (intTimeout > VERY_HIGH_TIMEOUT) {
-            return FormValidation.warning("You choose a very long timeout. The value need to be in minutes.");
-        } else {
-            return FormValidation.ok();
-        }
+    public boolean isBackupConfigHistory() {
+        return backupConfigHistory;
     }
 
-    public FormValidation doCheckBackupPath(
-            final StaplerRequest res, final StaplerResponse rsp, @QueryParameter("value") final String path) {
-        if ((path == null) || path.trim().isEmpty()) {
+    @DataBoundSetter
+    public void setBackupConfigHistory(boolean backupConfigHistory) {
+        this.backupConfigHistory = backupConfigHistory;
+        save();
+    }
+
+    public boolean isFailFast() {
+        return failFast;
+    }
+
+    @DataBoundSetter
+    public void setFailFast(boolean failFast) {
+        this.failFast = failFast;
+        save();
+    }
+
+    @POST
+    public FormValidation doCheckBackupPath(@QueryParameter String value) {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        if ((value == null) || value.trim().isEmpty()) {
             return FormValidation.error("Backup path must not be empty.");
         }
 
         String expandedPathMessage = "";
         String expandedPath = "";
         try {
-            expandedPath = Utils.expandEnvironmentVariables(path);
+            expandedPath = Utils.expandEnvironmentVariables(value);
         } catch (final EnvironmentVariableNotDefinedException evnd) {
             return FormValidation.error(evnd.getMessage());
         }
-        if (!expandedPath.equals(path)) {
+        if (!expandedPath.equals(value)) {
             expandedPathMessage = String.format("The path will be expanded to '%s'.%n%n", expandedPath);
         }
 
@@ -328,13 +377,23 @@ public class ThinBackupPluginImpl extends Plugin {
         return FormValidation.ok();
     }
 
-    public FormValidation doCheckBackupSchedule(
-            final StaplerRequest res, final StaplerResponse rsp, @QueryParameter("value") final String schedule) {
+    @POST
+    public FormValidation doCheckFullBackupSchedule(@QueryParameter("value") final String schedule) {
+        return checkBackupSchedule(schedule);
+    }
+
+    @POST
+    public FormValidation doCheckDiffBackupSchedule(@QueryParameter("value") final String schedule) {
+        return checkBackupSchedule(schedule);
+    }
+
+    private FormValidation checkBackupSchedule(final String schedule) {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         if ((schedule != null) && !schedule.isEmpty()) {
             String message;
             try {
                 message = new CronTab(schedule).checkSanity();
-            } catch (final ANTLRException e) {
+            } catch (final IllegalArgumentException e) {
                 return FormValidation.error("Invalid cron schedule. " + e.getMessage());
             }
             if (message != null) {
@@ -347,9 +406,18 @@ public class ThinBackupPluginImpl extends Plugin {
         }
     }
 
-    public FormValidation doCheckExcludedFilesRegex(
-            final StaplerRequest res, final StaplerResponse rsp, @QueryParameter("value") final String regex) {
+    @POST
+    public FormValidation doCheckExcludedFilesRegex(@QueryParameter("value") final String regex) {
+        return checkCronSytax(regex);
+    }
 
+    @POST
+    public FormValidation doCheckBackupAdditionalFilesRegex(@QueryParameter("value") final String regex) {
+        return checkCronSytax(regex);
+    }
+
+    private FormValidation checkCronSytax(final String regex) {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         if ((regex == null) || (regex.isEmpty())) {
             return FormValidation.ok();
         }
@@ -373,8 +441,9 @@ public class ThinBackupPluginImpl extends Plugin {
         return FormValidation.ok();
     }
 
-    public FormValidation doCheckWaitForIdle(
-            final StaplerRequest res, final StaplerResponse rsp, @QueryParameter("value") final String waitForIdle) {
+    @POST
+    public FormValidation doCheckWaitForIdle(@QueryParameter("value") final String waitForIdle) {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         if (Boolean.parseBoolean(waitForIdle)) {
             return FormValidation.ok();
         } else {
@@ -383,19 +452,19 @@ public class ThinBackupPluginImpl extends Plugin {
         }
     }
 
-    public boolean isBackupConfigHistory() {
-        return backupConfigHistory;
-    }
+    @POST
+    public FormValidation doCheckForceQuietModeTimeout(@QueryParameter("value") final String timeout) {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        FormValidation validation = FormValidation.validateIntegerInRange(timeout, -1, Integer.MAX_VALUE);
+        if (!FormValidation.ok().equals(validation)) {
+            return validation;
+        }
 
-    public void setBackupConfigHistory(boolean backupConfigHistory) {
-        this.backupConfigHistory = backupConfigHistory;
-    }
-
-    public boolean isFailFast() {
-        return failFast;
-    }
-
-    public void setFailFast(boolean failFast) {
-        this.failFast = failFast;
+        int intTimeout = Integer.parseInt(timeout);
+        if (intTimeout > VERY_HIGH_TIMEOUT) {
+            return FormValidation.warning("You choose a very long timeout. The value need to be in minutes.");
+        } else {
+            return FormValidation.ok();
+        }
     }
 }

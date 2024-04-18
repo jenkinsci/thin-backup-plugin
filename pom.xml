@@ -73,6 +73,7 @@
     <jenkins.version>2.401.3</jenkins.version>
     <gitHubRepo>jenkinsci/thin-backup-plugin</gitHubRepo>
     <spotless.check.skip>false</spotless.check.skip>
+    <hpi.compatibleSinceVersion>2.0</hpi.compatibleSinceVersion>
   </properties>
 
   <dependencyManagement>
@@ -93,8 +94,13 @@
       <artifactId>ionicons-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
+      <groupId>io.jenkins</groupId>
+      <artifactId>configuration-as-code</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.jenkins.configuration-as-code</groupId>
+      <artifactId>test-harness</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>

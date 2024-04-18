@@ -1,73 +1,15 @@
 package org.jvnet.hudson.plugins.thinbackup;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
-import java.nio.file.Files;
 import org.jvnet.hudson.plugins.thinbackup.backup.HudsonBackup;
 
 public class TestHelper {
     public static final String CONFIG_XML_CONTENTS = "FILLED WITH DATA... ";
-    public static final String CONCRETE_BUILD_DIRECTORY_NAME = "2011-01-08_22-26-40";
+    public static final String CONCRETE_BUILD_DIRECTORY_NAME = "42";
     public static final String TEST_JOB_NAME = "test";
-    public static final String TEST_NODE_NAME = "node1";
-
-    public static File createBasicFolderStructure(File base) throws IOException {
-        File root = new File(base, "RootDirForHudsonBackupTest");
-        root.mkdirs();
-
-        new File(root, "config.xml").createNewFile();
-        new File(root, "thinBackup.xml").createNewFile();
-        new File(root, "secret.key").createNewFile();
-        new File(root, "nodeMonitors.xml").createNewFile();
-        new File(root, "hudson.model.UpdateCenter.xml").createNewFile();
-        new File(root, HudsonBackup.JOBS_DIR_NAME).mkdir();
-        new File(root, HudsonBackup.USERS_DIR_NAME).mkdir();
-        new File(root, HudsonBackup.NODES_DIR_NAME).mkdir();
-        new File(root, HudsonBackup.USERSCONTENTS_DIR_NAME).mkdir();
-        new File(root, "plugins").mkdir();
-
-        return root;
-    }
-
-    public static File createBackupFolder(File base) {
-        File backupDir = new File(base, "BackupDirForHudsonBackupTest");
-        backupDir.mkdirs();
-
-        return backupDir;
-    }
-
-    public static File createCloudBeesFolder(File jenkinsHome, String folderName)
-            throws FileNotFoundException, IOException {
-        final File folderDir = new File(new File(jenkinsHome, HudsonBackup.JOBS_DIR_NAME), folderName);
-        folderDir.mkdirs();
-
-        final File config = new File(folderDir, "config.xml");
-        config.createNewFile();
-        final BufferedOutputStream out = new BufferedOutputStream(Files.newOutputStream(config.toPath()));
-        out.write(CONFIG_XML_CONTENTS.getBytes());
-        out.close();
-
-        return folderDir;
-    }
-
-    public static File createJob(File jenkinsHome, String jobName) throws IOException {
-        final File testJob = createJobsFolderWithConfiguration(jenkinsHome, jobName);
-        final File nextBuildNumberFile = new File(testJob, HudsonBackup.NEXT_BUILD_NUMBER_FILE_NAME);
-        nextBuildNumberFile.createNewFile();
-        addBuildNumber(nextBuildNumberFile);
-        File workspace = new File(testJob, "workspace");
-        workspace.mkdir();
-        new File(workspace, "neverBackupMe.txt").createNewFile();
-
-        return testJob;
-    }
 
     /**
      * When deleting multibranch jobs / folders or removing them we saw leftover directories in the Jenkins
@@ -81,21 +23,10 @@ public class TestHelper {
     public static File createMaliciousMultiJob(File jenkinsHome, String jobName) {
         final File emptyJobDir = new File(new File(jenkinsHome, HudsonBackup.JOBS_DIR_NAME), "empty");
         emptyJobDir.mkdirs();
-        final File jobsDirectory = new File(emptyJobDir, HudsonBackup.JOBS_DIR_NAME);
+        final File jobsDirectory = new File(emptyJobDir, jobName);
         jobsDirectory.mkdir();
 
         return emptyJobDir;
-    }
-
-    private static File createJobsFolderWithConfiguration(File jenkinsHome, String jobName) throws IOException {
-        final File testJob = new File(new File(jenkinsHome, HudsonBackup.JOBS_DIR_NAME), jobName);
-        testJob.mkdirs();
-        final File config = new File(testJob, "config.xml");
-        config.createNewFile();
-        final BufferedOutputStream out = new BufferedOutputStream(Files.newOutputStream(config.toPath()));
-        out.write(CONFIG_XML_CONTENTS.getBytes());
-        out.close();
-        return testJob;
     }
 
     public static File addNewBuildToJob(File job) throws IOException {
@@ -123,7 +54,7 @@ public class TestHelper {
         return build;
     }
 
-    public static void addSingleConfigurationResult(File job) throws IOException, InterruptedException {
+    public static void addSingleConfigurationResult(File job) throws IOException {
         File configurations = new File(job, HudsonBackup.CONFIGURATIONS_DIR_NAME);
         configurations.mkdir();
         File axis_x = new File(configurations, "axis-x");
@@ -147,7 +78,7 @@ public class TestHelper {
         addBuildNumber(nextBuildnumber);
     }
 
-    public static void addSinglePromotionResult(File job) throws IOException, InterruptedException {
+    public static void addSinglePromotionResult(File job) throws IOException {
         File promotions = new File(job, HudsonBackup.PROMOTIONS_DIR_NAME);
         promotions.mkdir();
         File promotion_x = new File(promotions, "promotion-x");
@@ -194,34 +125,5 @@ public class TestHelper {
         } catch (final IOException e) {
             // catch me if you can!
         }
-    }
-
-    public static ThinBackupPluginImpl createMockPlugin(File jenkinsHome, File backupDir) {
-        final ThinBackupPluginImpl mockPlugin = mock(ThinBackupPluginImpl.class);
-
-        when(mockPlugin.getHudsonHome()).thenReturn(jenkinsHome);
-        when(mockPlugin.getFullBackupSchedule()).thenReturn("");
-        when(mockPlugin.getDiffBackupSchedule()).thenReturn("");
-        when(mockPlugin.getExpandedBackupPath()).thenReturn(backupDir.getAbsolutePath());
-        when(mockPlugin.getNrMaxStoredFull()).thenReturn(-1);
-        when(mockPlugin.isCleanupDiff()).thenReturn(false);
-        when(mockPlugin.isMoveOldBackupsToZipFile()).thenReturn(false);
-        when(mockPlugin.isBackupBuildResults()).thenReturn(true);
-        when(mockPlugin.isBackupBuildArchive()).thenReturn(false);
-        when(mockPlugin.isBackupNextBuildNumber()).thenReturn(false);
-        when(mockPlugin.getExcludedFilesRegex()).thenReturn("");
-
-        return mockPlugin;
-    }
-
-    public static File createNode(File jenkinsHome, String nodeName) throws IOException {
-        final File testNode = new File(new File(jenkinsHome, HudsonBackup.NODES_DIR_NAME), nodeName);
-        testNode.mkdirs();
-        final File config = new File(testNode, "config.xml");
-        config.createNewFile();
-        final BufferedOutputStream out = new BufferedOutputStream(Files.newOutputStream(config.toPath()));
-        out.write(CONFIG_XML_CONTENTS.getBytes());
-        out.close();
-        return testNode;
     }
 }

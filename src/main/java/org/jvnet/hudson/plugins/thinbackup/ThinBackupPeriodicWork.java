@@ -16,7 +16,6 @@
  */
 package org.jvnet.hudson.plugins.thinbackup;
 
-import antlr.ANTLRException;
 import hudson.Extension;
 import hudson.model.AsyncPeriodicWork;
 import hudson.model.TaskListener;
@@ -29,7 +28,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
-import org.apache.commons.lang.StringUtils;
 import org.jvnet.hudson.plugins.thinbackup.backup.HudsonBackup;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 
@@ -38,7 +36,7 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
 
     private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
 
-    private final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.getInstance();
+    private final ThinBackupPluginImpl plugin = ThinBackupPluginImpl.get();
 
     public enum BackupType {
         NONE,
@@ -68,17 +66,14 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
     }
 
     protected void backupNow(final BackupType type) {
-        final Jenkins jenkins = Jenkins.getInstanceOrNull();
-        if (jenkins == null) {
-            return;
-        }
+        final Jenkins jenkins = Jenkins.get();
         final boolean inQuietModeBeforeBackup = jenkins.isQuietingDown();
 
         String backupPath = null;
         try {
             backupPath = plugin.getExpandedBackupPath();
 
-            if (StringUtils.isNotEmpty(backupPath)) {
+            if (backupPath != null && !backupPath.isEmpty()) {
                 if (plugin.isWaitForIdle()) {
                     LOGGER.fine("Wait until executors are idle to perform backup.");
                     Utils.waitUntilIdleAndSwitchToQuietMode(plugin.getForceQuietModeTimeout(), TimeUnit.MINUTES);
@@ -107,7 +102,7 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
         }
     }
 
-    BackupType getNextScheduledBackupType(final long currentTime, final String fullCron, final String diffCron) {
+    static BackupType getNextScheduledBackupType(final long currentTime, final String fullCron, final String diffCron) {
         final long fullDelay = calculateDelay(currentTime, BackupType.FULL, fullCron);
         final long diffDelay = calculateDelay(currentTime, BackupType.DIFF, diffCron);
 
@@ -133,10 +128,10 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
         return delay < MIN ? res : BackupType.NONE;
     }
 
-    long calculateDelay(final long currentTime, final BackupType backupType, final String cron) {
+    static long calculateDelay(final long currentTime, final BackupType backupType, final String cron) {
         CronTab cronTab;
         try {
-            if (StringUtils.isEmpty(cron)) {
+            if (cron == null || cron.isEmpty()) {
                 return -1;
             }
 
@@ -162,7 +157,7 @@ public class ThinBackupPeriodicWork extends AsyncPeriodicWork {
             }
 
             return delay;
-        } catch (final ANTLRException e) {
+        } catch (final IllegalArgumentException e) {
             LOGGER.warning(MessageFormat.format(
                     "Cannot parse the specified ''Backup schedule for {0} backups''. Check cron notation.",
                     backupType));

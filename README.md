@@ -6,16 +6,27 @@
 
 This plugin simply backs up the global and job specific configurations (not the archive or the workspace). It can be scheduled and only backs up the most vital configuration info. It also let's you decide what vital means for you.
 
+<!-- TOC -->
+* [Thin Backup Plugin](#thin-backup-plugin)
+  * [Documentation](#documentation)
+    * [Backup Now](#backup-now)
+    * [Restore](#restore)
+    * [Settings](#settings)
+  * [Jenkins Configuration as Code (JCasC) support](#jenkins-configuration-as-code-jcasc-support)
+  * [Backup process](#backup-process)
+  * [Feature requests or bug reports](#feature-requests-or-bug-reports)
+<!-- TOC -->
 ## Documentation
 
-This plugin adds another management link to "Manage Jenkins" in the Tools section in newer Jenkins versions, called ThinBackup which looks like
-this:
+This plugin adds a management link to "Manage Jenkins" in the Tools section, called ThinBackup which looks like this:
 
 ![](images/ManagementLink.png)
 
-This new link provides the following actions:
+This link provides the following actions:
 
 ![](images/thinBackup.png)
+
+**Note:** If you are using a version older than 2.0 this will also contain a settings button, as illustrated in [this screenshot](/images/thinBackupOld.png)
 
 ### Backup Now
 
@@ -47,6 +58,8 @@ If this option is enabled, the plugins get restored.  You need an active interne
 update server, because plugins will be downloaded from the update server to keep the backup small.
 
 ### Settings
+
+**Note:** The settings are present in the global configuration since version 2.0 
 
 ![](/images/thinBackupSettings.png)
 
@@ -136,6 +149,36 @@ as well.
 
 **Note**: In case "Clean up differential backups" is checked, differential cleanup will be performed
 before zipping is done, and therefore no differential backups will be in the ZIP files.
+
+## Jenkins Configuration as Code (JCasC) support
+
+Since version 2.0 the plugin fully supports JCasC. An example config as a basis can be used from here.
+
+**Note**: Remember to escape backslashes in the YAML
+
+```yaml
+unclassified:
+  thinBackup:
+    backupAdditionalFiles: false
+    backupAdditionalFilesRegex: "^.*\\.(txt)$"
+    backupBuildArchive: false
+    backupBuildResults: true
+    backupBuildsToKeepOnly: false
+    backupConfigHistory: false
+    backupNextBuildNumber: false
+    backupPath: "c:\\temp\\thin-backup"
+    backupPluginArchives: false
+    backupUserContents: false
+    cleanupDiff: false
+    diffBackupSchedule: "0 12 * * 1-5"
+    excludedFilesRegex: "^.*\\.(log)$"
+    failFast: true
+    forceQuietModeTimeout: 120
+    fullBackupSchedule: "0 12 * * 1"
+    moveOldBackupsToZipFile: false
+    nrMaxStoredFull: -1
+    waitForIdle: true
+```
 
 ## Backup process
 
