@@ -84,6 +84,7 @@ public class HudsonBackup {
     public static final String CHANGELOG_HISTORY_PLUGIN_DIR_NAME = "changelog-history";
     public static final String SVN_CREDENTIALS_FILE_NAME = "subversion.credentials";
     public static final String SVN_EXTERNALS_FILE_NAME = "svnexternals.txt";
+    public static final String COMPLETED_BACKUP_FILE = "backup-completed.info";
 
     private final ThinBackupPluginImpl plugin;
     private final File hudsonHome;
@@ -222,6 +223,17 @@ public class HudsonBackup {
             moveOldBackupsToZipFile(backupDirectory);
             removeSuperfluousBackupSets();
         }
+        touchCompleteFile();
+    }
+
+    /**
+     * Creates a empty file backup-completed.info at the end of the backup.
+     *
+     * @throws IOException if an I/O Error occurs
+     */
+    public void touchCompleteFile() throws IOException {
+        File backupCompletedFile = new File(backupDirectory.getAbsolutePath(), COMPLETED_BACKUP_FILE);
+        backupCompletedFile.createNewFile();
     }
 
     /**
