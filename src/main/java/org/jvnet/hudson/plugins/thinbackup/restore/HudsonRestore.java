@@ -165,7 +165,8 @@ public class HudsonRestore {
 
     private void restore(final File toRestore) throws IOException {
         final IOFileFilter nextBuildNumberFileFilter = FileFilterUtils.nameFileFilter("nextBuildNumber");
-        final IOFileFilter noBackupCompletedFile = FileFilterUtils.notFileFilter(FileFilterUtils.nameFileFilter(COMPLETED_BACKUP_FILE));
+        final IOFileFilter noBackupCompletedFile =
+                FileFilterUtils.notFileFilter(FileFilterUtils.nameFileFilter(COMPLETED_BACKUP_FILE));
         IOFileFilter restoreNextBuildNumberFilter;
 
         if (restoreNextBuildNumber) {
@@ -194,9 +195,7 @@ public class HudsonRestore {
             }
         } else {
             restoreNextBuildNumberFilter = FileFilterUtils.andFileFilter(
-                FileFilterUtils.notFileFilter(nextBuildNumberFileFilter),
-                noBackupCompletedFile
-            );
+                    FileFilterUtils.notFileFilter(nextBuildNumberFileFilter), noBackupCompletedFile);
         }
 
         FileUtils.copyDirectory(toRestore, this.hudsonHome, restoreNextBuildNumberFilter, true);
