@@ -233,7 +233,7 @@ public class HudsonBackup {
      */
     public void touchCompleteFile() throws IOException {
         File backupCompletedFile = new File(backupDirectory.getAbsolutePath(), COMPLETED_BACKUP_FILE);
-        backupCompletedFile.createNewFile();
+        FileUtils.touch(backupCompletedFile);
     }
 
     /**
