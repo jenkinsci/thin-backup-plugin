@@ -108,7 +108,7 @@ public class TestBackupZipping {
             zipEntries.nextElement();
             ++entryCount;
         }
-        assertEquals(25, entryCount);
+        assertEquals(27, entryCount);
         zipFile.close();
 
         final BackupSet backupSetFromZip = new BackupSet(zippedBackupSet);

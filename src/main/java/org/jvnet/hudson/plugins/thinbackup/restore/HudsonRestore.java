@@ -58,6 +58,7 @@ public class HudsonRestore {
     private static final int SLEEP_TIMEOUT = 500;
 
     private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
+    public static final String COMPLETED_BACKUP_FILE = "backup-completed.info";
 
     private final String backupPath;
     private final File hudsonHome;
@@ -164,10 +165,12 @@ public class HudsonRestore {
 
     private void restore(final File toRestore) throws IOException {
         final IOFileFilter nextBuildNumberFileFilter = FileFilterUtils.nameFileFilter("nextBuildNumber");
+        final IOFileFilter noBackupCompletedFile =
+                FileFilterUtils.notFileFilter(FileFilterUtils.nameFileFilter(COMPLETED_BACKUP_FILE));
         IOFileFilter restoreNextBuildNumberFilter;
 
         if (restoreNextBuildNumber) {
-            restoreNextBuildNumberFilter = FileFilterUtils.trueFileFilter();
+            restoreNextBuildNumberFilter = noBackupCompletedFile;
 
             final Collection<File> restore =
                     FileUtils.listFiles(toRestore, nextBuildNumberFileFilter, TrueFileFilter.INSTANCE);
@@ -191,7 +194,8 @@ public class HudsonRestore {
                 }
             }
         } else {
-            restoreNextBuildNumberFilter = FileFilterUtils.notFileFilter(nextBuildNumberFileFilter);
+            restoreNextBuildNumberFilter = FileFilterUtils.andFileFilter(
+                    FileFilterUtils.notFileFilter(nextBuildNumberFileFilter), noBackupCompletedFile);
         }
 
         FileUtils.copyDirectory(toRestore, this.hudsonHome, restoreNextBuildNumberFilter, true);
