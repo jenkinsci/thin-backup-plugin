@@ -16,6 +16,8 @@
  */
 package org.jvnet.hudson.plugins.thinbackup.restore;
 
+import static org.jvnet.hudson.plugins.thinbackup.backup.HudsonBackup.COMPLETED_BACKUP_FILE;
+
 import hudson.PluginManager;
 import hudson.model.UpdateCenter;
 import hudson.model.UpdateCenter.UpdateCenterJob;
@@ -58,7 +60,6 @@ public class HudsonRestore {
     private static final int SLEEP_TIMEOUT = 500;
 
     private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
-    public static final String COMPLETED_BACKUP_FILE = "backup-completed.info";
 
     private final String backupPath;
     private final File hudsonHome;
@@ -194,7 +195,7 @@ public class HudsonRestore {
                 }
             }
         } else {
-            restoreNextBuildNumberFilter = FileFilterUtils.andFileFilter(
+            restoreNextBuildNumberFilter = FileFilterUtils.and(
                     FileFilterUtils.notFileFilter(nextBuildNumberFileFilter), noBackupCompletedFile);
         }
 
