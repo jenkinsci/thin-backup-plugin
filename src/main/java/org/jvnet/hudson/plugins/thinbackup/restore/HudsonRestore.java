@@ -16,6 +16,8 @@
  */
 package org.jvnet.hudson.plugins.thinbackup.restore;
 
+import static org.jvnet.hudson.plugins.thinbackup.backup.HudsonBackup.COMPLETED_BACKUP_FILE;
+
 import hudson.PluginManager;
 import hudson.model.UpdateCenter;
 import hudson.model.UpdateCenter.UpdateCenterJob;
@@ -53,8 +55,6 @@ import org.jvnet.hudson.plugins.thinbackup.backup.BackupSet;
 import org.jvnet.hudson.plugins.thinbackup.backup.HudsonBackup;
 import org.jvnet.hudson.plugins.thinbackup.backup.PluginList;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
-
-import static org.jvnet.hudson.plugins.thinbackup.backup.HudsonBackup.COMPLETED_BACKUP_FILE;
 
 public class HudsonRestore {
     private static final int SLEEP_TIMEOUT = 500;
