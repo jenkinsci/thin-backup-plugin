@@ -18,11 +18,13 @@ package org.jvnet.hudson.plugins.thinbackup.backup;
 
 import com.google.common.base.Throwables;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Plugin;
 import hudson.PluginWrapper;
 import hudson.model.ItemGroup;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.model.TopLevelItem;
+import hudson.plugins.jobConfigHistory.JobConfigHistory;
 import hudson.util.RunList;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -194,7 +196,15 @@ public class HudsonBackup {
         }
 
         if (plugin.isBackupConfigHistory()) {
-            backupRootFolder(CONFIG_HISTORY_DIR_NAME);
+            final Plugin configHistoryPlugin = Jenkins.get().getPlugin("jobConfigHistory");
+            if (configHistoryPlugin != null && configHistoryPlugin.getWrapper().isActive()) {
+                final JobConfigHistory descriptor =
+                        (JobConfigHistory) Jenkins.get().getDescriptor(JobConfigHistory.class);
+                if (descriptor != null) {
+                    final File configuredHistoryRootDir = descriptor.getConfiguredHistoryRootDir();
+                    backupConfigHistoryFolder(configuredHistoryRootDir.toString());
+                }
+            }
         }
 
         if (plugin.isBackupPluginArchives()) {
@@ -584,7 +594,7 @@ public class HudsonBackup {
 
     private void backupRootFolder(String folderName) throws IOException {
         try {
-            backupRootFolder(folderName, TrueFileFilter.INSTANCE);
+            backupRootFolder(folderName, TrueFileFilter.TRUE);
         } catch (IOException e) {
             if (plugin.isFailFast()) {
                 throw e;
@@ -592,6 +602,19 @@ public class HudsonBackup {
                 LOGGER.warning("Failed to backup root folder " + folderName + ": " + e.getLocalizedMessage());
                 LOGGER.warning(Throwables.getStackTraceAsString(e));
             }
+        }
+    }
+
+    private void backupConfigHistoryFolder(String folderName) throws IOException {
+        final File srcDirectory = new File(folderName);
+        if (srcDirectory.exists() && srcDirectory.isDirectory()) {
+            LOGGER.log(Level.FINE, "Backing up {0}...", folderName);
+            final File destDirectory = new File(backupDirectory.getAbsolutePath(), CONFIG_HISTORY_DIR_NAME);
+            IOFileFilter filter =
+                    FileFilterUtils.and(TrueFileFilter.TRUE, getFileAgeDiffFilter(), getExcludedFilesFilter());
+            filter = FileFilterUtils.or(filter, DirectoryFileFilter.DIRECTORY);
+            FileUtils.copyDirectory(srcDirectory, destDirectory, ExistsAndReadableFileFilter.wrapperFilter(filter));
+            LOGGER.log(Level.FINE, "DONE backing up {0}.", folderName);
         }
     }
 

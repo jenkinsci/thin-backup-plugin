@@ -46,6 +46,10 @@
                         <f:checkbox name="restorePlugins"/>
                     </f:entry>
 
+                    <f:entry title="${%restore_config_history}" help="/plugin/thinBackup/help/help-restoreConfigHistory.html">
+                        <f:checkbox name="restoreConfigHistory"/>
+                    </f:entry>
+
                 </f:section>
 
                 <f:bottomButtonBar>

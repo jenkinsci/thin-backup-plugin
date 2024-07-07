@@ -94,6 +94,12 @@
       <artifactId>ionicons-api</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>jobConfigHistory</artifactId>
+      <version>1229.v3039470161a_d</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
       <groupId>io.jenkins</groupId>
       <artifactId>configuration-as-code</artifactId>
       <scope>test</scope>
