@@ -133,7 +133,7 @@ If this option is enabled, only results/artifacts on builds which are marked "Ke
 forever" are backed up.
 
 #### Backup additional files
-This feature enables the user to include additional files into the backup. For example to include fingerprints and the files for secrets; add the following regular expression : (fingerprints|.*|.*|.*\.xml)(secrets|.*\..*)(secrets|.*)$. 
+This feature enables the user to include additional files into the backup. For example to include fingerprints and the files for secrets; add the following regular expression : `(fingerprints|.*|.*|.*\.xml)(secrets|.*\..*)(secrets|.*)$`. 
 This allows the plugin to be used in migration scenarions, for example the secrets will not automatically by backuped, but are needed to descrypt the backuped credentials. therefore the addtional files field is needed to create a fully functional backup of your jenkins server data.
 
 #### Clean up differential backups
