@@ -4,7 +4,8 @@
 [![GitHub release](https://img.shields.io/github/v/release/jenkinsci/thin-backup-plugin.svg?label=release)](https://github.com/jenkinsci/thin-backup-plugin/releases/latest)
 [![Jenkins Plugin Installs](https://img.shields.io/jenkins/plugin/i/thinBackup.svg?color=blue)](https://plugins.jenkins.io/thinBackup/)
 
-This plugin simply backs up the global and job specific configurations (not the archive or the workspace). It can be scheduled and only backs up the most vital configuration info. It also let's you decide what vital means for you.
+This plugin simply backs up the global and job specific configurations (not the archive or the workspace). It can be scheduled and only backs up the most vital configuration info. It also let's you decide what vital means for you. For example it does backup the credentials.xml, but will not backup the server keys. Therefore any backup, which is used on an fresh server, will see the credentials, but is not able to correctly decrypt them. Therefore the credentials will be corrupt. So any migration use case will need the secrets additionally, or make use of the backup additional files feature.
+Be aware that in general the controller key should be stored somewhere else, as stated in the Jenkins [backup guidelines](https://www.jenkins.io/doc/book/system-administration/backing-up/#back-up-the-controller-key-separately).
 
 <!-- TOC -->
 * [Thin Backup Plugin](#thin-backup-plugin)
@@ -131,6 +132,13 @@ backup all of this data if you check this option.
 
 If this option is enabled, only results/artifacts on builds which are marked "Keep this build
 forever" are backed up.
+
+#### Backup additional files
+
+This feature enables the user to include additional files into the backup. For example to include fingerprints and the files for secrets; add the following regular expression : `(fingerprints|.*|.*|.*\.xml)(secrets|.*\..*)(secrets|.*)$`. 
+This allows the plugin to be used in migration scenarions. For example the secrets will not automatically by backuped, but are needed to descrypt the backuped credentials. Therefore the additional files field is needed to create a fully functional backup of your jenkins server data.
+
+> ***Important***: Be aware that in general the controller key should be stored somewhere else, as stated in the Jenkins [backup guidelines](https://www.jenkins.io/doc/book/system-administration/backing-up/#back-up-the-controller-key-separately)
 
 #### Clean up differential backups
 
