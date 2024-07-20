@@ -4,7 +4,8 @@
 [![GitHub release](https://img.shields.io/github/v/release/jenkinsci/thin-backup-plugin.svg?label=release)](https://github.com/jenkinsci/thin-backup-plugin/releases/latest)
 [![Jenkins Plugin Installs](https://img.shields.io/jenkins/plugin/i/thinBackup.svg?color=blue)](https://plugins.jenkins.io/thinBackup/)
 
-This plugin simply backs up the global and job specific configurations (not the archive or the workspace). It can be scheduled and only backs up the most vital configuration info. It also let's you decide what vital means for you. For example it does backup the credentials.xml, but will not backup the server keys. Therefore any backup, which is used on an fresh server, will see the credentials, but is not able to correctly decrypt them. Therefore the credentials will be corrupt. So any migration use case will need the backup additional files feature. 
+This plugin simply backs up the global and job specific configurations (not the archive or the workspace). It can be scheduled and only backs up the most vital configuration info. It also let's you decide what vital means for you. For example it does backup the credentials.xml, but will not backup the server keys. Therefore any backup, which is used on an fresh server, will see the credentials, but is not able to correctly decrypt them. Therefore the credentials will be corrupt. So any migration use case will need the secrets additionally, or make use of the backup additional files feature.
+Be aware that in general the controller key should be stored somewhere else, as stated in the Jenkins [backup guidelines](https://www.jenkins.io/doc/book/system-administration/backing-up/#back-up-the-controller-key-separately).
 
 <!-- TOC -->
 * [Thin Backup Plugin](#thin-backup-plugin)
