@@ -137,6 +137,8 @@ forever" are backed up.
 This feature enables the user to include additional files into the backup. For example to include fingerprints and the files for secrets; add the following regular expression : `(fingerprints|.*|.*|.*\.xml)(secrets|.*\..*)(secrets|.*)$`. 
 This allows the plugin to be used in migration scenarions. For example the secrets will not automatically by backuped, but are needed to descrypt the backuped credentials. Therefore the additional files field is needed to create a fully functional backup of your jenkins server data.
 
+> ***Important***: Be aware that in general the controller key should be stored somewhere else, as stated in the Jenkins [backup guidelines](https://www.jenkins.io/doc/book/system-administration/backing-up/#back-up-the-controller-key-separately)
+
 #### Clean up differential backups
 
 If this option is enabled, all differential backups are removed whenever a new full backup is done.
