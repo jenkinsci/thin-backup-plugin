@@ -35,6 +35,7 @@ public class TestJenkinsConfigAsCode {
 
         assertFalse(thinBackupPluginConfig.isCleanupDiff());
         assertFalse(thinBackupPluginConfig.isMoveOldBackupsToZipFile());
+        assertFalse(thinBackupPluginConfig.isMoveCurrentBackupToZipFile());
         assertFalse(thinBackupPluginConfig.isBackupBuildArchive());
         assertFalse(thinBackupPluginConfig.isBackupPluginArchives());
         assertFalse(thinBackupPluginConfig.isBackupUserContents());

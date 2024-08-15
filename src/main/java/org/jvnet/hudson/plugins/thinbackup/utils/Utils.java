@@ -388,14 +388,16 @@ public final class Utils {
      * @param currentBackup
      *          specified which backup should be omitted from being moved. If null, all backups are moved to ZIP files.
      */
-    public static void moveOldBackupsToZipFile(final File backupRoot, final File currentBackup) {
+    public static void moveOldBackupsToZipFile(
+            final File backupRoot, final File currentBackup, final boolean moveCurrentBackupToZipFile) {
         LOGGER.fine("Moving old backups to zip files...");
 
         final List<BackupSet> validBackupSets = Utils.getValidBackupSetsFromDirectories(backupRoot);
         int numberOfZippedBackupSets = 0;
         int numberOfMovedBackupSets = 0;
         for (final BackupSet backupSet : validBackupSets) {
-            if ((!backupSet.containsDirectory(currentBackup)) && (!backupSet.isInZipFile())) {
+            if ((!backupSet.containsDirectory(currentBackup) || moveCurrentBackupToZipFile)
+                    && (!backupSet.isInZipFile())) {
                 final File zippedBackupSet = backupSet.zipTo(backupRoot);
                 ++numberOfZippedBackupSets;
                 if (zippedBackupSet != null) {

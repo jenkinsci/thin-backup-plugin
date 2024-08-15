@@ -685,7 +685,8 @@ public class HudsonBackup {
 
     private void moveOldBackupsToZipFile(final File currentBackup) {
         if (plugin.isMoveOldBackupsToZipFile()) {
-            final ZipperThread zipperThread = new ZipperThread(backupRoot, currentBackup);
+            final ZipperThread zipperThread =
+                    new ZipperThread(backupRoot, currentBackup, plugin.isMoveCurrentBackupToZipFile());
             zipperThread.start();
         }
     }
@@ -743,16 +744,18 @@ public class HudsonBackup {
 
         private final File backupRoot;
         private final File currentBackup;
+        private final boolean moveCurrentBackupToZipFile;
 
-        public ZipperThread(final File backupRoot, final File currentBackup) {
+        public ZipperThread(final File backupRoot, final File currentBackup, final boolean moveCurrentBackupToZipFile) {
             this.backupRoot = backupRoot;
             this.currentBackup = currentBackup;
+            this.moveCurrentBackupToZipFile = moveCurrentBackupToZipFile;
         }
 
         @Override
         public void run() {
             LOGGER.fine("Starting zipper thread...");
-            Utils.moveOldBackupsToZipFile(backupRoot, currentBackup);
+            Utils.moveOldBackupsToZipFile(backupRoot, currentBackup, moveCurrentBackupToZipFile);
             LOGGER.fine("DONE zipping.");
         }
     }

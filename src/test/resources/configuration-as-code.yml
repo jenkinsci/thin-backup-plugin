@@ -17,5 +17,6 @@ unclassified:
     forceQuietModeTimeout: 120
     fullBackupSchedule: "0 12 * * 1"
     moveOldBackupsToZipFile: false
+    moveCurrentBackupToZipFile: false
     nrMaxStoredFull: -1
     waitForIdle: true
