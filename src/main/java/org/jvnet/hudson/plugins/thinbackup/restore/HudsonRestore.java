@@ -100,7 +100,7 @@ public class HudsonRestore {
             if (!success) {
                 LOGGER.severe("Could not restore backup.");
             } else {
-                LOGGER.info("Restore completed successfully.")
+                LOGGER.info("Restore completed successfully.");
             }
         } catch (final IOException ioe) {
             LOGGER.log(Level.SEVERE, "Could not restore backup.", ioe);
