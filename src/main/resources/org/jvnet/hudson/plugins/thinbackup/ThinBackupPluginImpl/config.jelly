@@ -85,9 +85,13 @@
             <f:checkbox/>
         </f:entry>
 
-        <f:entry title="${%move}" field="moveOldBackupsToZipFile">
-            <f:checkbox/>
-        </f:entry>
+        <f:optionalBlock title="${%move}"
+                         field="moveOldBackupsToZipFile"
+                         inline="true">
+            <f:entry title="${%move_current}" field="moveCurrentBackupToZipFile">
+                <f:checkbox/>
+            </f:entry>
+        </f:optionalBlock>
 
         <f:entry title="${%fail_fast}" field="failFast">
             <f:checkbox/>

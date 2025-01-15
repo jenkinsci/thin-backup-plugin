@@ -133,7 +133,7 @@ public class TestRestore {
         Assertions.assertEquals(1, backupsAsDates.size());
 
         // create zips with older backups
-        Utils.moveOldBackupsToZipFile(backupDir, null);
+        Utils.moveOldBackupsToZipFile(backupDir, null, false);
 
         // check that backupset is present
         File[] files = backupDir.listFiles();

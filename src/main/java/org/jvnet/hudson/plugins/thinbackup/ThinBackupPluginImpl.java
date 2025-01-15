@@ -57,6 +57,7 @@ public class ThinBackupPluginImpl extends GlobalConfiguration {
     private static final int VERY_HIGH_TIMEOUT = 12 * 60;
     private boolean cleanupDiff = false;
     private boolean moveOldBackupsToZipFile = false;
+    private boolean moveCurrentBackupToZipFile = false;
     private boolean backupBuildResults = true;
     private boolean backupBuildArchive = false;
     private boolean backupPluginArchives = false;
@@ -100,6 +101,7 @@ public class ThinBackupPluginImpl extends GlobalConfiguration {
 
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+        LOGGER.warning(json.toString());
 
         try (BulkChange bc = new BulkChange(this)) {
             req.bindJSON(this, json);
@@ -201,6 +203,16 @@ public class ThinBackupPluginImpl extends GlobalConfiguration {
 
     public boolean isMoveOldBackupsToZipFile() {
         return moveOldBackupsToZipFile;
+    }
+
+    @DataBoundSetter
+    public void setMoveCurrentBackupToZipFile(final boolean moveCurrentBackupToZipFile) {
+        this.moveCurrentBackupToZipFile = moveCurrentBackupToZipFile;
+        save();
+    }
+
+    public boolean isMoveCurrentBackupToZipFile() {
+        return moveCurrentBackupToZipFile;
     }
 
     @DataBoundSetter
