@@ -70,7 +70,9 @@
   <properties>
     <revision>2.1.2</revision>
     <changelist>-SNAPSHOT</changelist>
-    <jenkins.version>2.440.3</jenkins.version>
+    <!-- https://www.jenkins.io/doc/developer/plugin-development/choosing-jenkins-baseline/ -->
+    <jenkins.baseline>2.440</jenkins.baseline>
+    <jenkins.version>${jenkins.baseline}.3</jenkins.version>
     <gitHubRepo>jenkinsci/thin-backup-plugin</gitHubRepo>
     <spotless.check.skip>false</spotless.check.skip>
     <maven-hpi-plugin.injectedTestName>InjectedIT</maven-hpi-plugin.injectedTestName>
@@ -81,7 +83,7 @@
     <dependencies>
       <dependency>
         <groupId>io.jenkins.tools.bom</groupId>
-        <artifactId>bom-2.440.x</artifactId>
+        <artifactId>bom-${jenkins.baseline}.x</artifactId>
         <version>3435.v238d66a_043fb_</version>
         <type>pom</type>
         <scope>import</scope>
