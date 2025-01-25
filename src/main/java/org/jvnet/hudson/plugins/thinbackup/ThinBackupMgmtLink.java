@@ -34,8 +34,8 @@ import jenkins.util.Timer;
 import org.jvnet.hudson.plugins.thinbackup.restore.HudsonRestore;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.verb.POST;
 
 /**
@@ -71,7 +71,7 @@ public class ThinBackupMgmtLink extends ManagementLink {
     }
 
     @POST
-    public void doBackupManual(final StaplerRequest res, final StaplerResponse rsp) throws IOException {
+    public void doBackupManual(final StaplerRequest2 res, final StaplerResponse2 rsp) throws IOException {
         final Jenkins jenkins = Jenkins.get();
         jenkins.checkPermission(Jenkins.ADMINISTER);
         LOGGER.info("Starting manual backup.");
@@ -89,8 +89,8 @@ public class ThinBackupMgmtLink extends ManagementLink {
 
     @POST
     public void doRestore(
-            final StaplerRequest res,
-            final StaplerResponse rsp,
+            final StaplerRequest2 res,
+            final StaplerResponse2 rsp,
             @QueryParameter("restoreBackupFrom") final String restoreBackupFrom,
             @QueryParameter("restoreNextBuildNumber") final String restoreNextBuildNumber,
             @QueryParameter("restorePlugins") final String restorePlugins)
