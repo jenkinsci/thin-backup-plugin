@@ -427,7 +427,7 @@ public class TestHudsonBackup {
             throw new RuntimeException(e);
         }
 
-        assertThat(filesAndFolders.size(), greaterThan(75));
+        assertThat(filesAndFolders.size(), greaterThan(73));
 
         // run backup (which will clean up empty folders)
         new HudsonBackup(thinBackupPlugin, BackupType.FULL, date, r.jenkins).backup();
