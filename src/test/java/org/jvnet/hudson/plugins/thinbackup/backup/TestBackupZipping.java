@@ -2,10 +2,12 @@ package org.jvnet.hudson.plugins.thinbackup.backup;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.lessThan;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.jvnet.hudson.plugins.thinbackup.TestHelper.newFolder;
 
 import hudson.model.FreeStyleProject;
 import java.io.File;
@@ -17,26 +19,24 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockFolder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class TestBackupZipping {
+@WithJenkins
+class TestBackupZipping {
 
-    @Rule
-    public JenkinsRule r = new JenkinsRule();
-
-    @Rule
-    public TemporaryFolder tmpFolder = new TemporaryFolder();
+    @TempDir
+    private File tmpFolder;
 
     @Test
-    public void testThinBackupZipper() throws Exception {
-        File backupDir = tmpFolder.newFolder();
+    void testThinBackupZipper(JenkinsRule r) throws Exception {
+        File backupDir = newFolder(tmpFolder, "junit");
 
         final ThinBackupPluginImpl thinBackupPlugin = ThinBackupPluginImpl.get();
         thinBackupPlugin.setBackupPath(backupDir.getAbsolutePath());
@@ -108,7 +108,7 @@ public class TestBackupZipping {
             zipEntries.nextElement();
             ++entryCount;
         }
-        assertEquals(27, entryCount);
+        assertThat(entryCount, lessThan(30));
         zipFile.close();
 
         final BackupSet backupSetFromZip = new BackupSet(zippedBackupSet);

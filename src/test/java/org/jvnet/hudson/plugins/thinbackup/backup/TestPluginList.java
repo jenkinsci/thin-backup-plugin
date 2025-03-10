@@ -25,34 +25,34 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class TestPluginList {
+class TestPluginList {
 
     private PluginList pluginList;
     private File pluginsXml;
     private File pluginsXml2;
 
     @BeforeEach
-    public void setup() throws IOException {
+    void setup() throws IOException {
         pluginsXml = File.createTempFile("pluginList", ".xml");
         pluginList = new PluginList(pluginsXml);
         pluginList.add("default", "0.1");
     }
 
     @AfterEach
-    public void teardown() {
+    void teardown() {
         FileUtils.deleteQuietly(pluginsXml);
         FileUtils.deleteQuietly(pluginsXml2);
     }
 
     @Test
-    public void testAdd() {
+    void testAdd() {
         assertEquals(1, pluginList.getPlugins().size());
         pluginList.add("plugin", "0.1");
         assertEquals(2, pluginList.getPlugins().size());
     }
 
     @Test
-    public void testCompareToEqualPluginList() throws IOException {
+    void testCompareToEqualPluginList() throws IOException {
         pluginsXml2 = File.createTempFile("pluginList2", ".xml");
         final PluginList pluginList2 = new PluginList(pluginsXml2);
         pluginList2.add("default", "0.1");
@@ -62,7 +62,7 @@ public class TestPluginList {
     }
 
     @Test
-    public void testCompareToNotEqualPluginList() throws IOException {
+    void testCompareToNotEqualPluginList() throws IOException {
         pluginsXml2 = File.createTempFile("pluginList2", ".xml");
         final PluginList pluginList2 = new PluginList(pluginsXml2);
 
@@ -76,7 +76,7 @@ public class TestPluginList {
     }
 
     @Test
-    public void testCompareToDifferentSecondPluginList() throws IOException {
+    void testCompareToDifferentSecondPluginList() throws IOException {
         pluginsXml2 = File.createTempFile("pluginList2", ".xml");
         final PluginList pluginList2 = new PluginList(pluginsXml2);
 
