@@ -5,33 +5,31 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasItems;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.jvnet.hudson.plugins.thinbackup.TestHelper.newFolder;
 
 import hudson.model.FreeStyleProject;
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Date;
 import java.util.List;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockFolder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class TestBackupWithCloudBeesFolder {
+@WithJenkins
+class TestBackupWithCloudBeesFolder {
 
-    @Rule
-    public JenkinsRule r = new JenkinsRule();
-
-    @Rule
-    public TemporaryFolder tmpFolder = new TemporaryFolder();
+    @TempDir
+    private File tmpFolder;
 
     @Test
-    public void testWithFolder() throws IOException {
-        File backupDir = tmpFolder.newFolder();
+    void testWithFolder(JenkinsRule r) throws Exception {
+        File backupDir = newFolder(tmpFolder, "junit");
 
         final ThinBackupPluginImpl thinBackupPlugin = ThinBackupPluginImpl.get();
         thinBackupPlugin.setBackupPath(backupDir.getAbsolutePath());

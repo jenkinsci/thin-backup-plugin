@@ -17,15 +17,15 @@
 package org.jvnet.hudson.plugins.thinbackup.backup;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.jvnet.hudson.plugins.thinbackup.TestHelper.newFile;
 
 import java.io.File;
-import java.io.IOException;
 import org.junit.jupiter.api.Test;
 
-public class TestBackupSet extends BackupDirStructureSetup {
+class TestBackupSet extends BackupDirStructureSetup {
 
     @Test
-    public void testSimpleBackupSet() {
+    void testSimpleBackupSet() {
         final BackupSet setFromFull = new BackupSet(full2);
         assertTrue(setFromFull.isValid());
         assertEquals(1, setFromFull.getDiffBackups().size());
@@ -40,7 +40,7 @@ public class TestBackupSet extends BackupDirStructureSetup {
     }
 
     @Test
-    public void testDelete() throws Exception {
+    void testDelete() throws Exception {
         final BackupSet setFromFull = new BackupSet(full1);
         assertTrue(setFromFull.isValid());
         assertEquals(4, setFromFull.getDiffBackups().size());
@@ -56,7 +56,7 @@ public class TestBackupSet extends BackupDirStructureSetup {
     }
 
     @Test
-    public void testInvalidSet() throws Exception {
+    void testInvalidSet() throws Exception {
         final BackupSet setFromDiff = new BackupSet(diff41);
         assertFalse(setFromDiff.isValid());
         assertFalse(setFromDiff.isValid());
@@ -69,7 +69,7 @@ public class TestBackupSet extends BackupDirStructureSetup {
     }
 
     @Test
-    public void testBackupSetCompare() {
+    void testBackupSetCompare() {
         final BackupSet backupSet1 = new BackupSet(full1);
         final BackupSet backupSet2 = new BackupSet(full2);
         final BackupSet invalidBackupSet = new BackupSet(diff41);
@@ -83,7 +83,7 @@ public class TestBackupSet extends BackupDirStructureSetup {
     }
 
     @Test
-    public void testBackupSetContainsDirectory() throws IOException {
+    void testBackupSetContainsDirectory() throws Exception {
         final BackupSet backupSet1 = new BackupSet(full1);
 
         assertTrue(backupSet1.containsDirectory(full1));
@@ -102,8 +102,7 @@ public class TestBackupSet extends BackupDirStructureSetup {
 
         final File tempDir = new File(System.getProperty("java.io.tmpdir"));
         backupDir = new File(tempDir, "BackupDirForHudsonBackupTest");
-        final File testFile = tmpFolder.resolve("tempFile.nxt").toFile();
-        testFile.createNewFile();
+        final File testFile = newFile(tmpFolder.toFile(), "tempFile.nxt");
         assertFalse(backupSet1.containsDirectory(testFile));
         assertFalse(backupSet1.containsDirectory(new File(testFile.getAbsolutePath())));
     }

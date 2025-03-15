@@ -1,22 +1,18 @@
 package org.jvnet.hudson.plugins.thinbackup;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import io.jenkins.plugins.casc.misc.ConfiguredWithCode;
 import io.jenkins.plugins.casc.misc.JenkinsConfiguredWithCodeRule;
-import org.junit.Rule;
-import org.junit.Test;
+import io.jenkins.plugins.casc.misc.junit.jupiter.WithJenkinsConfiguredWithCode;
+import org.junit.jupiter.api.Test;
 
-public class TestJenkinsConfigAsCode {
-
-    @Rule
-    public JenkinsConfiguredWithCodeRule r = new JenkinsConfiguredWithCodeRule();
+@WithJenkinsConfiguredWithCode
+class TestJenkinsConfigAsCode {
 
     @Test
     @ConfiguredWithCode("configuration-as-code.yml")
-    public void should_support_configuration_as_code() {
+    void should_support_configuration_as_code(JenkinsConfiguredWithCodeRule r) {
         ThinBackupPluginImpl thinBackupPluginConfig = ThinBackupPluginImpl.get();
         final String backupPath = thinBackupPluginConfig.getBackupPath();
         // test strings
