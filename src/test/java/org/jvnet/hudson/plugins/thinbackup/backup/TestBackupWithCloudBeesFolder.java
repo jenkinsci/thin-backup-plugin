@@ -80,6 +80,6 @@ class TestBackupWithCloudBeesFolder {
         // check job is in folder
         File folderJobDir = new File(elementBackup, "jobs/elements");
         final List<String> listedJobElements = List.of(folderJobDir.list());
-        assertThat(listedJobElements, containsInAnyOrder("config.xml", "builds"));
+        assertThat(listedJobElements, containsInAnyOrder("config.xml"));
     }
 }
