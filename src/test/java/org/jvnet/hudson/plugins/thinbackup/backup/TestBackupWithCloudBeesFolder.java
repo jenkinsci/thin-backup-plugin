@@ -38,7 +38,8 @@ class TestBackupWithCloudBeesFolder {
         final Date date = new Date();
 
         // create job
-        r.createFreeStyleProject("freeStyleJob");
+        var fsJob = r.createFreeStyleProject("freeStyleJob");
+        r.assertBuildStatusSuccess(fsJob.scheduleBuild2(0));
 
         // create folder
         final MockFolder folder1 = r.createFolder("folder1");
@@ -80,6 +81,6 @@ class TestBackupWithCloudBeesFolder {
         // check job is in folder
         File folderJobDir = new File(elementBackup, "jobs/elements");
         final List<String> listedJobElements = List.of(folderJobDir.list());
-        assertThat(listedJobElements, containsInAnyOrder("config.xml"));
+        assertThat(listedJobElements, containsInAnyOrder("config.xml", "builds"));
     }
 }
