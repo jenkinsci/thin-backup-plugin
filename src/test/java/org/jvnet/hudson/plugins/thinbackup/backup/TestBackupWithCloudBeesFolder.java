@@ -44,7 +44,8 @@ class TestBackupWithCloudBeesFolder {
         final MockFolder folder1 = r.createFolder("folder1");
 
         // create job in folder1
-        folder1.createProject(FreeStyleProject.class, "elements");
+        var elementsJob = folder1.createProject(FreeStyleProject.class, "elements");
+        r.assertBuildStatusSuccess(elementsJob.scheduleBuild2(0));
 
         // run backup
         new HudsonBackup(thinBackupPlugin, BackupType.FULL, date, r.jenkins).backup();
