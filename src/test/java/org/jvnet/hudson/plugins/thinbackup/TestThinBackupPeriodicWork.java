@@ -20,10 +20,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
-public class TestThinBackupPeriodicWork {
+class TestThinBackupPeriodicWork {
 
     @Test
-    public void testGetNextScheduledBackup() {
+    void testGetNextScheduledBackup() {
         final long currentTime = System.currentTimeMillis();
         final String fullCron = "* * * * *";
         final String diffCron = "* * * * *";

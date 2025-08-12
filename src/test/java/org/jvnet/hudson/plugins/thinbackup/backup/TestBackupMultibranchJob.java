@@ -2,34 +2,33 @@ package org.jvnet.hudson.plugins.thinbackup.backup;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItems;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.jvnet.hudson.plugins.thinbackup.TestHelper.newFolder;
 
 import hudson.model.FreeStyleProject;
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Date;
 import java.util.List;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.plugins.thinbackup.TestHelper;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class TestBackupMultibranchJob {
+@WithJenkins
+class TestBackupMultibranchJob {
 
-    @Rule
-    public JenkinsRule r = new JenkinsRule();
-
-    @Rule
-    public TemporaryFolder tmpFolder = new TemporaryFolder();
+    @TempDir
+    private File tmpFolder;
 
     @Test
-    public void testFullBuildResultsBackup() throws IOException, InterruptedException {
-        File backupDir = tmpFolder.newFolder();
+    void testFullBuildResultsBackup(JenkinsRule r) throws Exception {
+        File backupDir = newFolder(tmpFolder, "junit");
 
         final ThinBackupPluginImpl thinBackupPlugin = ThinBackupPluginImpl.get();
         thinBackupPlugin.setBackupPath(backupDir.getAbsolutePath());

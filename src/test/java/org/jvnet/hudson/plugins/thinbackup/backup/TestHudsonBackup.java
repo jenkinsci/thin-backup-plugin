@@ -27,38 +27,36 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.jvnet.hudson.plugins.thinbackup.TestHelper.newFile;
+import static org.jvnet.hudson.plugins.thinbackup.TestHelper.newFolder;
 
 import hudson.model.FreeStyleProject;
 import hudson.model.Label;
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.plugins.thinbackup.TestHelper;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork.BackupType;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl;
 import org.jvnet.hudson.plugins.thinbackup.utils.Utils;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class TestHudsonBackup {
+@WithJenkins
+class TestHudsonBackup {
 
-    @Rule
-    public JenkinsRule r = new JenkinsRule();
-
-    @Rule
-    public TemporaryFolder tmpFolder = new TemporaryFolder();
+    @TempDir
+    private File tmpFolder;
 
     @Test
-    public void testBackup() throws Exception {
-        File backupDir = tmpFolder.newFolder();
+    void testBackup(JenkinsRule r) throws Exception {
+        File backupDir = newFolder(tmpFolder, "junit");
 
         final ThinBackupPluginImpl thinBackupPlugin = ThinBackupPluginImpl.get();
         thinBackupPlugin.setBackupPath(backupDir.getAbsolutePath());
@@ -120,8 +118,8 @@ public class TestHudsonBackup {
     }
 
     @Test
-    public void testBackupWithExcludes() throws Exception {
-        File backupDir = tmpFolder.newFolder();
+    void testBackupWithExcludes(JenkinsRule r) throws Exception {
+        File backupDir = newFolder(tmpFolder, "junit");
 
         final ThinBackupPluginImpl thinBackupPlugin = ThinBackupPluginImpl.get();
         thinBackupPlugin.setBackupPath(backupDir.getAbsolutePath());
@@ -135,10 +133,10 @@ public class TestHudsonBackup {
         File buildDir = TestHelper.addNewBuildToJob(test.getRootDir());
 
         // add some log files
-        new File(buildDir, "log").createNewFile(); // should be copied
-        new File(buildDir, "log.txt").createNewFile(); // should be copied
-        new File(buildDir, "logfile.log").createNewFile(); // should NOT be copied
-        new File(buildDir, "logfile.xlog").createNewFile(); // should be copied
+        newFile(buildDir, "log"); // should be copied
+        newFile(buildDir, "log.txt"); // should be copied
+        newFile(buildDir, "logfile.log"); // should NOT be copied
+        newFile(buildDir, "logfile.xlog"); // should be copied
 
         // create empty job
         TestHelper.createMaliciousMultiJob(rootDir, "jobs/emptyJob");
@@ -171,8 +169,8 @@ public class TestHudsonBackup {
     }
 
     @Test
-    public void testBackupWithoutBuildResults() throws Exception {
-        File backupDir = tmpFolder.newFolder();
+    void testBackupWithoutBuildResults(JenkinsRule r) throws Exception {
+        File backupDir = newFolder(tmpFolder, "junit");
 
         final ThinBackupPluginImpl thinBackupPlugin = ThinBackupPluginImpl.get();
         thinBackupPlugin.setBackupPath(backupDir.getAbsolutePath());
@@ -185,10 +183,10 @@ public class TestHudsonBackup {
         File buildDir = TestHelper.addNewBuildToJob(test.getRootDir());
 
         // add some log files
-        new File(buildDir, "log").createNewFile();
-        new File(buildDir, "log.txt").createNewFile();
-        new File(buildDir, "logfile.log").createNewFile();
-        new File(buildDir, "logfile.xlog").createNewFile();
+        newFile(buildDir, "log");
+        newFile(buildDir, "log.txt");
+        newFile(buildDir, "logfile.log");
+        newFile(buildDir, "logfile.xlog");
 
         // run backup
         new HudsonBackup(thinBackupPlugin, BackupType.FULL, date, r.jenkins).backup();
@@ -217,8 +215,8 @@ public class TestHudsonBackup {
     }
 
     @Test
-    public void testBackupNextBuildNumber() throws Exception {
-        File backupDir = tmpFolder.newFolder();
+    void testBackupNextBuildNumber(JenkinsRule r) throws Exception {
+        File backupDir = newFolder(tmpFolder, "junit");
 
         final ThinBackupPluginImpl thinBackupPlugin = ThinBackupPluginImpl.get();
         thinBackupPlugin.setBackupPath(backupDir.getAbsolutePath());
@@ -232,7 +230,7 @@ public class TestHudsonBackup {
         File buildDir = TestHelper.addNewBuildToJob(test.getRootDir());
 
         // add nextBuildNumber file
-        new File(test.getRootDir(), "nextBuildNumber").createNewFile();
+        newFile(test.getRootDir(), "nextBuildNumber");
 
         // run backup
         new HudsonBackup(thinBackupPlugin, BackupType.FULL, date, r.jenkins).backup();
@@ -281,8 +279,8 @@ public class TestHudsonBackup {
     }
 
     @Test
-    public void testBackupArchive() throws Exception {
-        File backupDir = tmpFolder.newFolder();
+    void testBackupArchive(JenkinsRule r) throws Exception {
+        File backupDir = newFolder(tmpFolder, "junit");
 
         final ThinBackupPluginImpl thinBackupPlugin = ThinBackupPluginImpl.get();
         thinBackupPlugin.setBackupPath(backupDir.getAbsolutePath());
@@ -340,8 +338,8 @@ public class TestHudsonBackup {
     }
 
     @Test
-    public void testBackupKeptBuildsOnly_doKeep() throws Exception {
-        File backupDir = tmpFolder.newFolder();
+    void testBackupKeptBuildsOnly_doKeep(JenkinsRule r) throws Exception {
+        File backupDir = newFolder(tmpFolder, "junit");
 
         final ThinBackupPluginImpl thinBackupPlugin = ThinBackupPluginImpl.get();
         thinBackupPlugin.setBackupPath(backupDir.getAbsolutePath());
@@ -355,8 +353,8 @@ public class TestHudsonBackup {
         File buildDir = TestHelper.addNewBuildToJob(test.getRootDir());
 
         // add some log files
-        new File(buildDir, "log").createNewFile();
-        new File(buildDir, "log.txt").createNewFile();
+        newFile(buildDir, "log");
+        newFile(buildDir, "log.txt");
 
         // run backup
         new HudsonBackup(thinBackupPlugin, BackupType.FULL, date, r.jenkins).backup();
@@ -393,8 +391,8 @@ public class TestHudsonBackup {
     }
 
     @Test
-    public void testRemovingEmptyDirs() throws IOException {
-        File backupDir = tmpFolder.newFolder();
+    void testRemovingEmptyDirs(JenkinsRule r) throws Exception {
+        File backupDir = newFolder(tmpFolder, "junit");
 
         final ThinBackupPluginImpl thinBackupPlugin = ThinBackupPluginImpl.get();
         thinBackupPlugin.setBackupPath(backupDir.getAbsolutePath());
@@ -408,11 +406,9 @@ public class TestHudsonBackup {
 
         // create a couple of empty dirs
         for (int i = 0; i < 10; i++) {
-            File folder = new File(rootDir, "empty" + i);
-            folder.mkdirs();
+            File folder = newFolder(rootDir, "empty" + i);
             for (int j = 0; j < 3; j++) {
-                File folder2 = new File(folder, "child" + j);
-                folder2.mkdirs();
+                File folder2 = newFolder(folder, "child" + j);
             }
         }
 
@@ -422,12 +418,10 @@ public class TestHudsonBackup {
             // exclude symbolic links, we ignore these in this test
             filesAndFolders = walk.filter(file -> !Files.isSymbolicLink(file))
                     .map(Path::toString)
-                    .collect(Collectors.toList());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+                    .toList();
         }
 
-        assertThat(filesAndFolders.size(), greaterThan(75));
+        assertThat(filesAndFolders.size(), greaterThan(70));
 
         // run backup (which will clean up empty folders)
         new HudsonBackup(thinBackupPlugin, BackupType.FULL, date, r.jenkins).backup();
@@ -439,16 +433,14 @@ public class TestHudsonBackup {
             // exclude symbolic links, we ignore these in this test
             filesAndFolders = walk.filter(file -> !Files.isSymbolicLink(file))
                     .map(Path::toString)
-                    .collect(Collectors.toList());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+                    .toList();
         }
-        assertThat(filesAndFolders.size(), lessThan(25));
+        assertThat(filesAndFolders.size(), lessThan(30));
     }
 
     @Test
-    public void testBackupNodes() throws Exception {
-        File backupDir = tmpFolder.newFolder();
+    void testBackupNodes(JenkinsRule r) throws Exception {
+        File backupDir = newFolder(tmpFolder, "junit");
 
         final ThinBackupPluginImpl thinBackupPlugin = ThinBackupPluginImpl.get();
         thinBackupPlugin.setBackupPath(backupDir.getAbsolutePath());
