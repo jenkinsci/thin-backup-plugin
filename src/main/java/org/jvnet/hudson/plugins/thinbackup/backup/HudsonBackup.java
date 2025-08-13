@@ -72,7 +72,6 @@ public class HudsonBackup {
     public static final String JOBS_DIR_NAME = "jobs";
     public static final String USERS_DIR_NAME = "users";
     public static final String ARCHIVE_DIR_NAME = "archive";
-    public static final String CONFIG_HISTORY_DIR_NAME = "config-history";
     public static final String USERSCONTENTS_DIR_NAME = "userContent";
     public static final String NEXT_BUILD_NUMBER_FILE_NAME = "nextBuildNumber";
     public static final String PLUGINS_DIR_NAME = "plugins";
