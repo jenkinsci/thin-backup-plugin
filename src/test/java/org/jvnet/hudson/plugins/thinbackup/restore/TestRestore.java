@@ -16,7 +16,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
-
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -56,7 +55,8 @@ class TestRestore {
         test2.setDescription("new test2");
 
         // run backup
-        final HudsonBackup backup = new HudsonBackup(thinBackupPlugin, ThinBackupPeriodicWork.BackupType.FULL, date, r.jenkins);
+        final HudsonBackup backup =
+                new HudsonBackup(thinBackupPlugin, ThinBackupPeriodicWork.BackupType.FULL, date, r.jenkins);
         backup.backup();
 
         // delete jobs
@@ -73,7 +73,8 @@ class TestRestore {
         assertEquals(0, jobList.length);
 
         // now do the restore without config-history
-        HudsonRestore hudsonRestore = new HudsonRestore(rootDir, backupDir.getAbsolutePath(), date, false, false, false);
+        HudsonRestore hudsonRestore =
+                new HudsonRestore(rootDir, backupDir.getAbsolutePath(), date, false, false, false);
         hudsonRestore.restore();
 
         // verify jobs are back
@@ -130,7 +131,8 @@ class TestRestore {
         assertEquals(0, jobList.length);
 
         // now do the restore without build number
-        HudsonRestore hudsonRestore = new HudsonRestore(rootDir, backupDir.getAbsolutePath(), date, false, false, false);
+        HudsonRestore hudsonRestore =
+                new HudsonRestore(rootDir, backupDir.getAbsolutePath(), date, false, false, false);
         hudsonRestore.restore();
 
         // verify jobs are back

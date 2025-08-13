@@ -425,7 +425,8 @@ public class HudsonBackup {
                             FileFilterUtils.and(getFileAgeDiffFilter(), getExcludedFilesFilter())));
 
             try {
-                FileUtils.copyDirectory(jenkinsHome, backupDirectory, ExistsAndReadableFileFilter.wrapperFilter(filter));
+                FileUtils.copyDirectory(
+                        jenkinsHome, backupDirectory, ExistsAndReadableFileFilter.wrapperFilter(filter));
             } catch (IOException e) {
                 if (plugin.isFailFast()) {
                     throw e;

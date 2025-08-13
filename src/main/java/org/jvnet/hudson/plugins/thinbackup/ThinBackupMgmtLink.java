@@ -115,8 +115,7 @@ public class ThinBackupMgmtLink extends ManagementLink {
                     restoreFromDate,
                     "on".equals(restoreNextBuildNumber),
                     "on".equals(restorePlugins),
-                    "on".equals(restoreConfigHistory)
-            );
+                    "on".equals(restoreConfigHistory));
             hudsonRestore.restore();
 
             LOGGER.info("Restore finished.");

@@ -171,7 +171,8 @@ public class HudsonRestore {
 
     private void restore(final File toRestore) throws IOException {
         final IOFileFilter nextBuildNumberFileFilter = FileFilterUtils.nameFileFilter("nextBuildNumber");
-        final IOFileFilter configHistoryFileFilter = FileFilterUtils.notFileFilter(FileFilterUtils.prefixFileFilter("config-history"));
+        final IOFileFilter configHistoryFileFilter =
+                FileFilterUtils.notFileFilter(FileFilterUtils.prefixFileFilter("config-history"));
         final IOFileFilter noBackupCompletedFile =
                 FileFilterUtils.notFileFilter(FileFilterUtils.nameFileFilter(COMPLETED_BACKUP_FILE));
         IOFileFilter restoreNextBuildNumberFilter;
@@ -206,8 +207,7 @@ public class HudsonRestore {
         }
 
         if (!restoreConfigHistory) {
-            restoreNextBuildNumberFilter = FileFilterUtils.and(
-                    restoreNextBuildNumberFilter, configHistoryFileFilter);
+            restoreNextBuildNumberFilter = FileFilterUtils.and(restoreNextBuildNumberFilter, configHistoryFileFilter);
         }
 
         FileUtils.copyDirectory(toRestore, this.jenkinsHome, restoreNextBuildNumberFilter, true);
