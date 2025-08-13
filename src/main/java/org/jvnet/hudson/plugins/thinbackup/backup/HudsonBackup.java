@@ -536,8 +536,7 @@ public class HudsonBackup {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private boolean isBuildToKeep(TopLevelItem item, File buildDir) {
-        if (item instanceof Job) {
-            Job job = (Job) item;
+        if (item instanceof Job job) {
             RunList<Run> builds = job.getBuilds();
             for (Run run : builds) {
                 if (run.getRootDir().equals(buildDir)) {
