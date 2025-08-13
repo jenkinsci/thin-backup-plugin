@@ -263,7 +263,7 @@ public class HudsonRestore {
 
     private void restoreNextBuildNumber(File file, Integer toRestoreNextBuildNumber) throws IOException {
         final String buildNumber = toRestoreNextBuildNumber + "\n";
-        Files.write(file.toPath(), buildNumber.getBytes(StandardCharsets.UTF_8), StandardOpenOption.TRUNCATE_EXISTING);
+        Files.writeString(file.toPath(), buildNumber, StandardOpenOption.TRUNCATE_EXISTING);
     }
 
     private Future<UpdateCenterJob> installPlugin(String pluginID, String version) {
