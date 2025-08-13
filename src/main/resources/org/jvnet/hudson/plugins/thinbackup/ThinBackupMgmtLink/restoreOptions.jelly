@@ -47,7 +47,7 @@
                     </f:entry>
 
                     <f:entry title="${%restore_config_history}" help="/plugin/thinBackup/help/help-restoreConfigHistory.html">
-                        <f:checkbox name="restoreConfigHistory"/>
+                        <f:checkbox name="restoreConfigHistory" default="true"/>
                     </f:entry>
 
                 </f:section>

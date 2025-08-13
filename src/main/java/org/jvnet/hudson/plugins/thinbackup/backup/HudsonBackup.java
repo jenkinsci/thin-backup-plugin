@@ -33,6 +33,7 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -89,7 +90,7 @@ public class HudsonBackup {
     public static final String COMPLETED_BACKUP_FILE = "backup-completed.info";
 
     private final ThinBackupPluginImpl plugin;
-    private final File hudsonHome;
+    private final File jenkinsHome;
     private final File backupRoot;
     private final File backupDirectory;
     private final BackupType backupType;
@@ -110,7 +111,7 @@ public class HudsonBackup {
             ItemGroup<TopLevelItem> hudson) {
         this.hudson = hudson;
         this.plugin = plugin;
-        this.hudsonHome = plugin.getJenkinsHome();
+        this.jenkinsHome = plugin.getJenkinsHome();
 
         final String excludedFilesRegex = plugin.getExcludedFilesRegex();
         if ((excludedFilesRegex != null) && !excludedFilesRegex.trim().isEmpty()) {
@@ -172,7 +173,7 @@ public class HudsonBackup {
 
         LOGGER.fine(MessageFormat.format("Performing {0} backup.", backupType));
 
-        if (!hudsonHome.exists() || !hudsonHome.isDirectory()) {
+        if (!jenkinsHome.exists() || !jenkinsHome.isDirectory()) {
             final String msg = "No Hudson directory found. Backup cannot be performed.";
             LOGGER.severe(msg);
             throw new FileNotFoundException(msg);
@@ -282,7 +283,7 @@ public class HudsonBackup {
                 getExcludedFilesFilter());
         try {
             FileUtils.copyDirectory(
-                    hudsonHome, backupDirectory, ExistsAndReadableFileFilter.wrapperFilter(suffixFileFilter));
+                    jenkinsHome, backupDirectory, ExistsAndReadableFileFilter.wrapperFilter(suffixFileFilter));
         } catch (IOException e) {
             if (plugin.isFailFast()) {
                 throw e;
@@ -296,7 +297,7 @@ public class HudsonBackup {
 
     private void backupJobs() throws IOException {
         LOGGER.fine("Backing up job specific configuration files...");
-        final File jobsDirectory = new File(hudsonHome.getAbsolutePath(), JOBS_DIR_NAME);
+        final File jobsDirectory = new File(jenkinsHome.getAbsolutePath(), JOBS_DIR_NAME);
         final File jobsBackupDirectory = new File(backupDirectory.getAbsolutePath(), JOBS_DIR_NAME);
 
         backupJobsDirectory(jobsDirectory, jobsBackupDirectory);
@@ -425,7 +426,7 @@ public class HudsonBackup {
                             FileFilterUtils.and(getFileAgeDiffFilter(), getExcludedFilesFilter())));
 
             try {
-                FileUtils.copyDirectory(hudsonHome, backupDirectory, ExistsAndReadableFileFilter.wrapperFilter(filter));
+                FileUtils.copyDirectory(jenkinsHome, backupDirectory, ExistsAndReadableFileFilter.wrapperFilter(filter));
             } catch (IOException e) {
                 if (plugin.isFailFast()) {
                     throw e;
@@ -475,7 +476,7 @@ public class HudsonBackup {
      */
     private List<File> findAllConfigurations(File dir) throws UncheckedIOException {
         Collection<File> listFiles =
-                FileUtils.listFiles(dir, FileFilterUtils.nameFileFilter(CONFIG_XML), TrueFileFilter.INSTANCE);
+                FileUtils.listFiles(dir, FileFilterUtils.nameFileFilter(CONFIG_XML), TrueFileFilter.TRUE);
 
         List<File> confs = new ArrayList<>();
         for (File file : listFiles) {
@@ -608,7 +609,10 @@ public class HudsonBackup {
         final File srcDirectory = new File(folderName);
         if (srcDirectory.exists() && srcDirectory.isDirectory()) {
             LOGGER.log(Level.FINE, "Backing up {0}...", folderName);
-            final File destDirectory = new File(backupDirectory.getAbsolutePath(), CONFIG_HISTORY_DIR_NAME);
+            Path pathAbsolute = Paths.get(folderName);
+            Path pathBase = Paths.get(jenkinsHome.getAbsolutePath());
+            Path pathRelative = pathBase.relativize(pathAbsolute);
+            final File destDirectory = new File(backupDirectory.getAbsolutePath(), String.valueOf(pathRelative));
             IOFileFilter filter =
                     FileFilterUtils.and(TrueFileFilter.TRUE, getFileAgeDiffFilter(), getExcludedFilesFilter());
             filter = FileFilterUtils.or(filter, DirectoryFileFilter.DIRECTORY);
@@ -618,7 +622,7 @@ public class HudsonBackup {
     }
 
     private void backupRootFolder(String folderName, IOFileFilter fileFilter) throws IOException {
-        final File srcDirectory = new File(hudsonHome.getAbsolutePath(), folderName);
+        final File srcDirectory = new File(jenkinsHome.getAbsolutePath(), folderName);
         if (srcDirectory.exists() && srcDirectory.isDirectory()) {
             LOGGER.log(Level.FINE, "Backing up {0}...", folderName);
             final File destDirectory = new File(backupDirectory.getAbsolutePath(), folderName);

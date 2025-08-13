@@ -72,7 +72,7 @@ class TestRestore {
         assertEquals(0, jobList.length);
 
         // now do the restore without build number
-        HudsonRestore hudsonRestore = new HudsonRestore(rootDir, backupDir.getAbsolutePath(), date, false, false);
+        HudsonRestore hudsonRestore = new HudsonRestore(rootDir, backupDir.getAbsolutePath(), date, false, false, false);
         hudsonRestore.restore();
 
         // verify jobs are back
@@ -83,7 +83,7 @@ class TestRestore {
         assertFalse(new File(test2rootDir, "nextBuildNumber").exists());
 
         // restore from backup INCLUDING build number
-        hudsonRestore = new HudsonRestore(rootDir, backupDir.getAbsolutePath(), date, true, false);
+        hudsonRestore = new HudsonRestore(rootDir, backupDir.getAbsolutePath(), date, true, false, false);
         hudsonRestore.restore();
 
         assertTrue(new File(test2rootDir, "nextBuildNumber").exists());
@@ -146,7 +146,7 @@ class TestRestore {
 
         // now do the restore without build number
         HudsonRestore hudsonRestore =
-                new HudsonRestore(rootDir, backupDir.getAbsolutePath(), restoreFromDate, false, false);
+                new HudsonRestore(rootDir, backupDir.getAbsolutePath(), restoreFromDate, false, false, false);
         hudsonRestore.restore();
 
         // verify jobs are back
@@ -157,7 +157,7 @@ class TestRestore {
         assertFalse(new File(test2rootDir, "nextBuildNumber").exists());
 
         // restore from backup INCLUDING build number
-        hudsonRestore = new HudsonRestore(rootDir, backupDir.getAbsolutePath(), restoreFromDate, true, false);
+        hudsonRestore = new HudsonRestore(rootDir, backupDir.getAbsolutePath(), restoreFromDate, true, false, false);
         hudsonRestore.restore();
 
         assertTrue(new File(test2rootDir, "nextBuildNumber").exists());
@@ -166,7 +166,7 @@ class TestRestore {
     @Test
     void testLogsForRestoringWithoutBackupPath(JenkinsRule r) {
         try (LogRecorder l = new LogRecorder().capture(3).record("hudson.plugins.thinbackup", Level.SEVERE)) {
-            final HudsonRestore hudsonRestore = new HudsonRestore(null, null, null, false, false);
+            final HudsonRestore hudsonRestore = new HudsonRestore(null, null, null, false, false, false);
             hudsonRestore.restore();
             assertThat(
                     l, recorded(Level.SEVERE, containsString("Backup path not specified for restoration. Aborting.")));
@@ -176,7 +176,7 @@ class TestRestore {
     @Test
     void testLogsForRestoringWithoutRestoreFromDate(JenkinsRule r) {
         try (LogRecorder l = new LogRecorder().capture(3).record("hudson.plugins.thinbackup", Level.SEVERE)) {
-            final HudsonRestore hudsonRestore = new HudsonRestore(null, "/var/backup", null, false, false);
+            final HudsonRestore hudsonRestore = new HudsonRestore(null, "/var/backup", null, false, false, false);
             hudsonRestore.restore();
             assertThat(
                     l,
