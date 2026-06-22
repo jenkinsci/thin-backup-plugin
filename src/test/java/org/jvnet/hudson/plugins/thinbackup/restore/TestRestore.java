@@ -16,6 +16,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.plugins.thinbackup.ThinBackupPeriodicWork;
@@ -31,6 +32,64 @@ class TestRestore {
 
     @TempDir
     private File tmpFolder;
+
+    @Test
+    void testRestoreWithConfigHistory(JenkinsRule r) throws Exception {
+        // create to test afterward
+        File backupDir = newFolder(tmpFolder, "junit");
+
+        final ThinBackupPluginImpl thinBackupPlugin = ThinBackupPluginImpl.get();
+        thinBackupPlugin.setBackupPath(backupDir.getAbsolutePath());
+        thinBackupPlugin.setBackupBuildResults(true);
+        thinBackupPlugin.setBackupNextBuildNumber(true);
+        thinBackupPlugin.setBackupConfigHistory(true);
+        final File rootDir = r.jenkins.getRootDir();
+        final Date date = new Date();
+
+        // create 2 jobs
+        final FreeStyleProject test = r.createFreeStyleProject("test");
+        final FreeStyleProject test2 = r.createFreeStyleProject("test2");
+
+        // adjust description to create config history
+        test.setDescription("new test");
+        test2.setDescription("new test2");
+
+        // run backup
+        final HudsonBackup backup =
+                new HudsonBackup(thinBackupPlugin, ThinBackupPeriodicWork.BackupType.FULL, date, r.jenkins);
+        backup.backup();
+
+        // delete jobs
+        test.delete();
+        test2.delete();
+
+        // delete config-history
+        final File configHistory = new File(rootDir, "config-history");
+        FileUtils.deleteDirectory(configHistory);
+
+        // check that files are gone
+        final File jobs = new File(rootDir, "jobs");
+        String[] jobList = jobs.list();
+        assertEquals(0, jobList.length);
+
+        // now do the restore without config-history
+        HudsonRestore hudsonRestore =
+                new HudsonRestore(rootDir, backupDir.getAbsolutePath(), date, false, false, false);
+        hudsonRestore.restore();
+
+        // verify jobs are back
+        jobList = jobs.list();
+        assertEquals(2, jobList.length);
+
+        // verify config-history is missing
+        assertFalse(configHistory.exists());
+
+        // restore from backup INCLUDING config-history
+        hudsonRestore = new HudsonRestore(rootDir, backupDir.getAbsolutePath(), date, false, false, true);
+        hudsonRestore.restore();
+
+        assertTrue(configHistory.exists());
+    }
 
     @Test
     void testRestoreFromFolder(JenkinsRule r) throws Exception {
@@ -72,7 +131,8 @@ class TestRestore {
         assertEquals(0, jobList.length);
 
         // now do the restore without build number
-        HudsonRestore hudsonRestore = new HudsonRestore(rootDir, backupDir.getAbsolutePath(), date, false, false);
+        HudsonRestore hudsonRestore =
+                new HudsonRestore(rootDir, backupDir.getAbsolutePath(), date, false, false, false);
         hudsonRestore.restore();
 
         // verify jobs are back
@@ -83,7 +143,7 @@ class TestRestore {
         assertFalse(new File(test2rootDir, "nextBuildNumber").exists());
 
         // restore from backup INCLUDING build number
-        hudsonRestore = new HudsonRestore(rootDir, backupDir.getAbsolutePath(), date, true, false);
+        hudsonRestore = new HudsonRestore(rootDir, backupDir.getAbsolutePath(), date, true, false, false);
         hudsonRestore.restore();
 
         assertTrue(new File(test2rootDir, "nextBuildNumber").exists());
@@ -146,7 +206,7 @@ class TestRestore {
 
         // now do the restore without build number
         HudsonRestore hudsonRestore =
-                new HudsonRestore(rootDir, backupDir.getAbsolutePath(), restoreFromDate, false, false);
+                new HudsonRestore(rootDir, backupDir.getAbsolutePath(), restoreFromDate, false, false, false);
         hudsonRestore.restore();
 
         // verify jobs are back
@@ -157,7 +217,7 @@ class TestRestore {
         assertFalse(new File(test2rootDir, "nextBuildNumber").exists());
 
         // restore from backup INCLUDING build number
-        hudsonRestore = new HudsonRestore(rootDir, backupDir.getAbsolutePath(), restoreFromDate, true, false);
+        hudsonRestore = new HudsonRestore(rootDir, backupDir.getAbsolutePath(), restoreFromDate, true, false, false);
         hudsonRestore.restore();
 
         assertTrue(new File(test2rootDir, "nextBuildNumber").exists());
@@ -166,7 +226,7 @@ class TestRestore {
     @Test
     void testLogsForRestoringWithoutBackupPath(JenkinsRule r) {
         try (LogRecorder l = new LogRecorder().capture(3).record("hudson.plugins.thinbackup", Level.SEVERE)) {
-            final HudsonRestore hudsonRestore = new HudsonRestore(null, null, null, false, false);
+            final HudsonRestore hudsonRestore = new HudsonRestore(null, null, null, false, false, false);
             hudsonRestore.restore();
             assertThat(
                     l, recorded(Level.SEVERE, containsString("Backup path not specified for restoration. Aborting.")));
@@ -176,7 +236,7 @@ class TestRestore {
     @Test
     void testLogsForRestoringWithoutRestoreFromDate(JenkinsRule r) {
         try (LogRecorder l = new LogRecorder().capture(3).record("hudson.plugins.thinbackup", Level.SEVERE)) {
-            final HudsonRestore hudsonRestore = new HudsonRestore(null, "/var/backup", null, false, false);
+            final HudsonRestore hudsonRestore = new HudsonRestore(null, "/var/backup", null, false, false, false);
             hudsonRestore.restore();
             assertThat(
                     l,
