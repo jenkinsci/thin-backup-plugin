@@ -62,10 +62,11 @@ public class HudsonRestore {
     private static final Logger LOGGER = Logger.getLogger("hudson.plugins.thinbackup");
 
     private final String backupPath;
-    private final File hudsonHome;
+    private final File jenkinsHome;
     private final Date restoreFromDate;
     private final boolean restoreNextBuildNumber;
     private final boolean restorePlugins;
+    private final boolean restoreConfigHistory;
     private final Map<String, List<Plugin>> availablePluginLocations;
 
     public HudsonRestore(
@@ -73,13 +74,15 @@ public class HudsonRestore {
             final String backupPath,
             final Date restoreFromDate,
             final boolean restoreNextBuildNumber,
-            final boolean restorePlugins) {
-        this.hudsonHome = hudsonConfigurationPath;
+            final boolean restorePlugins,
+            final boolean restoreConfigHistory) {
+        this.jenkinsHome = hudsonConfigurationPath;
         this.backupPath = backupPath;
         this.restoreFromDate = restoreFromDate;
         this.restoreNextBuildNumber = restoreNextBuildNumber;
         this.restorePlugins = restorePlugins;
         this.availablePluginLocations = new HashMap<>();
+        this.restoreConfigHistory = restoreConfigHistory;
     }
 
     public void restore() {
@@ -168,6 +171,8 @@ public class HudsonRestore {
 
     private void restore(final File toRestore) throws IOException {
         final IOFileFilter nextBuildNumberFileFilter = FileFilterUtils.nameFileFilter("nextBuildNumber");
+        final IOFileFilter configHistoryFileFilter =
+                FileFilterUtils.notFileFilter(FileFilterUtils.prefixFileFilter("config-history"));
         final IOFileFilter noBackupCompletedFile =
                 FileFilterUtils.notFileFilter(FileFilterUtils.nameFileFilter(COMPLETED_BACKUP_FILE));
         IOFileFilter restoreNextBuildNumberFilter;
@@ -176,7 +181,7 @@ public class HudsonRestore {
             restoreNextBuildNumberFilter = noBackupCompletedFile;
 
             final Collection<File> restore =
-                    FileUtils.listFiles(toRestore, nextBuildNumberFileFilter, TrueFileFilter.INSTANCE);
+                    FileUtils.listFiles(toRestore, nextBuildNumberFileFilter, TrueFileFilter.TRUE);
             final Map<String, Integer> nextBuildNumbers = new HashMap<>();
             for (final File file : restore) {
                 try (BufferedReader reader = new BufferedReader(new FileReader(file, StandardCharsets.UTF_8))) {
@@ -185,7 +190,7 @@ public class HudsonRestore {
             }
 
             final Collection<File> current =
-                    FileUtils.listFiles(hudsonHome, nextBuildNumberFileFilter, TrueFileFilter.INSTANCE);
+                    FileUtils.listFiles(jenkinsHome, nextBuildNumberFileFilter, TrueFileFilter.TRUE);
             for (final File file : current) {
                 try (BufferedReader reader = new BufferedReader(new FileReader(file, StandardCharsets.UTF_8))) {
                     final int currentBuildNumber = Integer.parseInt(reader.readLine());
@@ -201,7 +206,11 @@ public class HudsonRestore {
                     FileFilterUtils.notFileFilter(nextBuildNumberFileFilter), noBackupCompletedFile);
         }
 
-        FileUtils.copyDirectory(toRestore, this.hudsonHome, restoreNextBuildNumberFilter, true);
+        if (!restoreConfigHistory) {
+            restoreNextBuildNumberFilter = FileFilterUtils.and(restoreNextBuildNumberFilter, configHistoryFileFilter);
+        }
+
+        FileUtils.copyDirectory(toRestore, this.jenkinsHome, restoreNextBuildNumberFilter, true);
 
         if (restorePlugins) {
             restorePlugins(toRestore);

@@ -22,7 +22,7 @@ import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 @WithJenkins
-class TestBackupWithCloudBeesFolder {
+class TestBackupWithFolder {
 
     @TempDir
     private File tmpFolder;

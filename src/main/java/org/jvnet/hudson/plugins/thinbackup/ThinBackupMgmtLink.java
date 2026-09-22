@@ -93,7 +93,8 @@ public class ThinBackupMgmtLink extends ManagementLink {
             final StaplerResponse2 rsp,
             @QueryParameter("restoreBackupFrom") final String restoreBackupFrom,
             @QueryParameter("restoreNextBuildNumber") final String restoreNextBuildNumber,
-            @QueryParameter("restorePlugins") final String restorePlugins)
+            @QueryParameter("restorePlugins") final String restorePlugins,
+            @QueryParameter("restoreConfigHistory") final String restoreConfigHistory)
             throws IOException {
         LOGGER.info("Starting restore operation.");
 
@@ -113,7 +114,8 @@ public class ThinBackupMgmtLink extends ManagementLink {
                     ThinBackupPluginImpl.get().getExpandedBackupPath(),
                     restoreFromDate,
                     "on".equals(restoreNextBuildNumber),
-                    "on".equals(restorePlugins));
+                    "on".equals(restorePlugins),
+                    "on".equals(restoreConfigHistory));
             hudsonRestore.restore();
 
             LOGGER.info("Restore finished.");
